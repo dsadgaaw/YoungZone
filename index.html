@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YoungZone Sports - App Quản Lý Đơn Hàng & Tài Chính (Khôi & Lâm)</title>
 
-    <!-- Khai báo PWA xịn cho iPhone & Máy tính Windows (BƯỚC 2) -->
     <link rel="manifest" href="manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -19,18 +18,17 @@
     <!-- Firebase SDK (v9 Compatibility Mode) -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0b0f19; color: #f8fafc; }
         .gold-gradient { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
-        .card-glow { transition: all 0.3s ease; }
         .card-glow:hover { box-shadow: 0 0 20px rgba(245, 158, 11, 0.2); }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #0f172a; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
 
-        /* Toast Notifications ở góc trên bên phải */
         #toast-container {
             position: fixed;
             top: 20px;
@@ -67,220 +65,397 @@
             from { transform: translateX(100%); opacity: 0; }
             to { transform: translateX(0); opacity: 1; }
         }
+
+        @media print {
+            body * { visibility: hidden; }
+            #printArea, #printArea * { visibility: visible; }
+            #printArea { position: absolute; left: 0; top: 0; width: 100%; color: #000; background: #fff; }
+        }
     </style>
 </head>
 <body class="min-h-screen pb-16">
 
-    <!-- Container chứa thông báo góc phải -->
     <div id="toast-container"></div>
 
-    <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-40 backdrop-blur-md bg-opacity-90">
-        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-3">
-            <div class="flex items-center space-x-3">
+    <!-- MÀN HÌNH ĐĂNG NHẬP -->
+    <div id="loginScreen" class="fixed inset-0 bg-slate-950 z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 p-8 rounded-2xl max-w-sm w-full text-center shadow-2xl">
+            <span class="bg-amber-500 text-slate-950 font-black px-3 py-1 rounded text-2xl italic tracking-tighter inline-block mb-2">YoungZone</span>
+            <h2 class="text-sm font-bold text-white mb-6">ĐĂNG NHẬP HỆ THỐNG QUẢN TRỊ</h2>
+            <form onsubmit="handleLogin(event)" class="space-y-4 text-xs text-left">
                 <div>
-                    <div class="flex items-center space-x-2">
-                        <span class="bg-amber-500 text-slate-950 font-black px-2.5 py-1 rounded text-xl italic tracking-tighter">YoungZone</span>
-                        <h1 class="text-sm font-extrabold text-white leading-none">HỆ THỐNG QUẢN TRỊ NỘI BỘ</h1>
-                    </div>
-                    <div class="flex items-center space-x-2 mt-1">
-                        <span class="text-[10px] text-amber-400 font-semibold">Đối tác: Khôi & Lâm</span>
-                        <span id="firebaseStatus" class="text-[9px] px-1.5 py-0.2 rounded font-bold bg-slate-800 text-slate-400 border border-slate-700">
-                            <i class="fas fa-spinner fa-spin mr-1"></i>Đang kết nối Firebase...
-                        </span>
-                    </div>
+                    <label class="block text-slate-400 mb-1 font-semibold">Tên đăng nhập / Email</label>
+                    <input type="text" id="loginUser" required placeholder="Nhập tên đăng nhập..." class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white focus:outline-none focus:border-amber-500">
                 </div>
-            </div>
-            
-            <div class="flex items-center space-x-2">
-                <button onclick="switchTab('dashboard')" id="navDashboard" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-amber-500 text-slate-950 transition">
-                    <i class="fas fa-chart-line mr-1.5"></i> Quản Lý Đơn & Tài Chính
-                </button>
-                <button onclick="switchTab('sizePrice')" id="navSizePrice" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 border border-slate-700 hover:text-white transition">
-                    <i class="fas fa-ruler-combined mr-1.5"></i> Bảng Size & Bảng Giá
-                </button>
-                <button onclick="exportToExcel()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3 py-1.5 rounded-xl text-xs transition">
-                    <i class="fas fa-file-excel mr-1"></i> Xuất Excel
-                </button>
-            </div>
-        </div>
-    </header>
-
-    <div id="tabDashboard" class="max-w-7xl mx-auto px-4 mt-6">
-        
-        <!-- BỘ LỌC THÁNG, TỶ GIÁ TỆ & NGUỒN KHÁCH HÀNG -->
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 mb-6 flex flex-wrap justify-between items-center gap-4">
-            <div class="flex flex-wrap items-center gap-3">
-                <!-- Bộ lọc tháng -->
-                <div class="flex items-center space-x-2 bg-slate-950 border border-slate-700 px-3 py-1.5 rounded-xl">
-                    <i class="fas fa-calendar-alt text-amber-500 text-xs"></i>
-                    <span class="text-xs font-bold text-slate-300">Tháng:</span>
-                    <input type="month" id="filterMonth" onchange="renderDashboard()" class="bg-transparent text-xs text-amber-400 font-bold focus:outline-none">
-                </div>
-
-                <!-- Cài đặt Tỷ Giá RMB theo ngày -->
-                <div class="flex items-center space-x-2 bg-slate-950 border border-slate-700 px-3 py-1.5 rounded-xl">
-                    <i class="fas fa-yen-sign text-amber-500 text-xs"></i>
-                    <span class="text-xs font-bold text-slate-300">Tỷ Giá Tệ:</span>
-                    <input type="number" id="globalRmbRate" value="3810" onchange="updateRmbRate(this.value)" class="bg-transparent text-xs text-amber-400 font-bold w-14 focus:outline-none">
-                    <span class="text-[10px] text-slate-500">đ</span>
-                </div>
-
-                <!-- Bộ lọc Khách -->
-                <div class="flex items-center space-x-1.5">
-                    <button onclick="filterOwner('ALL')" id="btnFilterALL" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-500 text-slate-950">Tất Cả</button>
-                    <button onclick="filterOwner('Khoi')" id="btnFilterKhoi" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 border border-slate-700">Khách Khôi</button>
-                    <button onclick="filterOwner('Lam')" id="btnFilterLam" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 border border-slate-700">Khách Lâm</button>
-                    <button onclick="filterOwner('CHUNG')" id="btnFilterCHUNG" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 border border-slate-700">Nguồn Chung</button>
-                </div>
-            </div>
-
-            <div class="flex items-center space-x-2">
-                <button onclick="openWithdrawModal()" class="bg-rose-600 hover:bg-rose-500 text-white font-bold px-3.5 py-2 rounded-xl text-xs transition">
-                    <i class="fas fa-money-bill-transfer mr-1.5"></i> Rút Tiền / Chi Tiêu
-                </button>
-                <button onclick="openCalcModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-3.5 py-2 rounded-xl text-xs transition">
-                    <i class="fas fa-calculator mr-1.5"></i> Tính Giá Tự Động
-                </button>
-                <button onclick="openOrderModal()" class="gold-gradient text-slate-950 font-extrabold px-4 py-2 rounded-xl text-xs hover:opacity-90 transition">
-                    <i class="fas fa-plus mr-1.5"></i> Tạo Đơn Hàng Mới
-                </button>
-            </div>
-        </div>
-
-        <!-- THỐNG KÊ VỐN, SỐ DƯ TÀI KHOẢN & LÃI CHIA -->
-        <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
-            <!-- Khung Vốn Đầu Tư Gốc -->
-            <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex justify-between items-center">
                 <div>
-                    <span class="text-xs text-slate-400 block font-semibold">Tổng Vốn Đã Góp</span>
-                    <div class="flex items-center space-x-2 mt-1">
-                        <span id="displayCapital" class="text-lg font-black text-emerald-400">0đ</span>
-                    </div>
-                    <button onclick="openFundModal()" class="text-[11px] text-amber-400 font-bold hover:underline mt-1 block"><i class="fas fa-plus-circle mr-1"></i>+ THÊM VỐN GÓP</button>
+                    <label class="block text-slate-400 mb-1 font-semibold">Mật khẩu</label>
+                    <input type="password" id="loginPass" required placeholder="••••••••" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white focus:outline-none focus:border-amber-500">
                 </div>
-                <div class="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
-                    <i class="fas fa-sack-dollar"></i>
+                <div class="flex items-center space-x-2 pt-1">
+                    <input type="checkbox" id="rememberMe" class="w-4 h-4 rounded bg-slate-950 border-slate-700 text-amber-500 focus:ring-0 cursor-pointer">
+                    <label for="rememberMe" class="text-slate-300 font-semibold cursor-pointer select-none">Ghi nhớ đăng nhập</label>
                 </div>
-            </div>
-
-            <!-- Khung Tổng Tiền Trong Tài Khoản -->
-            <div class="bg-slate-900 border border-amber-500/40 p-4 rounded-2xl flex justify-between items-center shadow-lg shadow-amber-500/5">
-                <div>
-                    <span class="text-xs text-amber-400 block font-bold">TỔNG TIỀN TRONG TÀI KHOẢN</span>
-                    <span id="statTotalAccountBalance" class="text-lg font-black text-amber-400 block mt-1">0đ</span>
-                    <span class="text-[10px] text-slate-400 block">Vốn + Tiền Thu Hàng - Đã Rút</span>
-                </div>
-                <div class="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400">
-                    <i class="fas fa-vault"></i>
-                </div>
-            </div>
-
-            <!-- Khung Chia Lãi Khôi -->
-            <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex justify-between items-center">
-                <div>
-                    <span class="text-xs text-slate-400 block font-semibold">LÃI HOÀN TẤT: KHÔI</span>
-                    <span id="statProfitKhoi" class="text-lg font-black text-blue-400">0đ</span>
-                    <span class="text-[10px] text-slate-500 block mt-0.5">(Chỉ tính đơn đã xong)</span>
-                </div>
-                <div class="w-9 h-9 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
-                    <i class="fas fa-user-check"></i>
-                </div>
-            </div>
-
-            <!-- Khung Chia Lãi Lâm -->
-            <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex justify-between items-center">
-                <div>
-                    <span class="text-xs text-slate-400 block font-semibold">LÃI HOÀN TẤT: LÂM</span>
-                    <span id="statProfitLam" class="text-lg font-black text-purple-400">0đ</span>
-                    <span class="text-[10px] text-slate-500 block mt-0.5">(Chỉ tính đơn đã xong)</span>
-                </div>
-                <div class="w-9 h-9 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400">
-                    <i class="fas fa-user-check"></i>
-                </div>
-            </div>
-
-            <!-- Khung Dư Nợ COD Cần Thu -->
-            <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex justify-between items-center">
-                <div>
-                    <span class="text-xs text-slate-400 block font-semibold">DƯ NỢ COD CẦN THU</span>
-                    <span id="statTotalRemainingCOD" class="text-lg font-black text-amber-400">0đ</span>
-                    <span class="text-[10px] text-slate-500 block mt-0.5">Khách còn trả khi nhận</span>
-                </div>
-                <div class="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
-                    <i class="fas fa-hand-holding-dollar"></i>
-                </div>
-            </div>
-        </div>
-
-        <!-- THỐNG KÊ DOANH THU & PHÍ THÁNG -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-            <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl">
-                <span class="text-xs text-slate-400 block font-semibold">Số Đơn Trong Tháng</span>
-                <span id="statTotalOrders" class="text-xl font-black text-white">0</span>
-            </div>
-            <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl">
-                <span class="text-xs text-slate-400 block font-semibold">Tổng Lãi Thực Nhận (Đơn Xong)</span>
-                <span id="statTotalRevenue" class="text-xl font-black text-amber-400">0đ</span>
-            </div>
-            <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl">
-                <span class="text-xs text-slate-400 block font-semibold">Tổng Vốn Hàng Nhập</span>
-                <span id="statTotalCost" class="text-xl font-black text-rose-400">0đ</span>
-            </div>
-            <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl">
-                <span class="text-xs text-slate-400 block font-semibold">LÃI RÒNG (ĐÃ HOÀN TẤT)</span>
-                <span id="statTotalProfitMonth" class="text-xl font-black text-emerald-400">0đ</span>
-            </div>
-        </div>
-
-        <!-- BẢNG DANH SÁCH ĐƠN HÀNG -->
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl mb-8">
-            <div class="p-4 border-b border-slate-800 flex justify-between items-center">
-                <h3 class="text-sm font-bold text-white"><i class="fas fa-list-check text-amber-500 mr-2"></i>Danh Sách Đơn Hàng YoungZone</h3>
-                <span class="text-xs text-emerald-400 font-semibold"><i class="fas fa-cloud mr-1"></i>Đồng bộ trực tiếp Firebase</span>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left text-xs text-slate-300">
-                    <thead class="bg-slate-950 text-slate-400 uppercase font-semibold border-b border-slate-800">
-                        <tr>
-                            <th class="p-3">Mã Đơn / Ngày</th>
-                            <th class="p-3">Mã Vận Đơn TQ</th>
-                            <th class="p-3">Khách Hàng & SĐT</th>
-                            <th class="p-3">Sản Phẩm & Size</th>
-                            <th class="p-3">Người Phụ Trách</th>
-                            <th class="p-3">Giá Bán / Tiền Vốn Gốc</th>
-                            <th class="p-3">Đã Cọc / Thu COD</th>
-                            <th class="p-3">Lãi Ròng Đơn</th>
-                            <th class="p-3">Chia Lãi (Khôi / Lâm)</th>
-                            <th class="p-3">Trạng Thái</th>
-                            <th class="p-3 text-right">Thao Tác</th>
-                        </tr>
-                    </thead>
-                    <tbody id="adminTableBody" class="divide-y divide-slate-800/60"></tbody>
-                </table>
-            </div>
+                <button type="submit" class="w-full gold-gradient text-slate-950 font-extrabold py-3 rounded-xl text-xs hover:opacity-90 transition mt-2">
+                    ĐĂNG NHẬP HỆ THỐNG
+                </button>
+            </form>
         </div>
     </div>
 
-    <!-- TAB BẢNG GIÁ & BẢNG SIZE SHOP -->
-    <div id="tabSizePrice" class="max-w-7xl mx-auto px-4 mt-6 hidden">
-        <div class="flex justify-between items-center mb-6">
-            <div>
-                <h2 class="text-lg font-bold text-white"><i class="fas fa-ruler-combined text-amber-500 mr-2"></i>Bảng Thông Số Size & Bảng Giá Niêm Yết YoungZone</h2>
-                <p class="text-xs text-slate-400">Nơi lưu trữ hình ảnh size chuẩn đồ thể thao để gửi trực tiếp cho khách chọn</p>
+    <!-- MAIN APP CONTENT -->
+    <div id="appContainer" class="hidden">
+        <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-40 backdrop-blur-md bg-opacity-90">
+            <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-3">
+                <div class="flex items-center space-x-3">
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <span class="bg-amber-500 text-slate-950 font-black px-2.5 py-1 rounded text-xl italic tracking-tighter">YoungZone</span>
+                            <h1 class="text-sm font-extrabold text-white leading-none">QUẢN TRỊ NỘI BỘ PRO MAX</h1>
+                        </div>
+                        <div class="flex items-center space-x-2 mt-1">
+                            <span id="roleBadge" class="text-[10px] text-amber-400 font-semibold">Vai trò: Admin</span>
+                            <span id="firebaseStatus" class="text-[9px] px-1.5 py-0.2 rounded font-bold bg-slate-800 text-slate-400 border border-slate-700">
+                                <i class="fas fa-spinner fa-spin mr-1"></i>Đang kết nối Firebase...
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-2">
+                    <button onclick="switchTab('dashboard')" id="navDashboard" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-500 text-slate-950 transition">
+                        <i class="fas fa-chart-line mr-1"></i> Đơn Hàng
+                    </button>
+                    <button onclick="switchTab('coupons')" id="navCoupons" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 border border-slate-700 hover:text-white transition">
+                        <i class="fas fa-ticket mr-1"></i> Mã Giảm Giá
+                    </button>
+                    <button onclick="switchTab('inventory')" id="navInventory" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 border border-slate-700 hover:text-white transition">
+                        <i class="fas fa-boxes-stacked mr-1"></i> Kho Hàng Sẵn
+                    </button>
+                    <button onclick="switchTab('crm')" id="navCRM" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 border border-slate-700 hover:text-white transition">
+                        <i class="fas fa-users mr-1"></i> CRM Khách
+                    </button>
+                    <button onclick="switchTab('sizePrice')" id="navSizePrice" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 border border-slate-700 hover:text-white transition">
+                        <i class="fas fa-ruler-combined mr-1"></i> Bảng Size
+                    </button>
+                    <button onclick="exportBackupJSON()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-2.5 py-1.5 rounded-xl text-xs transition" title="Backup">
+                        <i class="fas fa-download"></i>
+                    </button>
+                    <button onclick="exportToExcel()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-2.5 py-1.5 rounded-xl text-xs transition">
+                        <i class="fas fa-file-excel"></i>
+                    </button>
+                    <button onclick="handleLogout()" class="bg-rose-600 hover:bg-rose-500 text-white font-bold px-2.5 py-1.5 rounded-xl text-xs transition" title="Đăng xuất">
+                        <i class="fas fa-right-from-bracket"></i>
+                    </button>
+                </div>
             </div>
-            <button onclick="openAddCatalogModal()" class="gold-gradient text-slate-950 font-bold px-4 py-2 rounded-xl text-xs hover:opacity-90">
-                <i class="fas fa-plus mr-1.5"></i> Thêm Bảng Size / Mẫu Giá Mới
-            </button>
+        </header>
+
+        <!-- TAB ĐƠN HÀNG -->
+        <div id="tabDashboard" class="max-w-7xl mx-auto px-4 mt-6">
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 mb-4 flex flex-wrap justify-between items-center gap-4">
+                <div class="flex flex-wrap items-center gap-3">
+                    <div class="flex items-center space-x-2 bg-slate-950 border border-slate-700 px-3 py-1.5 rounded-xl">
+                        <i class="fas fa-calendar-alt text-amber-500 text-xs"></i>
+                        <span class="text-xs font-bold text-slate-300">Tháng:</span>
+                        <input type="month" id="filterMonth" onchange="renderDashboard()" class="bg-transparent text-xs text-amber-400 font-bold focus:outline-none">
+                    </div>
+
+                    <div class="flex items-center space-x-2 bg-slate-950 border border-slate-700 px-3 py-1.5 rounded-xl">
+                        <i class="fas fa-yen-sign text-amber-500 text-xs"></i>
+                        <span class="text-xs font-bold text-slate-300">Tỷ Giá Tệ:</span>
+                        <input type="number" id="globalRmbRate" value="3810" onchange="updateRmbRate(this.value)" class="bg-transparent text-xs text-amber-400 font-bold w-14 focus:outline-none">
+                        <span class="text-[10px] text-slate-500">đ</span>
+                    </div>
+
+                    <div class="flex items-center space-x-1.5">
+                        <button onclick="filterOwner('ALL')" id="btnFilterALL" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-500 text-slate-950">Tất Cả</button>
+                        <button onclick="filterOwner('Khoi')" id="btnFilterKhoi" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 border border-slate-700">Khách Khôi</button>
+                        <button onclick="filterOwner('Lam')" id="btnFilterLam" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 border border-slate-700">Khách Lâm</button>
+                        <button onclick="filterOwner('CHUNG')" id="btnFilterCHUNG" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 border border-slate-700">Nguồn Chung</button>
+                    </div>
+                </div>
+
+                <div class="flex items-center space-x-2">
+                    <button onclick="openLogsModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold px-3 py-2 rounded-xl text-xs border border-slate-700 transition">
+                        <i class="fas fa-clock-rotate-left mr-1"></i> Nhật Ký
+                    </button>
+                    <button onclick="openWithdrawModal()" class="bg-rose-600 hover:bg-rose-500 text-white font-bold px-3.5 py-2 rounded-xl text-xs transition admin-only">
+                        <i class="fas fa-money-bill-transfer mr-1.5"></i> Rút Tiền / Chi
+                    </button>
+                    <button onclick="openOrderModal()" class="gold-gradient text-slate-950 font-extrabold px-4 py-2 rounded-xl text-xs hover:opacity-90 transition">
+                        <i class="fas fa-plus mr-1.5"></i> Tạo Đơn Mới
+                    </button>
+                </div>
+            </div>
+
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3 mb-6 flex flex-wrap justify-between items-center gap-3 text-xs">
+                <div class="flex items-center space-x-2 flex-1 min-w-[240px]">
+                    <i class="fas fa-magnifying-glass text-amber-500"></i>
+                    <input type="text" id="searchInput" oninput="renderDashboard()" placeholder="Tìm Tên khách, SĐT, Mã đơn, Mã vận đơn TQ/VN..." class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-white focus:outline-none focus:border-amber-500">
+                </div>
+
+                <div class="flex items-center space-x-2">
+                    <span class="text-slate-400 font-semibold">Trạng thái:</span>
+                    <select id="filterStatus" onchange="renderDashboard()" class="bg-slate-950 border border-slate-700 text-amber-400 rounded-xl px-3 py-1.5 font-bold focus:outline-none">
+                        <option value="ALL">Tất Cả Trạng Thái</option>
+                        <option value="ORDERING">1. Đã cọc - Đang mua Taobao</option>
+                        <option value="SHIPPING">2. Đang vận chuyển Trung - Việt</option>
+                        <option value="ARRIVED">3. Đã về kho Hà Nội - Đang giao</option>
+                        <option value="COMPLETED">4. Đã bán - Hoàn tất</option>
+                        <option value="REFUNDED">5. Hoàn hàng</option>
+                        <option value="UNPAID_COD">Chưa Nhận Tiền COD từ ĐVVC</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="delayedOrdersAlertBox" class="hidden bg-rose-500/10 border border-rose-500/30 rounded-2xl p-4 mb-6 text-xs text-rose-300 flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <i class="fas fa-triangle-exclamation text-rose-500 text-lg"></i>
+                    <div>
+                        <b class="text-white block font-bold">CẢNH BÁO ĐƠN ORDER QUÁ 7 NGÀY CHƯA XONG:</b>
+                        <span id="delayedOrdersCountText">Có 0 đơn hàng đang bị chậm trễ tiến độ vận chuyển!</span>
+                    </div>
+                </div>
+                <button onclick="filterDelayedOnly()" class="bg-rose-600 hover:bg-rose-500 text-white font-bold px-3 py-1.5 rounded-xl text-xs">Xem Đơn Trễ</button>
+            </div>
+
+            <!-- TÀI CHÍNH NỘI BỘ -->
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6 admin-only">
+                <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex justify-between items-center">
+                    <div>
+                        <span class="text-xs text-slate-400 block font-semibold">Tổng Vốn Đã Góp</span>
+                        <span id="displayCapital" class="text-lg font-black text-emerald-400 mt-1 block">0đ</span>
+                        <button onclick="openFundModal()" class="text-[11px] text-amber-400 font-bold hover:underline mt-1 block">+ GÓP VỐN</button>
+                    </div>
+                    <div class="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400"><i class="fas fa-sack-dollar"></i></div>
+                </div>
+
+                <div class="bg-slate-900 border border-amber-500/40 p-4 rounded-2xl flex justify-between items-center shadow-lg shadow-amber-500/5">
+                    <div>
+                        <span class="text-xs text-amber-400 block font-bold">TIỀN TRONG TÀI KHOẢN</span>
+                        <span id="statTotalAccountBalance" class="text-lg font-black text-amber-400 block mt-1">0đ</span>
+                        <span class="text-[10px] text-slate-400 block">Vốn + Thu Hàng - Rút</span>
+                    </div>
+                    <div class="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400"><i class="fas fa-vault"></i></div>
+                </div>
+
+                <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex justify-between items-center">
+                    <div>
+                        <span class="text-xs text-slate-400 block font-semibold">LÃI HOÀN TẤT: KHÔI</span>
+                        <span id="statProfitKhoi" class="text-lg font-black text-blue-400 mt-1 block">0đ</span>
+                    </div>
+                    <div class="w-9 h-9 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400"><i class="fas fa-user-check"></i></div>
+                </div>
+
+                <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex justify-between items-center">
+                    <div>
+                        <span class="text-xs text-slate-400 block font-semibold">LÃI HOÀN TẤT: LÂM</span>
+                        <span id="statProfitLam" class="text-lg font-black text-purple-400 mt-1 block">0đ</span>
+                    </div>
+                    <div class="w-9 h-9 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400"><i class="fas fa-user-check"></i></div>
+                </div>
+
+                <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex justify-between items-center">
+                    <div>
+                        <span class="text-xs text-slate-400 block font-semibold">DƯ NỢ COD CẦN THU</span>
+                        <span id="statTotalRemainingCOD" class="text-lg font-black text-amber-400 mt-1 block">0đ</span>
+                    </div>
+                    <div class="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400"><i class="fas fa-hand-holding-dollar"></i></div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl md:col-span-2">
+                    <span class="text-xs font-bold text-amber-400 block mb-2"><i class="fas fa-fire mr-1"></i> TOP SẢN PHẨM BÁN CHẠY TRONG THÁNG</span>
+                    <div id="topProductsContainer" class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs"></div>
+                </div>
+                <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl space-y-2">
+                    <span class="text-xs font-bold text-white block mb-1"><i class="fas fa-chart-pie text-amber-500 mr-1"></i> TỔNG QUAN DOANH THU THÁNG</span>
+                    <div class="flex justify-between text-xs"><span class="text-slate-400">Số đơn tạo:</span><b id="statTotalOrders" class="text-white">0</b></div>
+                    <div class="flex justify-between text-xs admin-only"><span class="text-slate-400">Vốn hàng nhập:</span><b id="statTotalCost" class="text-rose-400">0đ</b></div>
+                    <div class="flex justify-between text-xs border-t border-slate-800 pt-1 admin-only"><span class="text-slate-300 font-bold">Lãi ròng đã xong:</span><b id="statTotalProfitMonth" class="text-emerald-400 text-sm">0đ</b></div>
+                </div>
+            </div>
+
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl mb-8">
+                <div class="p-4 border-b border-slate-800 flex justify-between items-center">
+                    <h3 class="text-sm font-bold text-white"><i class="fas fa-list-check text-amber-500 mr-2"></i>Danh Sách Đơn Hàng YoungZone</h3>
+                    <span class="text-xs text-emerald-400 font-semibold"><i class="fas fa-cloud mr-1"></i>Firebase Realtime Sync</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs text-slate-300">
+                        <thead class="bg-slate-950 text-slate-400 uppercase font-semibold border-b border-slate-800">
+                            <tr>
+                                <th class="p-3">Mã Đơn / Ngày</th>
+                                <th class="p-3">Mã VĐ TQ / VN</th>
+                                <th class="p-3">Khách Hàng & SĐT</th>
+                                <th class="p-3">Sản Phẩm & Size</th>
+                                <th class="p-3">Người Phụ Trách</th>
+                                <th class="p-3">Giá Bán / Vốn</th>
+                                <th class="p-3">Cọc / Thu COD</th>
+                                <th class="p-3 admin-only">Lãi Ròng</th>
+                                <th class="p-3 admin-only">Chia Lãi (Khôi/Lâm)</th>
+                                <th class="p-3">Bill Cọc</th>
+                                <th class="p-3">Trạng Thái</th>
+                                <th class="p-3 text-right">Thao Tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminTableBody" class="divide-y divide-slate-800/60"></tbody>
+                    </table>
+                </div>
+            </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="catalogGrid"></div>
+        <!-- TAB MÃ GIẢM GIÁ -->
+        <div id="tabCoupons" class="max-w-7xl mx-auto px-4 mt-6 hidden">
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 mb-6">
+                <div class="flex justify-between items-center mb-4">
+                    <div>
+                        <h2 class="text-base font-bold text-white"><i class="fas fa-ticket text-amber-500 mr-2"></i>Quản Lý Mã Giảm Giá & Sự Kiện Shop</h2>
+                        <p class="text-xs text-slate-400">Tạo mã Voucher khuyến mãi để áp dụng trực tiếp khi tạo đơn cho khách.</p>
+                    </div>
+                    <button onclick="openCouponModal()" class="gold-gradient text-slate-950 font-bold px-4 py-2 rounded-xl text-xs hover:opacity-90">
+                        <i class="fas fa-plus mr-1"></i> Tạo Mã Giảm Giá Mới
+                    </button>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs text-slate-300">
+                        <thead class="bg-slate-950 text-slate-400 uppercase font-semibold border-b border-slate-800">
+                            <tr>
+                                <th class="p-3">Mã Voucher</th>
+                                <th class="p-3">Mức Giảm</th>
+                                <th class="p-3">Loại Giảm</th>
+                                <th class="p-3">Đã Dùng / Tổng Lượt</th>
+                                <th class="p-3 text-right">Thao Tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="couponsTableBody" class="divide-y divide-slate-800"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB QUẢN LÝ KHO HÀNG SẮN -->
+        <div id="tabInventory" class="max-w-7xl mx-auto px-4 mt-6 hidden">
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 mb-6">
+                <div class="flex justify-between items-center mb-4">
+                    <div>
+                        <h2 class="text-base font-bold text-white"><i class="fas fa-boxes-stacked text-amber-500 mr-2"></i>Kho Hàng Sẵn Tại Hà Nội</h2>
+                        <p class="text-xs text-slate-400">Quản lý các mẫu giày/áo có sẵn để xuất đơn ngay không cần đợi order.</p>
+                    </div>
+                    <button onclick="openInventoryModal()" class="gold-gradient text-slate-950 font-bold px-4 py-2 rounded-xl text-xs hover:opacity-90">
+                        <i class="fas fa-plus mr-1"></i> Nhập Hàng Sẵn Vào Kho
+                    </button>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs text-slate-300">
+                        <thead class="bg-slate-950 text-slate-400 uppercase font-semibold border-b border-slate-800">
+                            <tr>
+                                <th class="p-3">Tên Sản Phẩm</th>
+                                <th class="p-3">Size</th>
+                                <th class="p-3">Số Lượng Tồn Kho</th>
+                                <th class="p-3 admin-only">Giá Vốn Nhập</th>
+                                <th class="p-3">Giá Bán Niêm Yết</th>
+                                <th class="p-3 text-right">Thao Tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventoryTableBody" class="divide-y divide-slate-800"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB CRM KHÁCH HÀNG (CÓ TỰ ĐỘNG PHÂN LOẠI VIP TÍCH LŨY MỤC 6) -->
+        <div id="tabCRM" class="max-w-7xl mx-auto px-4 mt-6 hidden">
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 mb-6">
+                <h2 class="text-base font-bold text-white mb-2"><i class="fas fa-users text-amber-500 mr-2"></i>Danh Sách Khách Hàng CRM (Tự Động Tính Hạng VIP)</h2>
+                <p class="text-xs text-slate-400 mb-4">Tự động cộng dồn doanh số mua hàng thành công. Khách đạt <b>≥ 2.000.000đ</b> sẽ tự động nâng lên cấp <b>💎 VIP</b>!</p>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs text-slate-300">
+                        <thead class="bg-slate-950 text-slate-400 uppercase font-semibold border-b border-slate-800">
+                            <tr>
+                                <th class="p-3">Tên Khách Hàng</th>
+                                <th class="p-3">Số Điện Thoại</th>
+                                <th class="p-3">Địa Chỉ</th>
+                                <th class="p-3">Tổng Chi Tiêu Tích Lũy</th>
+                                <th class="p-3">Phân Loại Hạng Khách</th>
+                                <th class="p-3 text-right">Thao Tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="crmTableBody" class="divide-y divide-slate-800"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB BẢNG SIZE -->
+        <div id="tabSizePrice" class="max-w-7xl mx-auto px-4 mt-6 hidden">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h2 class="text-lg font-bold text-white"><i class="fas fa-ruler-combined text-amber-500 mr-2"></i>Bảng Thông Số Size YoungZone</h2>
+                </div>
+                <button onclick="openAddCatalogModal()" class="gold-gradient text-slate-950 font-bold px-4 py-2 rounded-xl text-xs hover:opacity-90">
+                    <i class="fas fa-plus mr-1.5"></i> Thêm Bảng Size Mới
+                </button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="catalogGrid"></div>
+        </div>
     </div>
 
     <!-- MODAL THÊM / SỬA ĐƠN HÀNG -->
     <div id="orderModal" class="fixed inset-0 bg-black/80 z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-lg w-full p-6 relative max-h-[90vh] overflow-y-auto">
+        <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-xl w-full p-6 relative max-h-[92vh] overflow-y-auto">
             <button onclick="closeOrderModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fas fa-xmark text-xl"></i></button>
-            <h3 class="text-base font-bold text-white mb-4" id="modalTitle">Tạo Đơn Hàng Mới</h3>
+            <h3 class="text-base font-bold text-white mb-3" id="modalTitle">Tạo Đơn Hàng Mới</h3>
+
+            <div class="bg-slate-950 border border-amber-500/40 rounded-xl p-3.5 mb-4 text-xs space-y-3">
+                <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                    <span class="font-bold text-amber-400"><i class="fas fa-calculator mr-1.5"></i>BẢNG TÍNH GIÁ VỐN & BÁN TỰ ĐỘNG</span>
+                    <div class="flex items-center space-x-1">
+                        <button type="button" onclick="setCalcCurrency('RMB')" id="btnCurrRMB" class="px-2 py-0.5 rounded font-bold text-[10px] bg-amber-500 text-slate-950">Tiền Tệ (RMB)</button>
+                        <button type="button" onclick="setCalcCurrency('VND')" id="btnCurrVND" class="px-2 py-0.5 rounded font-bold text-[10px] bg-slate-800 text-slate-300 border border-slate-700">Tiền VNĐ</button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-2">
+                    <div>
+                        <label class="block text-slate-400 text-[10px] mb-1 font-semibold">Tiền Hàng Gốc (<span id="txtGoodsCurr">RMB</span>)</label>
+                        <input type="number" id="calcGoodsInput" oninput="calculateIntegratedPrice()" placeholder="VD: 55" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 text-[10px] mb-1 font-semibold">Tiền Ship Trung Quốc</label>
+                        <div class="flex gap-1">
+                            <input type="number" id="calcShipInput" oninput="calculateIntegratedPrice()" placeholder="22" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white font-bold">
+                            <select id="calcShipUnit" onchange="calculateIntegratedPrice()" class="bg-slate-900 border border-slate-700 text-slate-300 rounded text-[10px] px-1 font-bold">
+                                <option value="RMB">¥</option>
+                                <option value="VND">đ</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 text-[10px] mb-1 font-semibold">Tỷ Giá Tệ</label>
+                        <input type="number" id="calcRateInput" value="3810" oninput="calculateIntegratedPrice()" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-amber-400 font-bold">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2 bg-slate-900/90 p-2.5 rounded-lg border border-slate-800/80">
+                    <div>
+                        <span class="text-slate-400 text-[10px] block">Tiền Vốn Nhập Gốc:</span>
+                        <b id="resCostText" class="text-rose-400 text-sm">0đ</b>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 text-[10px] block">Giá Bán Khuyến Nghị:</span>
+                        <b id="resSellText" class="text-emerald-400 text-sm">0đ</b>
+                    </div>
+                </div>
+
+                <button type="button" onclick="applyIntegratedPriceToForm()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 rounded-lg text-xs transition">
+                    <i class="fas fa-arrow-down-long mr-1.5"></i> Áp Dụng Giá Tính Này Vào Form Đơn Hàng Phía Dưới
+                </button>
+            </div>
 
             <form onsubmit="handleSaveOrder(event)" class="space-y-3 text-xs">
                 <input type="hidden" id="editIndex">
@@ -288,9 +463,9 @@
                     <div>
                         <label class="block text-slate-400 mb-1 font-semibold">Người Phụ Trách Đơn</label>
                         <select id="formOwner" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-white font-bold">
-                            <option value="CHUNG" selected>Khách Nguồn Chung (Khôi 50% / Lâm 50%)</option>
-                            <option value="Khoi">Khách riêng của Khôi (Khôi 60% / Lâm 40%)</option>
-                            <option value="Lam">Khách riêng của Lâm (Lâm 60% / Khôi 40%)</option>
+                            <option value="CHUNG" selected>Khách Nguồn Chung</option>
+                            <option value="Khoi">Khách riêng Khôi</option>
+                            <option value="Lam">Khách riêng Lâm</option>
                         </select>
                     </div>
                     <div>
@@ -298,58 +473,91 @@
                         <input type="date" id="formDate" required class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-white">
                     </div>
                 </div>
+
                 <div class="grid grid-cols-2 gap-2">
                     <div>
-                        <label class="block text-slate-400 mb-1 font-semibold">Tên Khách Hàng</label>
+                        <label class="block text-slate-400 mb-1 font-semibold">Số Điện Thoại *</label>
+                        <input type="tel" id="formPhone" oninput="lookupCustomerByPhone(this.value)" required placeholder="0906292600" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-amber-400 font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 mb-1 font-semibold">Tên Khách Hàng *</label>
                         <input type="text" id="formCustomer" required placeholder="Nguyễn Văn A" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-white">
                     </div>
-                    <div>
-                        <label class="block text-slate-400 mb-1 font-semibold">Số Điện Thoại</label>
-                        <input type="tel" id="formPhone" required placeholder="0906292600" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-white">
-                    </div>
                 </div>
+
                 <div class="grid grid-cols-2 gap-2">
                     <div>
-                        <label class="block text-slate-400 mb-1 font-semibold">Địa Chỉ Nhận Hàng</label>
-                        <input type="text" id="formAddress" required placeholder="Địa chỉ giao tận nhà..." class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-white">
+                        <label class="block text-slate-400 mb-1 font-semibold">Địa Chỉ Nhận Hàng *</label>
+                        <input type="text" id="formAddress" required placeholder="Địa chỉ giao..." class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-white">
                     </div>
                     <div>
-                        <label class="block text-slate-400 mb-1 font-semibold">Mã Vận Đơn TQ (Taobao/1688)</label>
-                        <input type="text" id="formTracking" placeholder="VD: SF142512398" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-amber-400 font-mono">
+                        <label class="block text-slate-400 mb-1 font-semibold">Mã VĐ Trung Quốc</label>
+                        <input type="text" id="formTracking" placeholder="SF142512398" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-amber-400 font-mono">
                     </div>
                 </div>
+
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-slate-400 mb-1 font-semibold">Mã VĐ Việt Nam</label>
+                        <input type="text" id="formVnTracking" placeholder="S22104423" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-indigo-400 font-mono">
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 mb-1 font-semibold">Trạng Thái Thu COD ĐVVC</label>
+                        <select id="formCodReceived" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-white font-semibold">
+                            <option value="NO">❌ Chưa Nhận Tiền COD</option>
+                            <option value="YES">✅ Đã Nhận Tiền COD</option>
+                        </select>
+                    </div>
+                </div>
+
                 <div class="grid grid-cols-3 gap-2">
                     <div class="col-span-2">
                         <label class="block text-slate-400 mb-1 font-semibold">Tên Sản Phẩm Order</label>
-                        <input type="text" id="formProduct" required placeholder="Áo Real Madrid / Giày..." class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-white">
+                        <input type="text" id="formProduct" required placeholder="Áo Real Madrid..." class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-white">
                     </div>
                     <div>
                         <label class="block text-slate-400 mb-1 font-semibold">Size</label>
                         <input type="text" id="formSize" required placeholder="M / 41" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-white">
                     </div>
                 </div>
-                
-                <div class="grid grid-cols-3 gap-2">
-                    <div>
-                        <label class="block text-slate-400 mb-1 font-semibold">Giá Bán Khách (VNĐ)</label>
-                        <input type="number" id="formTotal" oninput="autoCalculateDeposit()" required placeholder="260000" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-amber-400 font-bold">
-                    </div>
-                    <div>
-                        <label class="block text-slate-400 mb-1 font-semibold">Tiền Vốn Gốc (Giá Nhập)</label>
-                        <input type="number" id="formCost" required placeholder="150000" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-rose-400 font-bold">
-                    </div>
-                    <div>
-                        <label class="block text-slate-400 mb-1 font-semibold">Tiền Đã Cọc (VNĐ)</label>
-                        <input type="number" id="formDeposit" required placeholder="130000" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-emerald-400 font-bold">
+
+                <div class="bg-slate-950 p-2.5 rounded-xl border border-amber-500/30">
+                    <label class="block text-amber-400 mb-1 font-semibold"><i class="fas fa-ticket mr-1"></i>Mã Giảm Giá (Nếu Có)</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="formCouponCode" placeholder="VD: INMAY50K" class="flex-1 bg-slate-900 border border-slate-700 rounded-lg p-2 text-white font-mono uppercase font-bold">
+                        <button type="button" onclick="applyCouponToOrder()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-3 py-2 rounded-lg">Áp Dụng</button>
                     </div>
                 </div>
 
-                <!-- Nút chọn nhanh mức cọc -->
+                <div class="grid grid-cols-4 gap-2">
+                    <div>
+                        <label class="block text-slate-400 mb-1 font-semibold">Giá Bán Khách</label>
+                        <input type="number" id="formTotal" oninput="autoCalculateDeposit()" required placeholder="447000" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-amber-400 font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 mb-1 font-semibold">Vốn Gốc TQ</label>
+                        <input type="number" id="formCost" required placeholder="293370" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-rose-400 font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 mb-1 font-semibold">Ship Nội Địa VN</label>
+                        <input type="number" id="formVnShip" placeholder="30000" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-indigo-400 font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 mb-1 font-semibold">Tiền Đã Cọc</label>
+                        <input type="number" id="formDeposit" required placeholder="223500" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-emerald-400 font-bold">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-slate-400 mb-1 font-semibold">Tải Ảnh Bill Cọc / Chuyển Khoản:</label>
+                    <input type="file" id="formBillFile" accept="image/*" onchange="convertBillImage(this)" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-400 text-xs">
+                </div>
+
                 <div class="flex items-center space-x-2 text-[11px]">
-                    <span class="text-slate-400 font-semibold">Chọn nhanh mức cọc:</span>
-                    <button type="button" onclick="setDepositRatio(0.2)" class="bg-slate-800 hover:bg-slate-700 text-amber-400 border border-amber-500/30 px-2.5 py-1 rounded-lg font-bold">Cọc 20%</button>
-                    <button type="button" onclick="setDepositRatio(0.3)" class="bg-slate-800 hover:bg-slate-700 text-amber-400 border border-amber-500/30 px-2.5 py-1 rounded-lg font-bold">Cọc 30%</button>
-                    <button type="button" onclick="setDepositRatio(0.5)" class="bg-slate-800 hover:bg-slate-700 text-amber-400 border border-amber-500/30 px-2.5 py-1 rounded-lg font-bold">Cọc 50%</button>
+                    <span class="text-slate-400 font-semibold">Chọn nhanh cọc:</span>
+                    <button type="button" onclick="setDepositRatio(0.2)" class="bg-slate-800 hover:bg-slate-700 text-amber-400 border border-amber-500/30 px-2 py-1 rounded font-bold">Cọc 20%</button>
+                    <button type="button" onclick="setDepositRatio(0.3)" class="bg-slate-800 hover:bg-slate-700 text-amber-400 border border-amber-500/30 px-2 py-1 rounded font-bold">Cọc 30%</button>
+                    <button type="button" onclick="setDepositRatio(0.5)" class="bg-slate-800 hover:bg-slate-700 text-amber-400 border border-amber-500/30 px-2 py-1 rounded font-bold">Cọc 50%</button>
                 </div>
 
                 <div>
@@ -358,8 +566,8 @@
                         <option value="Đã cọc - Đang mua Taobao">1. Đã cọc - Đang mua Taobao</option>
                         <option value="Đang vận chuyển Trung - Việt">2. Đang vận chuyển Trung - Việt</option>
                         <option value="Đã về kho Hà Nội - Đang giao">3. Đã về kho Hà Nội - Đang giao</option>
-                        <option value="Đã bán - Hoàn tất">4. Đã bán - Hoàn tất (Đã nhận đủ tiền hàng)</option>
-                        <option value="Hoàn hàng">5. Hoàn hàng (Shop chịu ship/lỗ vốn, chỉ giữ cọc)</option>
+                        <option value="Đã bán - Hoàn tất">4. Đã bán - Hoàn tất</option>
+                        <option value="Hoàn hàng">5. Hoàn hàng</option>
                     </select>
                 </div>
                 <button type="submit" class="w-full gold-gradient text-slate-950 font-bold py-3 rounded-xl text-sm mt-2 hover:opacity-90">Lưu Đơn Hàng Dữ Liệu</button>
@@ -367,7 +575,152 @@
         </div>
     </div>
 
-    <!-- MODAL RÚT TIỀN / CHI TIÊU MINH BẠCH -->
+    <!-- MODAL TẠO MÃ GIẢM GIÁ -->
+    <div id="couponModal" class="fixed inset-0 bg-black/80 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-6 relative">
+            <button onclick="closeModal('couponModal')" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fas fa-xmark text-xl"></i></button>
+            <h3 class="text-sm font-bold text-white mb-3"><i class="fas fa-ticket text-amber-400 mr-2"></i>Tạo Mã Giảm Giá Mới</h3>
+            
+            <form onsubmit="handleSaveCoupon(event)" class="space-y-3 text-xs">
+                <div>
+                    <label class="block text-slate-400 mb-1 font-semibold">Mã Giảm Giá *</label>
+                    <input type="text" id="cpCode" required placeholder="VD: HE2026" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-amber-400 font-bold uppercase">
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-slate-400 mb-1 font-semibold">Loại Giảm *</label>
+                        <select id="cpType" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-white font-bold">
+                            <option value="FIXED">Giảm Tiền Trực Tiếp (VNĐ)</option>
+                            <option value="PERCENT">Giảm Theo Phần Trăm (%)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 mb-1 font-semibold">Mức Giảm *</label>
+                        <input type="number" id="cpValue" required placeholder="50000 hoặc 10" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-emerald-400 font-bold">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-slate-400 mb-1 font-semibold">Số Lượt Sử Dụng Tối Đa *</label>
+                    <input type="number" id="cpLimit" required placeholder="100" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-white font-bold">
+                </div>
+                <button type="submit" class="w-full gold-gradient text-slate-950 font-bold py-2.5 rounded-xl text-xs hover:opacity-90 mt-2">Lưu Mã Giảm Giá</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL SOẠN TIN NHẮN TỰ ĐỘNG GỬI KHÁCH -->
+    <div id="msgModal" class="fixed inset-0 bg-black/80 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-6 relative">
+            <button onclick="closeModal('msgModal')" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fas fa-xmark text-xl"></i></button>
+            <h3 class="text-sm font-bold text-white mb-3"><i class="fas fa-comment-dots text-amber-400 mr-2"></i>Mẫu Tin Nhắn Gửi Khách</h3>
+            
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="block text-slate-400 mb-1 font-semibold">Chọn loại tin nhắn:</label>
+                    <select id="msgTypeSelect" onchange="generateClientMsg()" class="w-full bg-slate-950 border border-slate-700 text-white rounded-lg p-2 font-semibold">
+                        <option value="CONFIRM">1. Tin nhắn xác nhận chốt cọc thành công</option>
+                        <option value="ARRIVED">2. Tin nhắn báo hàng về kho Hà Nội (Gửi mã VC)</option>
+                    </select>
+                </div>
+
+                <textarea id="msgContentArea" rows="6" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-amber-300 font-mono text-xs focus:outline-none"></textarea>
+
+                <button onclick="copyMsgToClipboard()" class="w-full gold-gradient text-slate-950 font-bold py-2.5 rounded-xl text-xs hover:opacity-90">
+                    <i class="fas fa-copy mr-1.5"></i> Copy Tin Nhắn Này Để Dán Zalo / Messenger
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL XEM ẢNH BILL CỌC LỚN -->
+    <div id="billViewerModal" class="fixed inset-0 bg-black/90 z-50 hidden flex items-center justify-center p-4" onclick="closeModal('billViewerModal')">
+        <div class="relative max-w-lg w-full text-center">
+            <span class="text-white text-xs block mb-2 font-bold">Ấn bất kỳ đâu để đóng</span>
+            <img id="viewerImg" src="" class="max-h-[85vh] mx-auto rounded-xl border-2 border-amber-500 shadow-2xl">
+        </div>
+    </div>
+
+    <!-- MODAL IN TEM DÁN GÓI HÀNG -->
+    <div id="printModal" class="fixed inset-0 bg-black/80 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-sm w-full p-6 relative">
+            <button onclick="closeModal('printModal')" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fas fa-xmark text-xl"></i></button>
+            <h3 class="text-sm font-bold text-white mb-3"><i class="fas fa-print mr-2 text-amber-400"></i>Xem Trước Tem Gửi Hàng</h3>
+
+            <div id="printArea" class="bg-white text-black p-4 rounded-xl space-y-2 border-2 border-black text-xs font-sans">
+                <div class="border-b-2 border-black pb-2 flex justify-between items-center">
+                    <b>YOUNGZONE SPORTS</b>
+                    <span id="lblOrderCode" class="font-mono font-bold">YZ-1001</span>
+                </div>
+                <div>
+                    <span class="block text-[10px] text-gray-600">NGƯỜI NHẬN HÀNG:</span>
+                    <b id="lblCustName" class="text-sm block">Nguyễn Văn A</b>
+                    <span id="lblCustPhone" class="block font-bold">0906292600</span>
+                    <p id="lblCustAddr" class="mt-0.5">Số 10, ngõ 12 Hà Nội...</p>
+                </div>
+                <div class="border-t border-black pt-2">
+                    <span class="block text-[10px] text-gray-600">SẢN PHẨM:</span>
+                    <b id="lblProduct" class="block">Áo Đấu Real Madrid Rep 1:1</b>
+                </div>
+                <div class="border-t-2 border-black pt-2 text-center bg-gray-100 p-2 rounded">
+                    <span class="block text-[10px] font-bold">SỐ TIỀN THU COD TẬN NƠI:</span>
+                    <b id="lblCodAmount" class="text-lg text-red-600 block">130.000đ</b>
+                </div>
+            </div>
+
+            <button onclick="window.print()" class="w-full gold-gradient text-slate-950 font-extrabold py-2.5 rounded-xl text-xs mt-4">
+                <i class="fas fa-print mr-1"></i> In Tem Dán Đơn Hàng Ngay
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL NHẬP TỒN KHO HÀNG SẮN -->
+    <div id="inventoryModal" class="fixed inset-0 bg-black/80 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-6 relative">
+            <button onclick="closeModal('inventoryModal')" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fas fa-xmark text-xl"></i></button>
+            <h3 class="text-sm font-bold text-white mb-3"><i class="fas fa-boxes-stacked mr-2 text-amber-400"></i>Nhập Hàng Sẵn Vào Kho</h3>
+            
+            <form onsubmit="handleSaveInventory(event)" class="space-y-3 text-xs">
+                <div>
+                    <label class="block text-slate-400 mb-1 font-semibold">Tên Sản Phẩm *</label>
+                    <input type="text" id="invProduct" required placeholder="Giày Cầu Lông Yonex..." class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-white">
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-slate-400 mb-1 font-semibold">Size *</label>
+                        <input type="text" id="invSize" required placeholder="42" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-white">
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 mb-1 font-semibold">Số Lượng Nhập *</label>
+                        <input type="number" id="invQty" required placeholder="5" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-amber-400 font-bold">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-slate-400 mb-1 font-semibold">Giá Vốn Nhập (VNĐ) *</label>
+                        <input type="number" id="invCost" required placeholder="300000" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-rose-400 font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 mb-1 font-semibold">Giá Bán Niêm Yết (VNĐ) *</label>
+                        <input type="number" id="invPrice" required placeholder="450000" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-emerald-400 font-bold">
+                    </div>
+                </div>
+                <button type="submit" class="w-full gold-gradient text-slate-950 font-bold py-2.5 rounded-xl text-xs hover:opacity-90 mt-2">Lưu Sản Phẩm Về Kho</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL NHẬT KÝ THAO TÁC -->
+    <div id="logsModal" class="fixed inset-0 bg-black/80 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-lg w-full p-6 relative">
+            <button onclick="closeModal('logsModal')" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fas fa-xmark text-xl"></i></button>
+            <h3 class="text-base font-bold text-white mb-2"><i class="fas fa-history text-amber-500 mr-2"></i>Nhật Ký Thao Tác Hệ Thống</h3>
+            <p class="text-xs text-slate-400 mb-4">Ghi vết mọi hành động Tạo/Sửa/Xóa đơn hàng của Khôi & Lâm.</p>
+
+            <div id="logsContainer" class="max-h-72 overflow-y-auto space-y-2 text-xs"></div>
+        </div>
+    </div>
+
+    <!-- MODAL RÚT TIỀN / CHI TIÊU -->
     <div id="withdrawModal" class="fixed inset-0 bg-black/80 z-50 hidden flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-lg w-full p-6 relative">
             <button onclick="closeWithdrawModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fas fa-xmark text-xl"></i></button>
@@ -405,45 +758,7 @@
         </div>
     </div>
 
-    <!-- MODAL CÔNG CỤ TÍNH GIÁ HÀNG TỰ ĐỘNG -->
-    <div id="calcModal" class="fixed inset-0 bg-black/80 z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-6 relative">
-            <button onclick="closeCalcModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fas fa-xmark text-xl"></i></button>
-            <h3 class="text-base font-bold text-white mb-1"><i class="fas fa-calculator text-indigo-400 mr-2"></i>Tính Giá Bán & Tiền Vốn Tự Động</h3>
-            <div class="space-y-3 text-xs mt-3">
-                <div>
-                    <label class="block text-slate-400 mb-1 font-semibold">Tỷ Giá Nhân Dân Tệ</label>
-                    <input type="number" id="calcRate" value="3810" oninput="calculateAutoPrice()" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-white font-bold">
-                </div>
-                <div class="grid grid-cols-2 gap-2">
-                    <div>
-                        <label class="block text-slate-400 mb-1 font-semibold">Giá Hàng Gốc (RMB)</label>
-                        <input type="number" id="calcRMB" placeholder="VD: 50" oninput="calculateAutoPrice()" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-white font-bold">
-                    </div>
-                    <div>
-                        <label class="block text-slate-400 mb-1 font-semibold">Quy Đổi Tiền Việt</label>
-                        <input type="text" id="calcVNDGoc" readonly class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2.5 text-slate-400 font-bold">
-                    </div>
-                </div>
-                <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-2">
-                    <div class="flex justify-between items-center">
-                        <span class="text-slate-400">Tiền Vốn Nhập (Tiền Hàng + 25k Ship):</span>
-                        <b id="calcResultCost" class="text-rose-400 text-sm">0đ</b>
-                    </div>
-                    <div class="flex justify-between items-center pt-2 border-t border-slate-800">
-                        <span class="text-white font-bold">GIÁ BÁN CHO KHÁCH:</span>
-                        <b id="calcResultSell" class="text-emerald-400 text-base">0đ</b>
-                    </div>
-                </div>
-                <div class="grid grid-cols-2 gap-2">
-                    <button onclick="copyQuoteToClipboard()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl text-xs transition">Copy Báo Giá</button>
-                    <button onclick="applyCalcToOrderForm()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 rounded-xl text-xs transition">Đưa Vào Form</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL SỔ QUỸ GÓP VỐN MINH BẠCH -->
+    <!-- MODAL SỔ QUỸ GÓP VỐN -->
     <div id="fundModal" class="fixed inset-0 bg-black/80 z-50 hidden flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-lg w-full p-6 relative">
             <button onclick="closeFundModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fas fa-xmark text-xl"></i></button>
@@ -515,9 +830,7 @@
                 </div>
             `;
             container.appendChild(toast);
-            setTimeout(() => {
-                toast.remove();
-            }, 3000);
+            setTimeout(() => { toast.remove(); }, 3000);
         }
 
         function showConfirmToast(message, onConfirmed) {
@@ -534,16 +847,9 @@
                     <button class="px-3 py-1 rounded bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold btn-ok">Đồng Ý Xóa</button>
                 </div>
             `;
-            
             container.appendChild(toast);
-
-            toast.querySelector('.btn-ok').onclick = () => {
-                toast.remove();
-                onConfirmed();
-            };
-            toast.querySelector('.btn-cancel').onclick = () => {
-                toast.remove();
-            };
+            toast.querySelector('.btn-ok').onclick = () => { toast.remove(); onConfirmed(); };
+            toast.querySelector('.btn-cancel').onclick = () => { toast.remove(); };
         }
 
         const firebaseConfig = {
@@ -553,16 +859,25 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
+        let currentUserRole = 'ADMIN';
+        let selectedOrderForMsg = null;
+
         let currentFilterOwner = 'ALL';
-        let capitalAmount = 0;
+        let isDelayedOnly = false;
         let globalRMBRate = 3810;
-        let tempCalculatedCost = 0;
-        let tempCalculatedSell = 0;
+        let currentCalcCurrency = 'RMB';
+        let autoCostResult = 0;
+        let autoSellResult = 0;
+        let tempBase64Bill = '';
 
         let orders = [];
+        let coupons = [];
+        let inventory = [];
         let funds = [];
         let withdraws = [];
         let catalogs = [];
+        let customers = [];
+        let logs = [];
 
         document.addEventListener('DOMContentLoaded', () => {
             const today = new Date();
@@ -571,52 +886,173 @@
             document.getElementById('filterMonth').value = `${year}-${month}`;
             document.getElementById('formDate').value = today.toISOString().split('T')[0];
 
+            loadLocalStorageCache(); // MỤC 5: Lấy cache từ LocalStorage trước
+            checkLoginSession();
             initFirebaseListeners();
         });
+
+        // MỤC 5: HÀM LƯU TẤT CẢ DỮ LIỆU VÀO LOCALSTORAGE NẾU MẤT MẠNG
+        function saveAllToLocalStorage() {
+            localStorage.setItem('youngzone_orders', JSON.stringify(orders));
+            localStorage.setItem('youngzone_coupons', JSON.stringify(coupons));
+            localStorage.setItem('youngzone_inventory', JSON.stringify(inventory));
+            localStorage.setItem('youngzone_funds', JSON.stringify(funds));
+            localStorage.setItem('youngzone_withdraws', JSON.stringify(withdraws));
+            localStorage.setItem('youngzone_customers', JSON.stringify(customers));
+            localStorage.setItem('youngzone_catalogs', JSON.stringify(catalogs));
+        }
+
+        function loadLocalStorageCache() {
+            if (localStorage.getItem('youngzone_orders')) orders = JSON.parse(localStorage.getItem('youngzone_orders'));
+            if (localStorage.getItem('youngzone_coupons')) coupons = JSON.parse(localStorage.getItem('youngzone_coupons'));
+            if (localStorage.getItem('youngzone_inventory')) inventory = JSON.parse(localStorage.getItem('youngzone_inventory'));
+            if (localStorage.getItem('youngzone_funds')) funds = JSON.parse(localStorage.getItem('youngzone_funds'));
+            if (localStorage.getItem('youngzone_withdraws')) withdraws = JSON.parse(localStorage.getItem('youngzone_withdraws'));
+            if (localStorage.getItem('youngzone_customers')) customers = JSON.parse(localStorage.getItem('youngzone_customers'));
+            if (localStorage.getItem('youngzone_catalogs')) catalogs = JSON.parse(localStorage.getItem('youngzone_catalogs'));
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const user = document.getElementById('loginUser').value.trim().toLowerCase();
+            const pass = document.getElementById('loginPass').value.trim();
+            const remember = document.getElementById('rememberMe').checked;
+
+            if (user === 'admin' && pass === '123456') {
+                currentUserRole = 'ADMIN';
+                if (remember) {
+                    localStorage.setItem('yz_user_role', 'ADMIN');
+                    localStorage.setItem('yz_saved_user', user);
+                } else {
+                    sessionStorage.setItem('yz_user_role', 'ADMIN');
+                    localStorage.removeItem('yz_user_role');
+                }
+            } else {
+                currentUserRole = 'STAFF';
+                if (remember) {
+                    localStorage.setItem('yz_user_role', 'STAFF');
+                    localStorage.setItem('yz_saved_user', user);
+                } else {
+                    sessionStorage.setItem('yz_user_role', 'STAFF');
+                    localStorage.removeItem('yz_user_role');
+                }
+            }
+
+            applyRolePermissions();
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('appContainer').classList.remove('hidden');
+            showToast(`Đăng nhập thành công! (Quyền: ${currentUserRole})`);
+        }
+
+        function checkLoginSession() {
+            const savedRole = localStorage.getItem('yz_user_role') || sessionStorage.getItem('yz_user_role');
+            const savedUser = localStorage.getItem('yz_saved_user');
+
+            if (savedUser) {
+                document.getElementById('loginUser').value = savedUser;
+                document.getElementById('rememberMe').checked = true;
+            }
+
+            if (savedRole) {
+                currentUserRole = savedRole;
+                applyRolePermissions();
+                document.getElementById('loginScreen').classList.add('hidden');
+                document.getElementById('appContainer').classList.remove('hidden');
+            }
+        }
+
+        function handleLogout() {
+            localStorage.removeItem('yz_user_role');
+            sessionStorage.removeItem('yz_user_role');
+            location.reload();
+        }
+
+        function applyRolePermissions() {
+            const roleText = document.getElementById('roleBadge');
+            const adminElements = document.querySelectorAll('.admin-only');
+
+            if (currentUserRole === 'ADMIN') {
+                roleText.innerText = 'Vai trò: Admin (Khôi & Lâm)';
+                adminElements.forEach(el => el.classList.remove('hidden'));
+            } else {
+                roleText.innerText = 'Vai trò: Nhân viên / CTV';
+                adminElements.forEach(el => el.classList.add('hidden'));
+            }
+        }
 
         function initFirebaseListeners() {
             db.ref('youngzone_orders').on('value', (snapshot) => {
                 const data = snapshot.val();
-                orders = data ? Object.values(data) : [];
-                localStorage.setItem('youngzone_orders', JSON.stringify(orders));
+                if (data) orders = Object.values(data);
+                saveAllToLocalStorage();
                 renderDashboard();
                 updateFirebaseStatus(true);
-            }, (error) => {
+            }, () => {
                 updateFirebaseStatus(false);
-                orders = JSON.parse(localStorage.getItem('youngzone_orders')) || [];
                 renderDashboard();
+            });
+
+            db.ref('youngzone_coupons').on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data) coupons = Object.values(data);
+                saveAllToLocalStorage();
+                renderCouponsTable();
+            });
+
+            db.ref('youngzone_inventory').on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data) inventory = Object.values(data);
+                saveAllToLocalStorage();
+                renderInventoryTable();
             });
 
             db.ref('youngzone_rmb_rate').on('value', (snapshot) => {
                 const rate = snapshot.val();
                 if (rate !== null) {
                     globalRMBRate = parseInt(rate);
-                    localStorage.setItem('youngzone_rmb_rate', globalRMBRate);
                     document.getElementById('globalRmbRate').value = globalRMBRate;
-                    document.getElementById('calcRate').value = globalRMBRate;
+                    if(document.getElementById('calcRateInput')) document.getElementById('calcRateInput').value = globalRMBRate;
                 }
+            });
+
+            db.ref('youngzone_customers').on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data) customers = Object.values(data);
+                saveAllToLocalStorage();
+                renderCRMTable();
+            });
+
+            db.ref('youngzone_logs').on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data) logs = Object.values(data);
             });
 
             db.ref('youngzone_funds').on('value', (snapshot) => {
                 const data = snapshot.val();
-                funds = data ? Object.values(data) : [];
-                localStorage.setItem('youngzone_funds', JSON.stringify(funds));
+                if (data) funds = Object.values(data);
+                saveAllToLocalStorage();
                 renderDashboard();
             });
 
             db.ref('youngzone_withdraws').on('value', (snapshot) => {
                 const data = snapshot.val();
-                withdraws = data ? Object.values(data) : [];
-                localStorage.setItem('youngzone_withdraws', JSON.stringify(withdraws));
+                if (data) withdraws = Object.values(data);
+                saveAllToLocalStorage();
                 renderDashboard();
             });
 
             db.ref('youngzone_catalogs').on('value', (snapshot) => {
                 const data = snapshot.val();
-                catalogs = data ? Object.values(data) : [];
-                localStorage.setItem('youngzone_catalogs', JSON.stringify(catalogs));
+                if (data) catalogs = Object.values(data);
+                saveAllToLocalStorage();
                 renderCatalogs();
             });
+        }
+
+        function addLog(action) {
+            const time = new Date().toLocaleString('vi-VN');
+            logs.unshift({ time, action });
+            db.ref('youngzone_logs').set(logs);
         }
 
         function updateFirebaseStatus(isConnected) {
@@ -632,33 +1068,124 @@
 
         function syncOrdersToFirebase() {
             db.ref('youngzone_orders').set(orders);
-            localStorage.setItem('youngzone_orders', JSON.stringify(orders));
+            saveAllToLocalStorage();
         }
 
         function updateRmbRate(val) {
             globalRMBRate = parseInt(val) || 3810;
-            document.getElementById('calcRate').value = globalRMBRate;
+            if(document.getElementById('calcRateInput')) document.getElementById('calcRateInput').value = globalRMBRate;
             db.ref('youngzone_rmb_rate').set(globalRMBRate);
-            localStorage.setItem('youngzone_rmb_rate', globalRMBRate);
-            calculateAutoPrice();
+            calculateIntegratedPrice();
         }
 
         function switchTab(tab) {
+            ['Dashboard', 'Coupons', 'Inventory', 'CRM', 'SizePrice'].forEach(t => {
+                document.getElementById('tab' + t).classList.add('hidden');
+                document.getElementById('nav' + t).className = "px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 border border-slate-700 hover:text-white transition";
+            });
+
             if (tab === 'dashboard') {
                 document.getElementById('tabDashboard').classList.remove('hidden');
-                document.getElementById('tabSizePrice').classList.add('hidden');
-                document.getElementById('navDashboard').className = "px-3.5 py-1.5 rounded-xl text-xs font-bold bg-amber-500 text-slate-950 transition";
-                document.getElementById('navSizePrice').className = "px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 border border-slate-700 hover:text-white transition";
+                document.getElementById('navDashboard').className = "px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-500 text-slate-950 transition";
+            } else if (tab === 'coupons') {
+                document.getElementById('tabCoupons').classList.remove('hidden');
+                document.getElementById('navCoupons').className = "px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-500 text-slate-950 transition";
+                renderCouponsTable();
+            } else if (tab === 'inventory') {
+                document.getElementById('tabInventory').classList.remove('hidden');
+                document.getElementById('navInventory').className = "px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-500 text-slate-950 transition";
+                renderInventoryTable();
+            } else if (tab === 'crm') {
+                document.getElementById('tabCRM').classList.remove('hidden');
+                document.getElementById('navCRM').className = "px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-500 text-slate-950 transition";
+                renderCRMTable();
             } else {
-                document.getElementById('tabDashboard').classList.add('hidden');
                 document.getElementById('tabSizePrice').classList.remove('hidden');
-                document.getElementById('navSizePrice').className = "px-3.5 py-1.5 rounded-xl text-xs font-bold bg-amber-500 text-slate-950 transition";
-                document.getElementById('navDashboard').className = "px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 border border-slate-700 hover:text-white transition";
+                document.getElementById('navSizePrice').className = "px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-500 text-slate-950 transition";
             }
+        }
+
+        function openCouponModal() { document.getElementById('couponModal').classList.remove('hidden'); }
+
+        function handleSaveCoupon(e) {
+            e.preventDefault();
+            const code = document.getElementById('cpCode').value.trim().toUpperCase();
+            coupons.unshift({
+                id: Date.now(),
+                code: code,
+                type: document.getElementById('cpType').value,
+                value: parseInt(document.getElementById('cpValue').value),
+                limit: parseInt(document.getElementById('cpLimit').value),
+                used: 0
+            });
+            db.ref('youngzone_coupons').set(coupons);
+            saveAllToLocalStorage();
+            renderCouponsTable();
+            closeModal('couponModal');
+            showToast(`Đã tạo mã giảm giá [${code}] thành công!`);
+        }
+
+        function renderCouponsTable() {
+            const tbody = document.getElementById('couponsTableBody');
+            if (coupons.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-500">Chưa có mã giảm giá nào.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = coupons.map((cp, idx) => `
+                <tr>
+                    <td class="p-3 font-mono font-bold text-amber-400">${cp.code}</td>
+                    <td class="p-3 font-bold text-emerald-400">${cp.type === 'FIXED' ? cp.value.toLocaleString() + 'đ' : cp.value + '%'}</td>
+                    <td class="p-3 text-slate-300">${cp.type === 'FIXED' ? 'Giảm tiền trực tiếp' : 'Giảm theo phần trăm'}</td>
+                    <td class="p-3"><b class="text-white">${cp.used} / ${cp.limit}</b></td>
+                    <td class="p-3 text-right">
+                        <button onclick="deleteCoupon(${idx})" class="text-rose-400 hover:underline admin-only"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+            applyRolePermissions();
+        }
+
+        function deleteCoupon(idx) {
+            showConfirmToast("Xóa mã giảm giá này?", () => {
+                coupons.splice(idx, 1);
+                db.ref('youngzone_coupons').set(coupons);
+                saveAllToLocalStorage();
+                renderCouponsTable();
+                showToast("Đã xóa mã giảm giá!");
+            });
+        }
+
+        function applyCouponToOrder() {
+            const inputCode = document.getElementById('formCouponCode').value.trim().toUpperCase();
+            if (!inputCode) { showToast("Vui lòng nhập mã giảm giá!"); return; }
+
+            const found = coupons.find(c => c.code === inputCode);
+            if (!found) { showToast("Mã giảm giá không tồn tại!"); return; }
+            if (found.used >= found.limit) { showToast("Mã giảm giá này đã hết lượt sử dụng!"); return; }
+
+            let currentTotal = parseFloat(document.getElementById('formTotal').value) || 0;
+            let discountAmount = 0;
+
+            if (found.type === 'FIXED') {
+                discountAmount = found.value;
+            } else {
+                discountAmount = (currentTotal * found.value) / 100;
+            }
+
+            let newTotal = Math.max(0, currentTotal - discountAmount);
+            document.getElementById('formTotal').value = Math.round(newTotal);
+            autoCalculateDeposit();
+
+            found.used += 1;
+            db.ref('youngzone_coupons').set(coupons);
+            saveAllToLocalStorage();
+
+            showToast(`Đã áp mã [${found.code}] giảm ${discountAmount.toLocaleString()}đ vào đơn!`);
         }
 
         function filterOwner(owner) {
             currentFilterOwner = owner;
+            isDelayedOnly = false;
             ['ALL', 'Khoi', 'Lam', 'CHUNG'].forEach(o => {
                 const btn = document.getElementById('btnFilter' + o);
                 if (btn) {
@@ -670,37 +1197,86 @@
             renderDashboard();
         }
 
+        function filterDelayedOnly() {
+            isDelayedOnly = true;
+            renderDashboard();
+        }
+
+        function getDaysDiff(dateStr) {
+            if (!dateStr) return 0;
+            const created = new Date(dateStr);
+            const now = new Date();
+            const diffTime = Math.abs(now - created);
+            return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        }
+
         function renderDashboard() {
             let totalFundAdded = funds.reduce((sum, f) => sum + (f.amount || 0), 0);
             document.getElementById('displayCapital').innerText = totalFundAdded.toLocaleString() + 'đ';
 
             const selectedMonthStr = document.getElementById('filterMonth').value;
+            const searchKw = document.getElementById('searchInput').value.trim().toLowerCase();
+            const statusFilter = document.getElementById('filterStatus').value;
             const tbody = document.getElementById('adminTableBody');
+
+            let delayedOrdersCount = 0;
 
             const monthOrders = orders.filter(o => {
                 const matchMonth = o.date ? o.date.startsWith(selectedMonthStr) : true;
                 const matchOwner = currentFilterOwner === 'ALL' ? true : o.owner === currentFilterOwner;
-                return matchMonth && matchOwner;
+                
+                const matchKw = !searchKw || 
+                    (o.customer && o.customer.toLowerCase().includes(searchKw)) ||
+                    (o.phone && o.phone.includes(searchKw)) ||
+                    (o.id && o.id.toLowerCase().includes(searchKw)) ||
+                    (o.tracking && o.tracking.toLowerCase().includes(searchKw)) ||
+                    (o.vnTracking && o.vnTracking.toLowerCase().includes(searchKw));
+
+                let matchStatus = true;
+                if (statusFilter === 'ORDERING') matchStatus = o.status && o.status.includes('Đang mua Taobao');
+                else if (statusFilter === 'SHIPPING') matchStatus = o.status && o.status.includes('vận chuyển Trung - Việt');
+                else if (statusFilter === 'ARRIVED') matchStatus = o.status && o.status.includes('về kho Hà Nội');
+                else if (statusFilter === 'COMPLETED') matchStatus = o.status && o.status.includes('Đã bán - Hoàn tất');
+                else if (statusFilter === 'REFUNDED') matchStatus = o.status && o.status.includes('Hoàn hàng');
+                else if (statusFilter === 'UNPAID_COD') matchStatus = o.codReceived !== 'YES';
+
+                const days = getDaysDiff(o.date);
+                const isDone = o.status && (o.status.includes('Đã bán - Hoàn tất') || o.status.includes('Hoàn hàng'));
+                const isDelayed = days > 7 && !isDone;
+
+                if (isDelayed) delayedOrdersCount++;
+
+                if (isDelayedOnly) return isDelayed && matchOwner;
+
+                return matchMonth && matchOwner && matchKw && matchStatus;
             });
+
+            const alertBox = document.getElementById('delayedOrdersAlertBox');
+            if (delayedOrdersCount > 0) {
+                alertBox.classList.remove('hidden');
+                document.getElementById('delayedOrdersCountText').innerText = `Có ${delayedOrdersCount} đơn hàng order quá 7 ngày chưa hoàn tất!`;
+            } else {
+                alertBox.classList.add('hidden');
+            }
 
             let totCost = 0, totProfit = 0, totRemCOD = 0;
             let profitKhoi = 0, profitLam = 0;
-
             let totalAcc = totalFundAdded;
             
             orders.forEach(o => {
                 const isCompleted = o.status && o.status.includes('Đã bán - Hoàn tất');
                 const isRefunded = o.status && o.status.includes('Hoàn hàng');
+                const totalCostSingle = (o.cost || 0) + (o.vnShip || 0);
                 
                 if (isCompleted) {
                     totalAcc += (o.total || 0);
-                    totalAcc -= (o.cost || 0);
+                    totalAcc -= totalCostSingle;
                 } else if (isRefunded) {
                     totalAcc += (o.deposit || 0);
-                    totalAcc -= (o.cost || 0);
+                    totalAcc -= totalCostSingle;
                 } else {
                     totalAcc += (o.deposit || 0);
-                    totalAcc -= (o.cost || 0);
+                    totalAcc -= totalCostSingle;
                 }
             });
 
@@ -709,14 +1285,21 @@
 
             document.getElementById('statTotalAccountBalance').innerText = totalAcc.toLocaleString() + 'đ';
 
+            let prodStats = {};
+
             monthOrders.forEach(o => {
                 const isCompleted = o.status && o.status.includes('Đã bán - Hoàn tất');
                 const isRefunded = o.status && o.status.includes('Hoàn hàng');
+                const totalCostSingle = (o.cost || 0) + (o.vnShip || 0);
 
-                totCost += (o.cost || 0);
+                totCost += totalCostSingle;
+
+                if (o.product) {
+                    prodStats[o.product] = (prodStats[o.product] || 0) + 1;
+                }
 
                 if (isCompleted) {
-                    const singleOrderProfit = (o.total || 0) - (o.cost || 0);
+                    const singleOrderProfit = (o.total || 0) - totalCostSingle;
                     totProfit += singleOrderProfit;
 
                     if (o.owner === 'CHUNG') {
@@ -734,8 +1317,20 @@
                 }
             });
 
+            const topProducts = Object.entries(prodStats).sort((a,b) => b[1] - a[1]).slice(0, 3);
+            const topContainer = document.getElementById('topProductsContainer');
+            if (topProducts.length === 0) {
+                topContainer.innerHTML = `<span class="text-slate-500 italic">Chưa có thống kê</span>`;
+            } else {
+                topContainer.innerHTML = topProducts.map((p, i) => `
+                    <div class="bg-slate-950 p-2 rounded-xl border border-slate-800 flex justify-between items-center">
+                        <span class="font-bold text-amber-400 line-clamp-1">#${i+1} ${p[0]}</span>
+                        <b class="text-white bg-slate-800 px-1.5 py-0.5 rounded text-[10px]">${p[1]} đơn</b>
+                    </div>
+                `).join('');
+            }
+
             document.getElementById('statTotalOrders').innerText = monthOrders.length;
-            document.getElementById('statTotalRevenue').innerText = totProfit.toLocaleString() + 'đ';
             document.getElementById('statTotalCost').innerText = totCost.toLocaleString() + 'đ';
             document.getElementById('statTotalProfitMonth').innerText = totProfit.toLocaleString() + 'đ';
             document.getElementById('statTotalRemainingCOD').innerText = totRemCOD.toLocaleString() + 'đ';
@@ -743,17 +1338,20 @@
             document.getElementById('statProfitLam').innerText = Math.round(profitLam).toLocaleString() + 'đ';
 
             if (monthOrders.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="11" class="p-8 text-center text-slate-500">Không có đơn hàng nào trong bộ lọc tháng này.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="12" class="p-8 text-center text-slate-500">Không tìm thấy đơn hàng nào phù hợp.</td></tr>`;
                 return;
             }
 
             tbody.innerHTML = monthOrders.map((o) => {
                 const isCompleted = o.status && o.status.includes('Đã bán - Hoàn tất');
                 const isRefunded = o.status && o.status.includes('Hoàn hàng');
+                const totalCostSingle = (o.cost || 0) + (o.vnShip || 0);
                 
-                const orderProfit = isCompleted ? ((o.total || 0) - (o.cost || 0)) : 0;
+                const orderProfit = isCompleted ? ((o.total || 0) - totalCostSingle) : 0;
                 const remCOD = (isCompleted || isRefunded) ? 0 : ((o.total || 0) - (o.deposit || 0));
-                const isLackDeposit = o.deposit < ((o.total || 0) * 0.2);
+                
+                const daysCount = getDaysDiff(o.date);
+                const isDelayed = daysCount > 7 && !isCompleted && !isRefunded;
 
                 let kShare = 0, lShare = 0;
                 if (isCompleted) {
@@ -765,44 +1363,306 @@
                 const realIdx = orders.indexOf(o);
 
                 return `
-                <tr class="hover:bg-slate-800/40">
-                    <td class="p-3"><b class="text-amber-400 block">${o.id}</b><span class="text-[10px] text-slate-400">${o.date}</span></td>
-                    <td class="p-3"><span class="font-mono text-amber-300 font-semibold block">${o.tracking || 'Chưa cập nhật'}</span></td>
-                    <td class="p-3"><b class="text-white block">${o.customer}</b><span class="text-slate-400">${o.phone}</span></td>
+                <tr class="hover:bg-slate-800/40 ${isDelayed ? 'bg-rose-500/10' : ''}">
+                    <td class="p-3">
+                        <b class="text-amber-400 block">${o.id}</b>
+                        <span class="text-[10px] text-slate-400">${o.date}</span>
+                        ${isDelayed ? `<span class="text-[9px] bg-rose-600 text-white font-bold px-1 rounded block mt-0.5">⚠️ Trễ ${daysCount} ngày</span>` : ''}
+                    </td>
+                    <td class="p-3">
+                        <span class="font-mono text-amber-300 font-semibold block">TQ: ${o.tracking || 'Chưa có'}</span>
+                        <span class="font-mono text-indigo-400 font-semibold block">VN: ${o.vnTracking || 'Chưa có'}</span>
+                    </td>
+                    <td class="p-3">
+                        <b class="text-white block">${o.customer}</b>
+                        <span class="text-slate-400">${o.phone}</span>
+                    </td>
                     <td class="p-3"><span class="text-slate-200 block font-semibold">${o.product}</span><span class="text-slate-400">Size: ${o.size}</span></td>
                     <td class="p-3">
                         <span class="px-2 py-0.5 rounded font-bold text-[10px] ${o.owner==='Khoi'?'bg-blue-500/20 text-blue-400':o.owner==='Lam'?'bg-purple-500/20 text-purple-400':'bg-emerald-500/20 text-emerald-400'}">
                             ${o.owner === 'Khoi' ? 'Khách Khôi' : o.owner === 'Lam' ? 'Khách Lâm' : 'Nguồn Chung'}
                         </span>
                     </td>
-                    <td class="p-3"><b class="text-amber-400 block">${(o.total||0).toLocaleString()}đ</b><span class="text-rose-400">Vốn gốc: ${(o.cost||0).toLocaleString()}đ</span></td>
+                    <td class="p-3">
+                        <b class="text-amber-400 block">${(o.total||0).toLocaleString()}đ</b>
+                        <span class="text-rose-400 block admin-only">Vốn TQ: ${(o.cost||0).toLocaleString()}đ</span>
+                        ${o.vnShip ? `<span class="text-indigo-400 text-[10px] admin-only">Ship VN: ${o.vnShip.toLocaleString()}đ</span>` : ''}
+                    </td>
                     <td class="p-3">
                         <span class="text-emerald-400 block font-bold">Cọc: ${(o.deposit||0).toLocaleString()}đ</span>
                         <span class="${remCOD>0?'text-amber-400':'text-slate-400'}">COD: ${remCOD.toLocaleString()}đ</span>
-                        ${isLackDeposit ? '<span class="text-[9px] bg-rose-500/20 text-rose-400 px-1 rounded block mt-0.5 font-bold">Cọc thấp (<20%)</span>' : ''}
+                        ${o.codReceived === 'YES' ? '<span class="text-[9px] text-emerald-400 font-bold block mt-0.5">✓ Đã thu COD</span>' : '<span class="text-[9px] text-slate-500 block mt-0.5"> Chưa nhận COD</span>'}
                     </td>
-                    <td class="p-3"><b class="${isCompleted?'text-emerald-400':'text-slate-500'} text-sm">${orderProfit.toLocaleString()}đ</b></td>
-                    <td class="p-3">
+                    <td class="p-3 admin-only"><b class="${isCompleted?'text-emerald-400':'text-slate-500'} text-sm">${orderProfit.toLocaleString()}đ</b></td>
+                    <td class="p-3 admin-only">
                         <span class="text-[10px] text-blue-400 block font-semibold">Khôi: ${Math.round(kShare).toLocaleString()}đ</span>
                         <span class="text-[10px] text-purple-400 block font-semibold">Lâm: ${Math.round(lShare).toLocaleString()}đ</span>
+                    </td>
+                    <td class="p-3">
+                        ${o.billImg ? `<img src="${o.billImg}" onclick="openBillViewer('${o.billImg}')" class="w-8 h-8 object-cover rounded-lg border border-amber-500/50 cursor-pointer hover:scale-110 transition" title="Xem bill">` : '<span class="text-slate-600 italic">Không</span>'}
                     </td>
                     <td class="p-3">
                         <span class="text-[10px] font-bold px-2 py-0.5 rounded ${isCompleted?'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30':isRefunded?'bg-rose-500/20 text-rose-400 border border-rose-500/30':'bg-amber-500/10 text-amber-400 border border-amber-500/30'}">
                             ${o.status}
                         </span>
                     </td>
-                    <td class="p-3 text-right">
-                        <button onclick="editOrder(${realIdx})" class="text-amber-400 hover:text-amber-300 mr-2"><i class="fas fa-pen"></i></button>
-                        <button onclick="deleteOrder(${realIdx})" class="text-rose-400 hover:text-rose-300"><i class="fas fa-trash"></i></button>
+                    <td class="p-3 text-right space-x-1">
+                        <button onclick="openMsgModal(${realIdx})" class="text-amber-400 hover:underline" title="Gửi tin nhắn khách"><i class="fas fa-comment-dots"></i></button>
+                        <button onclick="openPrintModal(${realIdx})" class="text-emerald-400 hover:underline" title="In tem dán"><i class="fas fa-print"></i></button>
+                        <button onclick="editOrder(${realIdx})" class="text-blue-400 hover:underline"><i class="fas fa-pen"></i></button>
+                        <button onclick="deleteOrder(${realIdx})" class="text-rose-400 hover:underline admin-only"><i class="fas fa-trash"></i></button>
                     </td>
                 </tr>
             `}).join('');
+            applyRolePermissions();
+        }
+
+        function openMsgModal(idx) {
+            selectedOrderForMsg = orders[idx];
+            document.getElementById('msgTypeSelect').value = 'CONFIRM';
+            generateClientMsg();
+            document.getElementById('msgModal').classList.remove('hidden');
+        }
+
+        function generateClientMsg() {
+            if (!selectedOrderForMsg) return;
+            const o = selectedOrderForMsg;
+            const type = document.getElementById('msgTypeSelect').value;
+            const remCOD = (o.total || 0) - (o.deposit || 0);
+
+            let txt = "";
+            if (type === 'CONFIRM') {
+                txt = `Cảm ơn ${o.customer} đã chốt đơn tại YoungZone Sports! ❤️\n\n📌 Đơn hàng: ${o.product} (Size: ${o.size})\n💰 Giá bán: ${o.total.toLocaleString()}đ\n✅ Đã cọc: ${o.deposit.toLocaleString()}đ\n🛵 Còn lại thu COD: ${remCOD.toLocaleString()}đ\n\nShop đang tiến hành mua hàng Taobao, hàng về kho Hà Nội từ 5-7 ngày shop gửi bạn mã vận đơn nhé!`;
+            } else {
+                txt = `Thông báo từ YoungZone Sports! 🚀\n\nChào ${o.customer}, đơn hàng [${o.product} - Size ${o.size}] của bạn đã về kho Hà Nội và đang được giao đi.\n\n🚚 Mã vận đơn VN: ${o.vnTracking || 'Đang cập nhật'}\n💰 Số tiền COD thanh toán khi nhận: ${remCOD.toLocaleString()}đ\n\nBạn chú ý nghe máy shipper giúp shop nhé! Tks u ❤️`;
+            }
+            document.getElementById('msgContentArea').value = txt;
+        }
+
+        function copyMsgToClipboard() {
+            const txt = document.getElementById('msgContentArea').value;
+            navigator.clipboard.writeText(txt);
+            showToast("Đã copy tin nhắn! Mở Zalo/Mess dán gửi khách ngay.");
+        }
+
+        function openInventoryModal() { document.getElementById('inventoryModal').classList.remove('hidden'); }
+
+        function handleSaveInventory(e) {
+            e.preventDefault();
+            inventory.unshift({
+                id: Date.now(),
+                product: document.getElementById('invProduct').value,
+                size: document.getElementById('invSize').value,
+                qty: parseInt(document.getElementById('invQty').value),
+                cost: parseInt(document.getElementById('invCost').value),
+                price: parseInt(document.getElementById('invPrice').value)
+            });
+            db.ref('youngzone_inventory').set(inventory);
+            saveAllToLocalStorage();
+            renderInventoryTable();
+            closeModal('inventoryModal');
+            showToast("Đã nhập sản phẩm vào Kho Hàng Sẵn!");
+        }
+
+        function renderInventoryTable() {
+            const tbody = document.getElementById('inventoryTableBody');
+            if (inventory.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-500">Kho hàng sẵn hiện tại đang trống.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = inventory.map((item, idx) => `
+                <tr>
+                    <td class="p-3 font-bold text-white">${item.product}</td>
+                    <td class="p-3 text-slate-300">${item.size}</td>
+                    <td class="p-3"><b class="text-amber-400 bg-slate-950 px-2 py-1 rounded border border-slate-800">${item.qty} cái</b></td>
+                    <td class="p-3 text-rose-400 font-bold admin-only">${(item.cost||0).toLocaleString()}đ</td>
+                    <td class="p-3 text-emerald-400 font-bold">${(item.price||0).toLocaleString()}đ</td>
+                    <td class="p-3 text-right">
+                        <button onclick="createOrderFromStock(${idx})" class="text-amber-400 hover:underline mr-2"><i class="fas fa-cart-plus mr-1"></i> Xuất Đơn</button>
+                        <button onclick="deleteInventory(${idx})" class="text-rose-400 hover:underline admin-only"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+            applyRolePermissions();
+        }
+
+        function createOrderFromStock(idx) {
+            const item = inventory[idx];
+            if (item.qty <= 0) { showToast("Sản phẩm này đã hết hàng trong kho!"); return; }
+
+            openOrderModal();
+            document.getElementById('formProduct').value = item.product;
+            document.getElementById('formSize').value = item.size;
+            document.getElementById('formCost').value = item.cost;
+            document.getElementById('formTotal').value = item.price;
+            document.getElementById('formDeposit').value = item.price;
+            document.getElementById('formStatus').value = 'Đã về kho Hà Nội - Đang giao';
+
+            item.qty -= 1;
+            db.ref('youngzone_inventory').set(inventory);
+            saveAllToLocalStorage();
+            showToast(`Đã xuất 1 ${item.product} từ Kho! Số lượng tồn còn lại: ${item.qty}`);
+        }
+
+        function deleteInventory(idx) {
+            showConfirmToast("Xóa sản phẩm này khỏi Kho?", () => {
+                inventory.splice(idx, 1);
+                db.ref('youngzone_inventory').set(inventory);
+                saveAllToLocalStorage();
+                renderInventoryTable();
+                showToast("Đã xóa khỏi kho!");
+            });
+        }
+
+        function convertBillImage(input) {
+            const file = input.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onloadend = function() { tempBase64Bill = reader.result; };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function openBillViewer(imgSrc) {
+            document.getElementById('viewerImg').src = imgSrc;
+            document.getElementById('billViewerModal').classList.remove('hidden');
+        }
+
+        function exportBackupJSON() {
+            const backupData = { orders, coupons, inventory, customers, funds, withdraws, catalogs, logs };
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupData, null, 2));
+            const dlAnchor = document.createElement('a');
+            dlAnchor.setAttribute("href", dataStr);
+            dlAnchor.setAttribute("download", `YoungZone_Backup_${new Date().toISOString().split('T')[0]}.json`);
+            document.body.appendChild(dlAnchor);
+            dlAnchor.click();
+            dlAnchor.remove();
+            showToast("Đã xuất file dữ liệu sao lưu (JSON)!");
+        }
+
+        function lookupCustomerByPhone(phoneVal) {
+            const cleanPhone = phoneVal.trim();
+            if (cleanPhone.length >= 9) {
+                const found = customers.find(c => c.phone === cleanPhone);
+                if (found) {
+                    document.getElementById('formCustomer').value = found.name;
+                    document.getElementById('formAddress').value = found.address;
+                    showToast(`Tự động điền thông tin khách cũ: [${found.name}]`);
+                }
+            }
+        }
+
+        // MỤC 6: HÀM CRM TỰ ĐỘNG CỘNG DỒN DOANH SỐ & PHÂN HẠNG VIP
+        function renderCRMTable() {
+            const tbody = document.getElementById('crmTableBody');
+            if (customers.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-500">Chưa có thông tin khách hàng.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = customers.map((c, idx) => {
+                // Tự động tính tổng chi tiêu các đơn đã HOÀN TẤT của SĐT này
+                const totalSpent = orders.filter(o => o.phone === c.phone && o.status && o.status.includes('Đã bán - Hoàn tất'))
+                                         .reduce((sum, o) => sum + (o.total || 0), 0);
+                
+                // Tự động xếp hạng VIP nếu chi tiêu >= 2.000.000đ
+                const isAutoVIP = totalSpent >= 2000000;
+                
+                return `
+                <tr>
+                    <td class="p-3 font-bold text-white">${c.name}</td>
+                    <td class="p-3 text-amber-400 font-bold">${c.phone}</td>
+                    <td class="p-3 text-slate-300">${c.address}</td>
+                    <td class="p-3 font-bold text-emerald-400">${totalSpent.toLocaleString()}đ</td>
+                    <td class="p-3">
+                        ${isAutoVIP 
+                            ? `<span class="bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2 py-1 rounded font-bold text-[10px]"><i class="fas fa-crown mr-1"></i>💎 VIP (Tích lũy > 2tr)</span>`
+                            : `<select onchange="updateCustomerType(${idx}, this.value)" class="bg-slate-950 border border-slate-700 text-xs text-amber-400 rounded px-2 py-1 font-bold">
+                                <option value="VIP" ${c.type==='VIP'?'selected':''}>VIP</option>
+                                <option value="NORMAL" ${(!c.type||c.type==='NORMAL')?'selected':''}>Thường</option>
+                                <option value="BAD" ${c.type==='BAD'?'selected':''}>⚠️ Bom Hàng</option>
+                               </select>`
+                        }
+                    </td>
+                    <td class="p-3 text-right">
+                        <button onclick="deleteCustomer(${idx})" class="text-rose-400 hover:underline admin-only"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>
+            `}).join('');
+            applyRolePermissions();
+        }
+
+        function updateCustomerType(idx, newType) {
+            customers[idx].type = newType;
+            db.ref('youngzone_customers').set(customers);
+            saveAllToLocalStorage();
+            showToast("Đã cập nhật phân loại khách hàng!");
+        }
+
+        function deleteCustomer(idx) {
+            showConfirmToast("Xóa thông tin khách hàng này?", () => {
+                customers.splice(idx, 1);
+                db.ref('youngzone_customers').set(customers);
+                saveAllToLocalStorage();
+                renderCRMTable();
+                showToast("Đã xóa khách hàng!");
+            });
+        }
+
+        function setCalcCurrency(curr) {
+            currentCalcCurrency = curr;
+            const btnRmb = document.getElementById('btnCurrRMB');
+            const btnVnd = document.getElementById('btnCurrVND');
+            const txtCurr = document.getElementById('txtGoodsCurr');
+
+            if (curr === 'RMB') {
+                btnRmb.className = "px-2 py-0.5 rounded font-bold text-[10px] bg-amber-500 text-slate-950";
+                btnVnd.className = "px-2 py-0.5 rounded font-bold text-[10px] bg-slate-800 text-slate-300 border border-slate-700";
+                txtCurr.innerText = "RMB";
+            } else {
+                btnVnd.className = "px-2 py-0.5 rounded font-bold text-[10px] bg-amber-500 text-slate-950";
+                btnRmb.className = "px-2 py-0.5 rounded font-bold text-[10px] bg-slate-800 text-slate-300 border border-slate-700";
+                txtCurr.innerText = "VNĐ";
+            }
+            calculateIntegratedPrice();
+        }
+
+        function calculateIntegratedPrice() {
+            const rawGoods = parseFloat(document.getElementById('calcGoodsInput').value) || 0;
+            const rawShip = parseFloat(document.getElementById('calcShipInput').value) || 0;
+            const shipUnit = document.getElementById('calcShipUnit').value;
+            const rate = parseFloat(document.getElementById('calcRateInput').value) || globalRMBRate;
+
+            let goodsVND = (currentCalcCurrency === 'RMB') ? (rawGoods * rate) : rawGoods;
+            let shipVND = (shipUnit === 'RMB') ? (rawShip * rate) : rawShip;
+
+            let costVND = Math.round(goodsVND + shipVND);
+            autoCostResult = costVND;
+
+            let profitPercent = 0.30;
+            if (costVND > 3000000) profitPercent = 0.20;
+            else if (costVND > 1000000) profitPercent = 0.25;
+
+            let baseAmount = costVND + 50000;
+            let rawSell = baseAmount * (1 + profitPercent);
+            let sellVND = Math.ceil(rawSell / 1000) * 1000;
+            autoSellResult = sellVND;
+
+            document.getElementById('resCostText').innerText = costVND.toLocaleString() + 'đ';
+            document.getElementById('resSellText').innerText = sellVND.toLocaleString() + 'đ';
+        }
+
+        function applyIntegratedPriceToForm() {
+            if (autoSellResult === 0) { showToast("Vui lòng nhập tiền hàng trước!"); return; }
+            document.getElementById('formCost').value = autoCostResult;
+            document.getElementById('formTotal').value = autoSellResult;
+            document.getElementById('formDeposit').value = Math.round(autoSellResult * 0.5);
+            showToast("Đã áp dụng Giá Vốn & Giá Bán vào Form!");
         }
 
         function setDepositRatio(ratio) {
             const total = parseFloat(document.getElementById('formTotal').value) || 0;
-            const deposit = Math.round(total * ratio);
-            document.getElementById('formDeposit').value = deposit;
+            document.getElementById('formDeposit').value = Math.round(total * ratio);
         }
 
         function autoCalculateDeposit() {
@@ -810,53 +1670,24 @@
             document.getElementById('formDeposit').value = Math.round(total * 0.5);
         }
 
-        function openCalcModal() { document.getElementById('calcModal').classList.remove('hidden'); }
-        function closeCalcModal() { document.getElementById('calcModal').classList.add('hidden'); }
-
-        function calculateAutoPrice() {
-            const rate = parseFloat(document.getElementById('calcRate').value) || 3810;
-            const rmb = parseFloat(document.getElementById('calcRMB').value) || 0;
-            
-            const vndGoc = rmb * rate;
-            document.getElementById('calcVNDGoc').value = Math.round(vndGoc).toLocaleString() + 'đ';
-            
-            const cost = vndGoc + 25000;
-            tempCalculatedCost = Math.round(cost);
-            
-            const baseAmount = vndGoc + 50000;
-            let profitMargin = (baseAmount <= 1000000) ? 0.35 : 0.30;
-            
-            const rawSellPrice = baseAmount * (1 + profitMargin);
-            const sellPrice = Math.round(rawSellPrice / 1000) * 1000;
-            tempCalculatedSell = sellPrice;
-
-            document.getElementById('calcResultCost').innerText = Math.round(cost).toLocaleString() + 'đ';
-            document.getElementById('calcResultSell').innerText = sellPrice.toLocaleString() + 'đ';
-        }
-
-        function copyQuoteToClipboard() {
-            if (tempCalculatedSell === 0) { showToast("Vui lòng nhập giá Tệ (RMB) trước!"); return; }
-            const deposit = tempCalculatedSell / 2;
-            const text = `YoungZone Sports Báo Giá Order:\n- Giá trọn gói (FreeShip): ${tempCalculatedSell.toLocaleString()}đ\n- Tiền cọc trước 50%: ${deposit.toLocaleString()}đ\n- Hàng về tận nhà sau 5-7 ngày!`;
-            navigator.clipboard.writeText(text);
-            showToast("Đã copy báo giá vào bộ nhớ tạm!");
-        }
-
-        function applyCalcToOrderForm() {
-            if (tempCalculatedSell === 0) { showToast("Vui lòng nhập giá Tệ (RMB) trước!"); return; }
-            openOrderModal();
-            document.getElementById('formCost').value = tempCalculatedCost;
-            document.getElementById('formTotal').value = tempCalculatedSell;
-            document.getElementById('formDeposit').value = Math.round(tempCalculatedSell * 0.5);
-            closeCalcModal();
-            showToast("Đã điền tự động vào form đơn hàng!");
-        }
-
         function openOrderModal() {
             document.getElementById('editIndex').value = "-1";
             document.getElementById('modalTitle').innerText = "Tạo Đơn Hàng Mới";
             document.getElementById('formOwner').value = "CHUNG";
             document.getElementById('formTracking').value = '';
+            document.getElementById('formVnTracking').value = '';
+            document.getElementById('formVnShip').value = '';
+            document.getElementById('formCodReceived').value = 'NO';
+            document.getElementById('formCouponCode').value = '';
+            tempBase64Bill = '';
+            
+            document.getElementById('calcGoodsInput').value = '';
+            document.getElementById('calcShipInput').value = '';
+            document.getElementById('calcRateInput').value = globalRMBRate;
+            autoCostResult = 0; autoSellResult = 0;
+            document.getElementById('resCostText').innerText = '0đ';
+            document.getElementById('resSellText').innerText = '0đ';
+
             document.getElementById('orderModal').classList.remove('hidden');
         }
 
@@ -865,28 +1696,44 @@
         function handleSaveOrder(e) {
             e.preventDefault();
             const idx = parseInt(document.getElementById('editIndex').value);
+            const name = document.getElementById('formCustomer').value.trim();
+            const phone = document.getElementById('formPhone').value.trim();
+            const address = document.getElementById('formAddress').value.trim();
+
+            const existingBill = idx >= 0 ? (orders[idx].billImg || '') : '';
 
             const orderObj = {
                 id: idx >= 0 ? orders[idx].id : 'YZ-' + Math.floor(1000 + Math.random() * 9000),
                 date: document.getElementById('formDate').value,
                 owner: document.getElementById('formOwner').value,
-                customer: document.getElementById('formCustomer').value,
-                phone: document.getElementById('formPhone').value,
+                customer: name,
+                phone: phone,
+                address: address,
                 tracking: document.getElementById('formTracking').value,
-                address: document.getElementById('formAddress').value,
+                vnTracking: document.getElementById('formVnTracking').value,
+                codReceived: document.getElementById('formCodReceived').value,
                 product: document.getElementById('formProduct').value,
                 size: document.getElementById('formSize').value,
                 total: parseInt(document.getElementById('formTotal').value),
                 deposit: parseInt(document.getElementById('formDeposit').value),
                 cost: parseInt(document.getElementById('formCost').value),
+                vnShip: parseInt(document.getElementById('formVnShip').value) || 0,
+                billImg: tempBase64Bill || existingBill,
                 status: document.getElementById('formStatus').value
             };
 
+            if (!customers.some(c => c.phone === phone)) {
+                customers.push({ name, phone, address, type: 'NORMAL' });
+                db.ref('youngzone_customers').set(customers);
+            }
+
             if (idx >= 0) {
                 orders[idx] = orderObj;
+                addLog(`Cập nhật đơn hàng [${orderObj.id}]`);
                 showToast("Cập nhật đơn hàng thành công!");
             } else {
                 orders.unshift(orderObj);
+                addLog(`Tạo đơn hàng mới [${orderObj.id}] - ${orderObj.product}`);
                 showToast("Tạo đơn hàng mới thành công!");
             }
 
@@ -904,23 +1751,59 @@
             document.getElementById('formCustomer').value = o.customer;
             document.getElementById('formPhone').value = o.phone;
             document.getElementById('formTracking').value = o.tracking || '';
+            document.getElementById('formVnTracking').value = o.vnTracking || '';
+            document.getElementById('formCodReceived').value = o.codReceived || 'NO';
             document.getElementById('formAddress').value = o.address;
             document.getElementById('formProduct').value = o.product;
             document.getElementById('formSize').value = o.size;
             document.getElementById('formTotal').value = o.total;
             document.getElementById('formDeposit').value = o.deposit;
             document.getElementById('formCost').value = o.cost;
+            document.getElementById('formVnShip').value = o.vnShip || '';
             document.getElementById('formStatus').value = o.status;
+            tempBase64Bill = o.billImg || '';
+
             document.getElementById('orderModal').classList.remove('hidden');
         }
 
         function deleteOrder(idx) {
             showConfirmToast("Bạn có chắc chắn muốn xóa đơn hàng này?", () => {
+                const deletedId = orders[idx].id;
                 orders.splice(idx, 1);
+                addLog(`Xóa đơn hàng [${deletedId}]`);
                 syncOrdersToFirebase();
                 renderDashboard();
                 showToast("Đã xóa đơn hàng!");
             });
+        }
+
+        function openPrintModal(idx) {
+            const o = orders[idx];
+            const codAmt = (o.total || 0) - (o.deposit || 0);
+
+            document.getElementById('lblOrderCode').innerText = o.id;
+            document.getElementById('lblCustName').innerText = o.customer;
+            document.getElementById('lblCustPhone').innerText = o.phone;
+            document.getElementById('lblCustAddr').innerText = o.address;
+            document.getElementById('lblProduct').innerText = `${o.product} (Size: ${o.size})`;
+            document.getElementById('lblCodAmount').innerText = `${codAmt.toLocaleString()}đ`;
+
+            document.getElementById('printModal').classList.remove('hidden');
+        }
+
+        function openLogsModal() {
+            const container = document.getElementById('logsContainer');
+            if (logs.length === 0) {
+                container.innerHTML = `<div class="text-slate-500 text-center py-4">Chưa có nhật ký hoạt động.</div>`;
+            } else {
+                container.innerHTML = logs.map(l => `
+                    <div class="bg-slate-950 p-2.5 rounded-lg border border-slate-800 flex justify-between items-center">
+                        <span class="text-slate-200 font-semibold">${l.action}</span>
+                        <span class="text-[10px] text-amber-400 font-mono">${l.time}</span>
+                    </div>
+                `).join('');
+            }
+            document.getElementById('logsModal').classList.remove('hidden');
         }
 
         function openWithdrawModal() {
@@ -938,7 +1821,8 @@
 
             withdraws.unshift({ date, person, amount, reason });
             db.ref('youngzone_withdraws').set(withdraws);
-            localStorage.setItem('youngzone_withdraws', JSON.stringify(withdraws));
+            saveAllToLocalStorage();
+            addLog(`Rút tiền/Chi tiêu: ${person} - ${amount.toLocaleString()}đ (${reason})`);
 
             renderWithdrawHistory();
             renderDashboard();
@@ -972,7 +1856,7 @@
             showConfirmToast("Xóa bản ghi rút tiền này?", () => {
                 withdraws.splice(idx, 1);
                 db.ref('youngzone_withdraws').set(withdraws);
-                localStorage.setItem('youngzone_withdraws', JSON.stringify(withdraws));
+                saveAllToLocalStorage();
                 renderWithdrawHistory();
                 renderDashboard();
                 showToast("Đã xóa bản ghi!");
@@ -994,7 +1878,8 @@
 
             funds.unshift({ date, person, amount, desc });
             db.ref('youngzone_funds').set(funds);
-            localStorage.setItem('youngzone_funds', JSON.stringify(funds));
+            saveAllToLocalStorage();
+            addLog(`Thêm vốn góp: ${person} +${amount.toLocaleString()}đ (${desc})`);
 
             renderFundHistory();
             renderDashboard();
@@ -1028,7 +1913,7 @@
             showConfirmToast("Xóa khoản góp vốn này?", () => {
                 funds.splice(idx, 1);
                 db.ref('youngzone_funds').set(funds);
-                localStorage.setItem('youngzone_funds', JSON.stringify(funds));
+                saveAllToLocalStorage();
                 renderFundHistory();
                 renderDashboard();
                 showToast("Đã xóa khoản góp vốn!");
@@ -1048,10 +1933,11 @@
                     </div>
                     <div class="p-4 pt-0 flex justify-between items-center">
                         <button onclick="copyToClipboard(\`${cat.notes}\`)" class="text-amber-400 hover:text-amber-300 text-xs font-bold"><i class="fas fa-copy mr-1"></i> Copy Thông Số</button>
-                        <button onclick="deleteCatalog(${idx})" class="text-rose-400 hover:text-rose-300 text-xs"><i class="fas fa-trash"></i></button>
+                        <button onclick="deleteCatalog(${idx})" class="text-rose-400 hover:text-rose-300 text-xs admin-only"><i class="fas fa-trash"></i></button>
                     </div>
                 </div>
             `).join('');
+            applyRolePermissions();
         }
 
         function openAddCatalogModal() { document.getElementById('catalogModal').classList.remove('hidden'); }
@@ -1078,7 +1964,7 @@
                 notes: document.getElementById('catNotes').value
             });
             db.ref('youngzone_catalogs').set(catalogs);
-            localStorage.setItem('youngzone_catalogs', JSON.stringify(catalogs));
+            saveAllToLocalStorage();
             renderCatalogs();
             closeCatalogModal();
             base64TempImage = '';
@@ -1089,7 +1975,7 @@
             showConfirmToast("Xóa bảng size này?", () => {
                 catalogs.splice(idx, 1);
                 db.ref('youngzone_catalogs').set(catalogs);
-                localStorage.setItem('youngzone_catalogs', JSON.stringify(catalogs));
+                saveAllToLocalStorage();
                 renderCatalogs();
                 showToast("Đã xóa bảng size!");
             });
@@ -1100,55 +1986,24 @@
             showToast("Đã copy thông số size vào bộ nhớ tạm!");
         }
 
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
         function exportToExcel() {
-            if (orders.length === 0) {
-                showToast("Không có dữ liệu đơn hàng để xuất!");
-                return;
-            }
+            if (orders.length === 0) { showToast("Không có dữ liệu đơn hàng để xuất!"); return; }
 
             let tableHtml = `
                 <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
                 <head>
                     <meta charset="utf-8">
-                    <!--[if gte mso 9]>
-                    <xml>
-                        <x:ExcelWorkbook>
-                            <x:ExcelWorksheets>
-                                <x:ExcelWorksheet>
-                                    <x:Name>Báo Cáo Đơn Hàng YoungZone</x:Name>
-                                    <x:WorksheetOptions>
-                                        <x:DisplayGridlines/>
-                                    </x:WorksheetOptions>
-                                </x:ExcelWorksheet>
-                            </x:ExcelWorksheets>
-                        </x:ExcelWorkbook>
-                    </xml>
-                    <![endif]-->
-                    <style>
-                        td, th { border: 1px solid #cccccc; padding: 5px; font-family: Arial; }
-                        th { background-color: #f59e0b; color: #ffffff; font-weight: bold; }
-                    </style>
+                    <style>td, th { border: 1px solid #cccccc; padding: 5px; font-family: Arial; } th { background-color: #f59e0b; color: #ffffff; font-weight: bold; }</style>
                 </head>
                 <body>
                     <table>
                         <thead>
                             <tr>
-                                <th>Mã Đơn</th>
-                                <th>Ngày</th>
-                                <th>Mã Vận Đơn TQ</th>
-                                <th>Người Phụ Trách</th>
-                                <th>Tên Khách Hàng</th>
-                                <th>Số Điện Thoại</th>
-                                <th>Địa Chỉ</th>
-                                <th>Tên Sản Phẩm</th>
-                                <th>Size</th>
-                                <th>Giá Bán (VNĐ)</th>
-                                <th>Tiền Vốn Gốc (VNĐ)</th>
-                                <th>Tiền Cọc (VNĐ)</th>
-                                <th>Lãi Ròng Đơn (VNĐ)</th>
-                                <th>Lãi Khôi (VNĐ)</th>
-                                <th>Lãi Lâm (VNĐ)</th>
-                                <th>Trạng Thái</th>
+                                <th>Mã Đơn</th><th>Ngày</th><th>Mã VĐ TQ</th><th>Mã VĐ VN</th><th>Người Phụ Trách</th>
+                                <th>Khách Hàng</th><th>SĐT</th><th>Địa Chỉ</th><th>Sản Phẩm</th><th>Size</th>
+                                <th>Giá Bán</th><th>Vốn TQ</th><th>Ship VN</th><th>Đã Cọc</th><th>Lãi Ròng</th><th>Lãi Khôi</th><th>Lãi Lâm</th><th>Trạng Thái</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -1156,7 +2011,8 @@
 
             orders.forEach(o => {
                 const isCompleted = o.status && o.status.includes('Đã bán - Hoàn tất');
-                const profit = isCompleted ? ((o.total||0) - (o.cost||0)) : 0;
+                const totalCostSingle = (o.cost||0) + (o.vnShip||0);
+                const profit = isCompleted ? ((o.total||0) - totalCostSingle) : 0;
                 let kShare = 0, lShare = 0;
                 if (isCompleted) {
                     if (o.owner === 'CHUNG') { kShare = profit * 0.5; lShare = profit * 0.5; }
@@ -1166,32 +2022,16 @@
 
                 tableHtml += `
                     <tr>
-                        <td>${o.id}</td>
-                        <td>${o.date}</td>
-                        <td>${o.tracking||''}</td>
+                        <td>${o.id}</td><td>${o.date}</td><td>${o.tracking||''}</td><td>${o.vnTracking||''}</td>
                         <td>${o.owner === 'Khoi' ? 'Khôi' : o.owner === 'Lam' ? 'Lâm' : 'Chung'}</td>
-                        <td>${o.customer}</td>
-                        <td>'${o.phone}</td>
-                        <td>${o.address}</td>
-                        <td>${o.product}</td>
-                        <td>${o.size}</td>
-                        <td>${o.total||0}</td>
-                        <td>${o.cost||0}</td>
-                        <td>${o.deposit||0}</td>
-                        <td>${profit}</td>
-                        <td>${Math.round(kShare)}</td>
-                        <td>${Math.round(lShare)}</td>
-                        <td>${o.status}</td>
+                        <td>${o.customer}</td><td>'${o.phone}</td><td>${o.address}</td><td>${o.product}</td><td>${o.size}</td>
+                        <td>${o.total||0}</td><td>${o.cost||0}</td><td>${o.vnShip||0}</td><td>${o.deposit||0}</td><td>${profit}</td>
+                        <td>${Math.round(kShare)}</td><td>${Math.round(lShare)}</td><td>${o.status}</td>
                     </tr>
                 `;
             });
 
-            tableHtml += `
-                        </tbody>
-                    </table>
-                </body>
-                </html>
-            `;
+            tableHtml += `</tbody></table></body></html>`;
 
             const blob = new Blob([tableHtml], { type: 'application/vnd.ms-excel;charset=utf-8' });
             const link = document.createElement("a");
