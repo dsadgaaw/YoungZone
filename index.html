@@ -192,7 +192,7 @@
                     <div>
                         <span class="text-xs text-slate-400 block font-semibold">Tổng Vốn Đã Góp</span>
                         <span id="displayCapital" class="text-lg font-black text-emerald-400 mt-1 block">0đ</span>
-                        <button onclick="openFundModal()" class="text-[11px] text-amber-400 font-bold hover:underline mt-1 block admin-only">+ THÊM VỐN GÓP</button>
+                        <button onclick="openFundModal()" class="text-[11px] text-amber-400 font-bold hover:underline mt-1 block">+ THÊM VỐN GÓP</button>
                     </div>
                     <div class="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400"><i class="fas fa-sack-dollar"></i></div>
                 </div>
@@ -201,7 +201,7 @@
                     <div>
                         <span class="text-xs text-amber-400 block font-bold">TỔNG TIỀN TRONG TÀI KHOẢN</span>
                         <span id="statTotalAccountBalance" class="text-lg font-black text-amber-400 block mt-1">0đ</span>
-                        <button onclick="openWithdrawModal()" class="text-[11px] text-rose-400 font-bold hover:underline mt-0.5 block admin-only">- RÚT TIỀN / CHI TIÊU</button>
+                        <button onclick="openWithdrawModal()" class="text-[11px] text-rose-400 font-bold hover:underline mt-0.5 block">- RÚT TIỀN / CHI TIÊU</button>
                     </div>
                     <div class="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400"><i class="fas fa-vault"></i></div>
                 </div>
@@ -316,8 +316,8 @@
                                 <th class="p-3">Người Phụ Trách</th>
                                 <th class="p-3">Giá Bán / Vốn</th>
                                 <th class="p-3">Cọc / Thu COD</th>
-                                <th class="p-3 admin-only">Lãi Ròng</th>
-                                <th class="p-3 admin-only">Chia Lãi (Khôi/Lâm)</th>
+                                <th class="p-3">Lãi Ròng</th>
+                                <th class="p-3">Chia Lãi (Khôi/Lâm)</th>
                                 <th class="p-3">Bill Cọc</th>
                                 <th class="p-3">Trạng Thái</th>
                                 <th class="p-3 text-right">Thao Tác</th>
@@ -379,7 +379,7 @@
                                 <th class="p-3">Tên Sản Phẩm</th>
                                 <th class="p-3">Size</th>
                                 <th class="p-3">Số Lượng Tồn Kho</th>
-                                <th class="p-3 admin-only">Giá Vốn Nhập</th>
+                                <th class="p-3">Giá Vốn Nhập</th>
                                 <th class="p-3">Giá Bán Niêm Yết</th>
                                 <th class="p-3 text-right">Thao Tác</th>
                             </tr>
@@ -991,21 +991,17 @@
 
         function applyRolePermissions() {
             const roleText = document.getElementById('roleBadge');
-            const adminElements = document.querySelectorAll('.admin-only');
-
             if (currentUserRole === 'ADMIN') {
                 roleText.innerText = 'Vai trò: Admin (Khôi & Lâm)';
-                adminElements.forEach(el => el.classList.remove('hidden'));
             } else {
                 roleText.innerText = 'Vai trò: Nhân viên / CTV';
-                adminElements.forEach(el => el.classList.add('hidden'));
             }
         }
 
         function initFirebaseListeners() {
             db.ref('youngzone_orders').on('value', (snapshot) => {
                 const data = snapshot.val();
-                if (data) orders = Object.values(data);
+                orders = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
                 saveAllToLocalStorage();
                 renderDashboard();
                 updateFirebaseStatus(true);
@@ -1016,14 +1012,14 @@
 
             db.ref('youngzone_coupons').on('value', (snapshot) => {
                 const data = snapshot.val();
-                if (data) coupons = Object.values(data);
+                coupons = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
                 saveAllToLocalStorage();
                 renderCouponsTable();
             });
 
             db.ref('youngzone_inventory').on('value', (snapshot) => {
                 const data = snapshot.val();
-                if (data) inventory = Object.values(data);
+                inventory = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
                 saveAllToLocalStorage();
                 renderInventoryTable();
             });
@@ -1039,33 +1035,33 @@
 
             db.ref('youngzone_customers').on('value', (snapshot) => {
                 const data = snapshot.val();
-                if (data) customers = Object.values(data);
+                customers = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
                 saveAllToLocalStorage();
                 renderCRMTable();
             });
 
             db.ref('youngzone_logs').on('value', (snapshot) => {
                 const data = snapshot.val();
-                if (data) logs = Object.values(data);
+                logs = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
             });
 
             db.ref('youngzone_funds').on('value', (snapshot) => {
                 const data = snapshot.val();
-                if (data) funds = Object.values(data);
+                funds = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
                 saveAllToLocalStorage();
                 renderDashboard();
             });
 
             db.ref('youngzone_withdraws').on('value', (snapshot) => {
                 const data = snapshot.val();
-                if (data) withdraws = Object.values(data);
+                withdraws = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
                 saveAllToLocalStorage();
                 renderDashboard();
             });
 
             db.ref('youngzone_catalogs').on('value', (snapshot) => {
                 const data = snapshot.val();
-                if (data) catalogs = Object.values(data);
+                catalogs = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
                 saveAllToLocalStorage();
                 renderCatalogs();
             });
@@ -1160,7 +1156,7 @@
                     <td class="p-3 text-slate-300">${cp.type === 'FIXED' ? 'Giảm tiền trực tiếp' : 'Giảm theo phần trăm'}</td>
                     <td class="p-3"><b class="text-white">${cp.used} / ${cp.limit}</b></td>
                     <td class="p-3 text-right">
-                        <button onclick="deleteCoupon(${idx})" class="text-rose-400 hover:underline admin-only"><i class="fas fa-trash"></i></button>
+                        <button onclick="deleteCoupon(${idx})" class="text-rose-400 hover:underline"><i class="fas fa-trash"></i></button>
                     </td>
                 </tr>
             `).join('');
@@ -1389,16 +1385,16 @@
                     </td>
                     <td class="p-3">
                         <b class="text-amber-400 block">${(o.total||0).toLocaleString()}đ</b>
-                        <span class="text-rose-400 block admin-only">Vốn TQ: ${(o.cost||0).toLocaleString()}đ</span>
-                        ${o.vnShip ? `<span class="text-indigo-400 text-[10px] admin-only">Ship VN: ${o.vnShip.toLocaleString()}đ</span>` : ''}
+                        <span class="text-rose-400 block">Vốn TQ: ${(o.cost||0).toLocaleString()}đ</span>
+                        ${o.vnShip ? `<span class="text-indigo-400 text-[10px]">Ship VN: ${o.vnShip.toLocaleString()}đ</span>` : ''}
                     </td>
                     <td class="p-3">
                         <span class="text-emerald-400 block font-bold">Cọc: ${(o.deposit||0).toLocaleString()}đ</span>
                         <span class="${remCOD>0?'text-amber-400':'text-slate-400'}">COD: ${remCOD.toLocaleString()}đ</span>
                         ${o.codReceived === 'YES' ? '<span class="text-[9px] text-emerald-400 font-bold block mt-0.5">✓ Đã thu COD</span>' : '<span class="text-[9px] text-slate-500 block mt-0.5"> Chưa nhận COD</span>'}
                     </td>
-                    <td class="p-3 admin-only"><b class="${isCompleted?'text-emerald-400':'text-slate-500'} text-sm">${orderProfit.toLocaleString()}đ</b></td>
-                    <td class="p-3 admin-only">
+                    <td class="p-3"><b class="${isCompleted?'text-emerald-400':'text-slate-500'} text-sm">${orderProfit.toLocaleString()}đ</b></td>
+                    <td class="p-3">
                         <span class="text-[10px] text-blue-400 block font-semibold">Khôi: ${Math.round(kShare).toLocaleString()}đ</span>
                         <span class="text-[10px] text-purple-400 block font-semibold">Lâm: ${Math.round(lShare).toLocaleString()}đ</span>
                     </td>
@@ -1413,8 +1409,8 @@
                     <td class="p-3 text-right space-x-1">
                         <button onclick="openMsgModal(${realIdx})" class="text-amber-400 hover:underline" title="Gửi tin nhắn khách"><i class="fas fa-comment-dots"></i></button>
                         <button onclick="openPrintModal(${realIdx})" class="text-emerald-400 hover:underline" title="In tem dán"><i class="fas fa-print"></i></button>
-                        <button onclick="editOrder(${realIdx})" class="text-blue-400 hover:underline"><i class="fas fa-pen"></i></button>
-                        <button onclick="deleteOrder(${realIdx})" class="text-rose-400 hover:underline admin-only"><i class="fas fa-trash"></i></button>
+                        <button onclick="editOrder(${realIdx})" class="text-blue-400 hover:underline" title="Sửa đơn"><i class="fas fa-pen"></i></button>
+                        <button onclick="deleteOrder(${realIdx})" class="text-rose-400 hover:underline" title="Xóa đơn"><i class="fas fa-trash"></i></button>
                     </td>
                 </tr>
             `}).join('');
@@ -1479,11 +1475,11 @@
                     <td class="p-3 font-bold text-white">${item.product}</td>
                     <td class="p-3 text-slate-300">${item.size}</td>
                     <td class="p-3"><b class="text-amber-400 bg-slate-950 px-2 py-1 rounded border border-slate-800">${item.qty} cái</b></td>
-                    <td class="p-3 text-rose-400 font-bold admin-only">${(item.cost||0).toLocaleString()}đ</td>
+                    <td class="p-3 text-rose-400 font-bold">${(item.cost||0).toLocaleString()}đ</td>
                     <td class="p-3 text-emerald-400 font-bold">${(item.price||0).toLocaleString()}đ</td>
                     <td class="p-3 text-right">
                         <button onclick="createOrderFromStock(${idx})" class="text-amber-400 hover:underline mr-2"><i class="fas fa-cart-plus mr-1"></i> Xuất Đơn</button>
-                        <button onclick="deleteInventory(${idx})" class="text-rose-400 hover:underline admin-only"><i class="fas fa-trash"></i></button>
+                        <button onclick="deleteInventory(${idx})" class="text-rose-400 hover:underline"><i class="fas fa-trash"></i></button>
                     </td>
                 </tr>
             `).join('');
@@ -1586,7 +1582,7 @@
                         }
                     </td>
                     <td class="p-3 text-right">
-                        <button onclick="deleteCustomer(${idx})" class="text-rose-400 hover:underline admin-only"><i class="fas fa-trash"></i></button>
+                        <button onclick="deleteCustomer(${idx})" class="text-rose-400 hover:underline"><i class="fas fa-trash"></i></button>
                     </td>
                 </tr>
             `}).join('');
@@ -1767,14 +1763,24 @@
             document.getElementById('orderModal').classList.remove('hidden');
         }
 
+        // HÀM XÓA ĐƠN HÀNG ĐÃ SỬA LỖI VÀ ĐỒNG BỘ TRỰC TIẾP LÊN FIREBASE
         function deleteOrder(idx) {
+            if (idx < 0 || idx >= orders.length) return;
             showConfirmToast("Bạn có chắc chắn muốn xóa đơn hàng này?", () => {
                 const deletedId = orders[idx].id;
                 orders.splice(idx, 1);
                 addLog(`Xóa đơn hàng [${deletedId}]`);
-                syncOrdersToFirebase();
-                renderDashboard();
-                showToast("Đã xóa đơn hàng!");
+                
+                // Đồng bộ mảng sau khi xóa trực tiếp lên Firebase Database
+                db.ref('youngzone_orders').set(orders, (error) => {
+                    if (error) {
+                        showToast("Lỗi khi kết nối xóa trên Firebase!");
+                    } else {
+                        saveAllToLocalStorage();
+                        renderDashboard();
+                        showToast(`Đã xóa thành công đơn hàng [${deletedId}] khỏi Firebase!`);
+                    }
+                });
             });
         }
 
@@ -1934,7 +1940,7 @@
                     </div>
                     <div class="p-4 pt-0 flex justify-between items-center">
                         <button onclick="copyToClipboard(\`${cat.notes}\`)" class="text-amber-400 hover:text-amber-300 text-xs font-bold"><i class="fas fa-copy mr-1"></i> Copy Thông Số</button>
-                        <button onclick="deleteCatalog(${idx})" class="text-rose-400 hover:text-rose-300 text-xs admin-only"><i class="fas fa-trash"></i></button>
+                        <button onclick="deleteCatalog(${idx})" class="text-rose-400 hover:text-rose-300 text-xs"><i class="fas fa-trash"></i></button>
                     </div>
                 </div>
             `).join('');
