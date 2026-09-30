@@ -185,9 +185,8 @@
                 </div>
             </div>
 
-            <!-- CHUẨN ĐỦ 9 Ô THỐNG KÊ TÀI CHÍNH NHƯ ẢNH VÀ THÊM CÁC NÚT THAO TÁC -->
+            <!-- CHUẨN ĐỦ 9 Ô THỐNG KÊ TÀI CHÍNH -->
             <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
-                <!-- Hàng 1: 5 Ô -->
                 <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex justify-between items-center">
                     <div>
                         <span class="text-xs text-slate-400 block font-semibold">Tổng Vốn Đã Góp</span>
@@ -234,7 +233,6 @@
                 </div>
             </div>
 
-            <!-- Hàng 2: 4 Ô -->
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                 <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex justify-between items-center">
                     <div>
@@ -876,7 +874,7 @@
         }
 
         const firebaseConfig = {
-            databaseURL: "https://banhangonl-f83b4-default-rtdb.asia-southeast1.firebasedatabase.app/"
+            databaseURL: "https://web-ban-hang-4fd4e-default-rtdb.asia-southeast1.firebasedatabase.app/"
         };
         
         firebase.initializeApp(firebaseConfig);
@@ -1763,7 +1761,6 @@
             document.getElementById('orderModal').classList.remove('hidden');
         }
 
-        // HÀM XÓA ĐƠN HÀNG ĐÃ SỬA LỖI VÀ ĐỒNG BỘ TRỰC TIẾP LÊN FIREBASE
         function deleteOrder(idx) {
             if (idx < 0 || idx >= orders.length) return;
             showConfirmToast("Bạn có chắc chắn muốn xóa đơn hàng này?", () => {
@@ -1771,7 +1768,6 @@
                 orders.splice(idx, 1);
                 addLog(`Xóa đơn hàng [${deletedId}]`);
                 
-                // Đồng bộ mảng sau khi xóa trực tiếp lên Firebase Database
                 db.ref('youngzone_orders').set(orders, (error) => {
                     if (error) {
                         showToast("Lỗi khi kết nối xóa trên Firebase!");
