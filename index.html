@@ -179,12 +179,93 @@
                     <button onclick="openLogsModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold px-3 py-2 rounded-xl text-xs border border-slate-700 transition">
                         <i class="fas fa-clock-rotate-left mr-1"></i> Nhật Ký
                     </button>
-                    <button onclick="openWithdrawModal()" class="bg-rose-600 hover:bg-rose-500 text-white font-bold px-3.5 py-2 rounded-xl text-xs transition admin-only">
-                        <i class="fas fa-money-bill-transfer mr-1.5"></i> Rút Tiền / Chi
-                    </button>
                     <button onclick="openOrderModal()" class="gold-gradient text-slate-950 font-extrabold px-4 py-2 rounded-xl text-xs hover:opacity-90 transition">
                         <i class="fas fa-plus mr-1.5"></i> Tạo Đơn Mới
                     </button>
+                </div>
+            </div>
+
+            <!-- CHUẨN ĐỦ 9 Ô THỐNG KÊ TÀI CHÍNH NHƯ ẢNH VÀ THÊM CÁC NÚT THAO TÁC -->
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
+                <!-- Hàng 1: 5 Ô -->
+                <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex justify-between items-center">
+                    <div>
+                        <span class="text-xs text-slate-400 block font-semibold">Tổng Vốn Đã Góp</span>
+                        <span id="displayCapital" class="text-lg font-black text-emerald-400 mt-1 block">0đ</span>
+                        <button onclick="openFundModal()" class="text-[11px] text-amber-400 font-bold hover:underline mt-1 block admin-only">+ THÊM VỐN GÓP</button>
+                    </div>
+                    <div class="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400"><i class="fas fa-sack-dollar"></i></div>
+                </div>
+
+                <div class="bg-slate-900 border border-amber-500/40 p-4 rounded-2xl flex justify-between items-center shadow-lg shadow-amber-500/5">
+                    <div>
+                        <span class="text-xs text-amber-400 block font-bold">TỔNG TIỀN TRONG TÀI KHOẢN</span>
+                        <span id="statTotalAccountBalance" class="text-lg font-black text-amber-400 block mt-1">0đ</span>
+                        <button onclick="openWithdrawModal()" class="text-[11px] text-rose-400 font-bold hover:underline mt-0.5 block admin-only">- RÚT TIỀN / CHI TIÊU</button>
+                    </div>
+                    <div class="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400"><i class="fas fa-vault"></i></div>
+                </div>
+
+                <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex justify-between items-center">
+                    <div>
+                        <span class="text-xs text-slate-400 block font-semibold">LÃI HOÀN TẤT: KHÔI</span>
+                        <span id="statProfitKhoi" class="text-lg font-black text-blue-400 mt-1 block">0đ</span>
+                        <span class="text-[10px] text-slate-500 block">(Chỉ tính đơn đã xong)</span>
+                    </div>
+                    <div class="w-9 h-9 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400"><i class="fas fa-user-check"></i></div>
+                </div>
+
+                <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex justify-between items-center">
+                    <div>
+                        <span class="text-xs text-slate-400 block font-semibold">LÃI HOÀN TẤT: LÂM</span>
+                        <span id="statProfitLam" class="text-lg font-black text-purple-400 mt-1 block">0đ</span>
+                        <span class="text-[10px] text-slate-500 block">(Chỉ tính đơn đã xong)</span>
+                    </div>
+                    <div class="w-9 h-9 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400"><i class="fas fa-user-check"></i></div>
+                </div>
+
+                <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex justify-between items-center">
+                    <div>
+                        <span class="text-xs text-slate-400 block font-semibold">DƯ NỢ COD CẦN THU</span>
+                        <span id="statTotalRemainingCOD" class="text-lg font-black text-amber-400 mt-1 block">0đ</span>
+                        <span class="text-[10px] text-slate-500 block">Khách còn trả khi nhận</span>
+                    </div>
+                    <div class="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400"><i class="fas fa-hand-holding-dollar"></i></div>
+                </div>
+            </div>
+
+            <!-- Hàng 2: 4 Ô -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex justify-between items-center">
+                    <div>
+                        <span class="text-xs text-slate-400 block font-semibold">Số Đơn Trong Tháng</span>
+                        <b id="statTotalOrders" class="text-xl font-black text-white mt-1 block">0</b>
+                    </div>
+                    <div class="w-8 h-8 rounded-xl bg-slate-800 flex items-center justify-center text-slate-400"><i class="fas fa-box"></i></div>
+                </div>
+
+                <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex justify-between items-center">
+                    <div>
+                        <span class="text-xs text-slate-400 block font-semibold">Tổng Lãi Thực Nhận (Đơn Xong)</span>
+                        <b id="statTotalProfitMonth" class="text-xl font-black text-amber-400 mt-1 block">0đ</b>
+                    </div>
+                    <div class="w-8 h-8 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-400"><i class="fas fa-coins"></i></div>
+                </div>
+
+                <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex justify-between items-center">
+                    <div>
+                        <span class="text-xs text-slate-400 block font-semibold">Tổng Vốn Hàng Nhập</span>
+                        <b id="statTotalCost" class="text-xl font-black text-rose-400 mt-1 block">0đ</b>
+                    </div>
+                    <div class="w-8 h-8 rounded-xl bg-rose-500/10 flex items-center justify-center text-rose-400"><i class="fas fa-receipt"></i></div>
+                </div>
+
+                <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex justify-between items-center">
+                    <div>
+                        <span class="text-xs text-slate-400 block font-semibold">LÃI RÒNG (ĐÃ HOÀN TẤT)</span>
+                        <b id="statTotalProfitNet" class="text-xl font-black text-emerald-400 mt-1 block">0đ</b>
+                    </div>
+                    <div class="w-8 h-8 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-400"><i class="fas fa-chart-line"></i></div>
                 </div>
             </div>
 
@@ -217,64 +298,6 @@
                     </div>
                 </div>
                 <button onclick="filterDelayedOnly()" class="bg-rose-600 hover:bg-rose-500 text-white font-bold px-3 py-1.5 rounded-xl text-xs">Xem Đơn Trễ</button>
-            </div>
-
-            <!-- TÀI CHÍNH NỘI BỘ -->
-            <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6 admin-only">
-                <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex justify-between items-center">
-                    <div>
-                        <span class="text-xs text-slate-400 block font-semibold">Tổng Vốn Đã Góp</span>
-                        <span id="displayCapital" class="text-lg font-black text-emerald-400 mt-1 block">0đ</span>
-                        <button onclick="openFundModal()" class="text-[11px] text-amber-400 font-bold hover:underline mt-1 block">+ GÓP VỐN</button>
-                    </div>
-                    <div class="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400"><i class="fas fa-sack-dollar"></i></div>
-                </div>
-
-                <div class="bg-slate-900 border border-amber-500/40 p-4 rounded-2xl flex justify-between items-center shadow-lg shadow-amber-500/5">
-                    <div>
-                        <span class="text-xs text-amber-400 block font-bold">TIỀN TRONG TÀI KHOẢN</span>
-                        <span id="statTotalAccountBalance" class="text-lg font-black text-amber-400 block mt-1">0đ</span>
-                        <span class="text-[10px] text-slate-400 block">Vốn + Thu Hàng - Rút</span>
-                    </div>
-                    <div class="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400"><i class="fas fa-vault"></i></div>
-                </div>
-
-                <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex justify-between items-center">
-                    <div>
-                        <span class="text-xs text-slate-400 block font-semibold">LÃI HOÀN TẤT: KHÔI</span>
-                        <span id="statProfitKhoi" class="text-lg font-black text-blue-400 mt-1 block">0đ</span>
-                    </div>
-                    <div class="w-9 h-9 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400"><i class="fas fa-user-check"></i></div>
-                </div>
-
-                <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex justify-between items-center">
-                    <div>
-                        <span class="text-xs text-slate-400 block font-semibold">LÃI HOÀN TẤT: LÂM</span>
-                        <span id="statProfitLam" class="text-lg font-black text-purple-400 mt-1 block">0đ</span>
-                    </div>
-                    <div class="w-9 h-9 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400"><i class="fas fa-user-check"></i></div>
-                </div>
-
-                <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex justify-between items-center">
-                    <div>
-                        <span class="text-xs text-slate-400 block font-semibold">DƯ NỢ COD CẦN THU</span>
-                        <span id="statTotalRemainingCOD" class="text-lg font-black text-amber-400 mt-1 block">0đ</span>
-                    </div>
-                    <div class="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400"><i class="fas fa-hand-holding-dollar"></i></div>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl md:col-span-2">
-                    <span class="text-xs font-bold text-amber-400 block mb-2"><i class="fas fa-fire mr-1"></i> TOP SẢN PHẨM BÁN CHẠY TRONG THÁNG</span>
-                    <div id="topProductsContainer" class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs"></div>
-                </div>
-                <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl space-y-2">
-                    <span class="text-xs font-bold text-white block mb-1"><i class="fas fa-chart-pie text-amber-500 mr-1"></i> TỔNG QUAN DOANH THU THÁNG</span>
-                    <div class="flex justify-between text-xs"><span class="text-slate-400">Số đơn tạo:</span><b id="statTotalOrders" class="text-white">0</b></div>
-                    <div class="flex justify-between text-xs admin-only"><span class="text-slate-400">Vốn hàng nhập:</span><b id="statTotalCost" class="text-rose-400">0đ</b></div>
-                    <div class="flex justify-between text-xs border-t border-slate-800 pt-1 admin-only"><span class="text-slate-300 font-bold">Lãi ròng đã xong:</span><b id="statTotalProfitMonth" class="text-emerald-400 text-sm">0đ</b></div>
-                </div>
             </div>
 
             <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl mb-8">
@@ -367,7 +390,7 @@
             </div>
         </div>
 
-        <!-- TAB CRM KHÁCH HÀNG (CÓ TỰ ĐỘNG PHÂN LOẠI VIP TÍCH LŨY MỤC 6) -->
+        <!-- TAB CRM KHÁCH HÀNG -->
         <div id="tabCRM" class="max-w-7xl mx-auto px-4 mt-6 hidden">
             <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 mb-6">
                 <h2 class="text-base font-bold text-white mb-2"><i class="fas fa-users text-amber-500 mr-2"></i>Danh Sách Khách Hàng CRM (Tự Động Tính Hạng VIP)</h2>
@@ -886,12 +909,11 @@
             document.getElementById('filterMonth').value = `${year}-${month}`;
             document.getElementById('formDate').value = today.toISOString().split('T')[0];
 
-            loadLocalStorageCache(); // MỤC 5: Lấy cache từ LocalStorage trước
+            loadLocalStorageCache();
             checkLoginSession();
             initFirebaseListeners();
         });
 
-        // MỤC 5: HÀM LƯU TẤT CẢ DỮ LIỆU VÀO LOCALSTORAGE NẾU MẤT MẠNG
         function saveAllToLocalStorage() {
             localStorage.setItem('youngzone_orders', JSON.stringify(orders));
             localStorage.setItem('youngzone_coupons', JSON.stringify(coupons));
@@ -1285,18 +1307,12 @@
 
             document.getElementById('statTotalAccountBalance').innerText = totalAcc.toLocaleString() + 'đ';
 
-            let prodStats = {};
-
             monthOrders.forEach(o => {
                 const isCompleted = o.status && o.status.includes('Đã bán - Hoàn tất');
                 const isRefunded = o.status && o.status.includes('Hoàn hàng');
                 const totalCostSingle = (o.cost || 0) + (o.vnShip || 0);
 
                 totCost += totalCostSingle;
-
-                if (o.product) {
-                    prodStats[o.product] = (prodStats[o.product] || 0) + 1;
-                }
 
                 if (isCompleted) {
                     const singleOrderProfit = (o.total || 0) - totalCostSingle;
@@ -1317,22 +1333,10 @@
                 }
             });
 
-            const topProducts = Object.entries(prodStats).sort((a,b) => b[1] - a[1]).slice(0, 3);
-            const topContainer = document.getElementById('topProductsContainer');
-            if (topProducts.length === 0) {
-                topContainer.innerHTML = `<span class="text-slate-500 italic">Chưa có thống kê</span>`;
-            } else {
-                topContainer.innerHTML = topProducts.map((p, i) => `
-                    <div class="bg-slate-950 p-2 rounded-xl border border-slate-800 flex justify-between items-center">
-                        <span class="font-bold text-amber-400 line-clamp-1">#${i+1} ${p[0]}</span>
-                        <b class="text-white bg-slate-800 px-1.5 py-0.5 rounded text-[10px]">${p[1]} đơn</b>
-                    </div>
-                `).join('');
-            }
-
             document.getElementById('statTotalOrders').innerText = monthOrders.length;
             document.getElementById('statTotalCost').innerText = totCost.toLocaleString() + 'đ';
             document.getElementById('statTotalProfitMonth').innerText = totProfit.toLocaleString() + 'đ';
+            document.getElementById('statTotalProfitNet').innerText = totProfit.toLocaleString() + 'đ';
             document.getElementById('statTotalRemainingCOD').innerText = totRemCOD.toLocaleString() + 'đ';
             document.getElementById('statProfitKhoi').innerText = Math.round(profitKhoi).toLocaleString() + 'đ';
             document.getElementById('statProfitLam').innerText = Math.round(profitLam).toLocaleString() + 'đ';
@@ -1552,7 +1556,6 @@
             }
         }
 
-        // MỤC 6: HÀM CRM TỰ ĐỘNG CỘNG DỒN DOANH SỐ & PHÂN HẠNG VIP
         function renderCRMTable() {
             const tbody = document.getElementById('crmTableBody');
             if (customers.length === 0) {
@@ -1561,11 +1564,9 @@
             }
 
             tbody.innerHTML = customers.map((c, idx) => {
-                // Tự động tính tổng chi tiêu các đơn đã HOÀN TẤT của SĐT này
                 const totalSpent = orders.filter(o => o.phone === c.phone && o.status && o.status.includes('Đã bán - Hoàn tất'))
                                          .reduce((sum, o) => sum + (o.total || 0), 0);
                 
-                // Tự động xếp hạng VIP nếu chi tiêu >= 2.000.000đ
                 const isAutoVIP = totalSpent >= 2000000;
                 
                 return `
