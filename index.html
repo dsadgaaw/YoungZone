@@ -126,13 +126,13 @@
                 </div>
                 
                 <div class="flex items-center space-x-2 flex-wrap gap-1">
-                    <!-- NÚT CHUÔNG THÔNG BÁO BÉ GỌN Ở TRÊN HEADER -->
+                    <!-- NÚT CHUÔNG THÔNG BÁO -->
                     <button onclick="openNotificationsModal()" class="relative bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 border border-amber-500/40 font-bold w-8 h-8 rounded-xl text-xs transition flex items-center justify-center" title="Xem Thông Báo Đơn Mới">
                         <i class="fas fa-bell"></i>
                         <span id="unreadNotifBadge" class="absolute -top-1 -right-1 bg-rose-600 text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center hidden">0</span>
                     </button>
 
-                    <!-- TAB MENU TRÊN DESKTOP (PC GIỮ NGUYÊN) -->
+                    <!-- TAB MENU TRÊN DESKTOP -->
                     <div class="hidden md:flex items-center space-x-1">
                         <button onclick="switchTab('dashboard')" id="navDashboard" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-500 text-slate-950 transition">
                             <i class="fas fa-chart-line mr-1"></i> Đơn Hàng
@@ -174,7 +174,6 @@
         <!-- TAB ĐƠN HÀNG -->
         <div id="tabDashboard" class="max-w-7xl mx-auto px-4 mt-6">
             
-            <!-- THANH THÔNG BÁO TÍNH NĂNG CẬP NHẬT MỚI (ĐÃ BỎ NÚT "BẬT CHUÔNG THÔNG BÁO") -->
             <div class="bg-gradient-to-r from-slate-900 via-amber-950/40 to-slate-900 border border-amber-500/30 rounded-2xl p-4 mb-4 flex flex-wrap justify-between items-center gap-3">
                 <div class="flex items-center space-x-3">
                     <div class="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 text-lg">
@@ -342,7 +341,6 @@
                     <span class="text-xs text-emerald-400 font-semibold"><i class="fas fa-cloud mr-1"></i>Firebase Realtime Sync</span>
                 </div>
 
-                <!-- 1. BẢNG TRÊN MÁY TÍNH (GIỮ NGUYÊN HOÀN TOÀN CÁC CỘT) -->
                 <div class="hidden md:block overflow-x-auto">
                     <table class="w-full text-left text-xs text-slate-300">
                         <thead class="bg-slate-950 text-slate-400 uppercase font-semibold border-b border-slate-800">
@@ -365,7 +363,6 @@
                     </table>
                 </div>
 
-                <!-- 2. GIAO DIỆN CARDS CHỈ DÀNH RIÊNG CHO ĐIỆN THOẠI -->
                 <div id="adminCardsBodyMobile" class="md:hidden p-3 space-y-3"></div>
             </div>
         </div>
@@ -568,18 +565,35 @@
         </div>
     </div>
 
-    <!-- MODALS -->
+    <!-- MODAL THÔNG BÁO -->
     <div id="notificationsModal" class="fixed inset-0 bg-black/80 z-50 hidden flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-6 relative">
             <button onclick="closeModal('notificationsModal')" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fas fa-xmark text-xl"></i></button>
             <div class="flex items-center space-x-2 mb-3">
                 <i class="fas fa-bell text-amber-400 text-lg"></i>
-                <h3 class="text-base font-bold text-white">Thông Báo Đơn Hàng Mới</h3>
+                <h3 class="text-base font-bold text-white">Trung Tâm Cảnh Báo & Thông Báo Đơn Mới</h3>
             </div>
-            <p class="text-xs text-slate-400 mb-4">Danh sách các đơn hàng mới phát sinh từ khách đặt Web/App theo thời gian thực.</p>
-            <div id="notificationsList" class="max-h-80 overflow-y-auto space-y-2 text-xs"></div>
+            
+            <div class="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 mb-4 space-y-2">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs text-amber-300 font-bold"><i class="fas fa-volume-high mr-1"></i> Cài Đặt Cảnh Báo Trình Duyệt:</span>
+                    <span id="notifPermissionStatus" class="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-800 text-slate-400">Chưa Bật</span>
+                </div>
+                <div class="flex space-x-2">
+                    <button onclick="requestNotificationPermission()" class="flex-1 gold-gradient text-slate-950 font-bold py-1.5 rounded-lg text-xs hover:opacity-90">
+                        <i class="fas fa-bell mr-1"></i> Bật Chuông Thông Báo
+                    </button>
+                    <button onclick="playNotificationSound(); showToast('🔔 Đã phát âm báo iOS (Ping/Ding)!');" class="bg-slate-800 hover:bg-slate-700 text-amber-400 border border-amber-500/30 font-bold px-3 py-1.5 rounded-lg text-xs">
+                        <i class="fas fa-play mr-1"></i> Thử Chuông IP
+                    </button>
+                </div>
+            </div>
+
+            <p class="text-xs text-slate-400 mb-3">Danh sách các đơn hàng mới phát sinh từ khách đặt Web/App theo thời gian thực:</p>
+            <div id="notificationsList" class="max-h-72 overflow-y-auto space-y-2 text-xs"></div>
+            
             <button onclick="clearNotifications()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-2 rounded-xl text-xs mt-4 transition">
-                <i class="fas fa-trash-can mr-1"></i> Xóa Tất Cả Thông Báo
+                <i class="fas fa-trash-can mr-1"></i> Xóa Tất Cả Lịch Sử Thông Báo
             </button>
         </div>
     </div>
@@ -1011,7 +1025,7 @@
         </div>
     </div>
 
-    <!-- TOÀN BỘ SCRIPT HỆ THỐNG -->
+    <!-- SCRIPT HỆ THỐNG -->
     <script>
         function showToast(message) {
             const container = document.getElementById('toast-container');
@@ -1027,21 +1041,68 @@
             setTimeout(() => { toast.remove(); }, 3000);
         }
 
+        // ÂM BÁO DING / PING NHẸ NHÀNG KIỂU IPHONE / iOS
         function playNotificationSound() {
             try {
                 const ctx = new (window.AudioContext || window.webkitAudioContext)();
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(587.33, ctx.currentTime); 
-                osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.3);
-                gain.gain.setValueAtTime(0.3, ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                osc.start();
-                osc.stop(ctx.currentTime + 0.3);
+                
+                // Nốt thứ 1 (C6 - 1046.50 Hz)
+                const osc1 = ctx.createOscillator();
+                const gain1 = ctx.createGain();
+                osc1.type = 'sine';
+                osc1.frequency.setValueAtTime(1046.50, ctx.currentTime);
+                gain1.gain.setValueAtTime(0.25, ctx.currentTime);
+                gain1.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+                osc1.connect(gain1);
+                gain1.connect(ctx.destination);
+                osc1.start(ctx.currentTime);
+                osc1.stop(ctx.currentTime + 0.3);
+
+                // Nốt thứ 2 (G6 - 1567.98 Hz) - phát ngay sau 80ms
+                const osc2 = ctx.createOscillator();
+                const gain2 = ctx.createGain();
+                osc2.type = 'sine';
+                osc2.frequency.setValueAtTime(1567.98, ctx.currentTime + 0.08);
+                gain2.gain.setValueAtTime(0.3, ctx.currentTime + 0.08);
+                gain2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+                osc2.connect(gain2);
+                gain2.connect(ctx.destination);
+                osc2.start(ctx.currentTime + 0.08);
+                osc2.stop(ctx.currentTime + 0.5);
             } catch (e) { console.log(e); }
+        }
+
+        function requestNotificationPermission() {
+            if ("Notification" in window) {
+                Notification.requestPermission().then(permission => {
+                    updateNotifPermissionUI();
+                    if (permission === "granted") {
+                        playNotificationSound();
+                        showToast("🔔 Đã bật thông báo thành công!");
+                    } else if (permission === "denied") {
+                        showToast("❌ Bạn đã chặn thông báo trên trình duyệt!");
+                    }
+                });
+            } else {
+                showToast("Trình duyệt không hỗ trợ Push Notification!");
+            }
+        }
+
+        function updateNotifPermissionUI() {
+            const statusEl = document.getElementById('notifPermissionStatus');
+            if (!statusEl) return;
+            if ("Notification" in window) {
+                if (Notification.permission === "granted") {
+                    statusEl.innerText = "Đã Bật";
+                    statusEl.className = "text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
+                } else if (Notification.permission === "denied") {
+                    statusEl.innerText = "Bị Chặn";
+                    statusEl.className = "text-[10px] font-bold px-2 py-0.5 rounded bg-rose-500/20 text-rose-400 border border-rose-500/30";
+                } else {
+                    statusEl.innerText = "Chưa Bật";
+                    statusEl.className = "text-[10px] font-bold px-2 py-0.5 rounded bg-slate-800 text-slate-400";
+                }
+            }
         }
 
         function sendDesktopNotification(title, body) {
@@ -1125,6 +1186,7 @@
             loadLocalStorageCache();
             checkLoginSession();
             initFirebaseListeners();
+            updateNotifPermissionUI();
         });
 
         function saveAllToLocalStorage() {
@@ -1337,6 +1399,7 @@
         }
 
         function openNotificationsModal() {
+            updateNotifPermissionUI();
             renderNotificationsUI();
             document.getElementById('notificationsModal').classList.remove('hidden');
         }
@@ -1996,7 +2059,6 @@
                 return;
             }
 
-            // RENDER 1: BẢNG TRÊN MÁY TÍNH
             if (desktopTbody) {
                 desktopTbody.innerHTML = monthOrders.map((o) => {
                     const isCompleted = o.status && o.status.includes('Đã bán - Hoàn tất');
@@ -2072,7 +2134,6 @@
                 `}).join('');
             }
 
-            // RENDER 2: GIAO DIỆN CARDS DÀNH RIÊNG CHO ĐIỆN THOẠI
             if (mobileCardsContainer) {
                 mobileCardsContainer.innerHTML = monthOrders.map((o) => {
                     const isCompleted = o.status && o.status.includes('Đã bán - Hoàn tất');
