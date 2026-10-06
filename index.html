@@ -229,6 +229,7 @@
                 </div>
             </div>
 
+            <!-- CÁC Ô CHỈ SỐ THỐNG KÊ ĐÃ ĐƯỢC LIÊN KẾT ĐỒNG BỘ CHUẨN FIREBASE -->
             <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
                 <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex justify-between items-center">
                     <div>
@@ -703,7 +704,7 @@
         </div>
     </div>
 
-    <!-- MODAL MÓN HÀNG WEB (ĐÃ BỔ SUNG LINK SẢN PHẨM MUA HÀNG DÀNH RIÊNG CHO ADMIN) -->
+    <!-- MODAL MÓN HÀNG WEB -->
     <div id="webProductModal" class="fixed inset-0 bg-black/80 z-50 hidden flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-6 relative max-h-[92vh] overflow-y-auto">
             <button onclick="closeModal('webProductModal')" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fas fa-xmark text-xl"></i></button>
@@ -715,7 +716,6 @@
                     <input type="text" id="webProdName" required placeholder="VD: Crocs Batman / Áo PSG Rep 1:1" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-white font-bold">
                 </div>
                 
-                <!-- BỔ SUNG: LINK SẢN PHẨM MUA HÀNG TAOBAO/1688 (CHỈ ADMIN THẤY, KHÁCH KHÔNG THẤY) -->
                 <div class="bg-indigo-950/40 p-2.5 rounded-xl border border-indigo-500/40">
                     <label class="block text-indigo-300 mb-1 font-bold flex items-center justify-between">
                         <span><i class="fas fa-link mr-1.5 text-indigo-400"></i>Link Nguồn Mua Hàng (Taobao / 1688) *</span>
@@ -2012,7 +2012,7 @@
             const prodObj = {
                 id: idx >= 0 ? webProducts[idx].id : Date.now(),
                 name: document.getElementById('webProdName').value.trim(),
-                buyUrl: document.getElementById('webProdBuyUrl').value.trim(), // LINK LƯU RIÊNG CHO ADMIN
+                buyUrl: document.getElementById('webProdBuyUrl').value.trim(),
                 tag: document.getElementById('webProdTag').value.trim(),
                 customSizes: customSizesArray,
                 customColors: customColorsArray,
@@ -2294,9 +2294,12 @@
             return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
         }
 
+        /* --- HÀM TÍNH TOÁN & HIỂN THỊ CHỈ SỐ THỐNG KÊ ĐÃ ĐƯỢC ĐỒNG BỘ CHUẨN FIREBASE --- */
         function renderDashboard() {
-            let totalFundAdded = funds.reduce((sum, f) => sum + (f.amount || 0), 0);
-            document.getElementById('displayCapital').innerText = totalFundAdded.toLocaleString() + 'đ';
+            // 1. TỔNG VỐN ĐÃ GÓP
+            let totalFundAdded = funds.reduce((sum, f) => sum + (Number(f.amount) || 0), 0);
+            const capitalEl = document.getElementById('displayCapital');
+            if (capitalEl) capitalEl.innerText = totalFundAdded.toLocaleString() + 'đ';
 
             const selectedMonthStr = document.getElementById('filterMonth').value;
             const searchKw = document.getElementById('searchInput').value.trim().toLowerCase();
@@ -2307,6 +2310,7 @@
 
             let delayedOrdersCount = 0;
 
+            // Lọc danh sách đơn hàng theo điều kiện
             const monthOrders = orders.filter(o => {
                 const matchMonth = o.date ? o.date.startsWith(selectedMonthStr) : true;
                 const matchOwner = currentFilterOwner === 'ALL' ? true : o.owner === currentFilterOwner;
@@ -2339,72 +2343,92 @@
 
             const alertBox = document.getElementById('delayedOrdersAlertBox');
             if (delayedOrdersCount > 0) {
-                alertBox.classList.remove('hidden');
-                document.getElementById('delayedOrdersCountText').innerText = `Có ${delayedOrdersCount} đơn hàng order quá 7 ngày chưa hoàn tất!`;
+                if (alertBox) alertBox.classList.remove('hidden');
+                const delayedTextEl = document.getElementById('delayedOrdersCountText');
+                if (delayedTextEl) delayedTextEl.innerText = `Có ${delayedOrdersCount} đơn hàng order quá 7 ngày chưa hoàn tất!`;
             } else {
-                alertBox.classList.add('hidden');
+                if (alertBox) alertBox.classList.add('hidden');
             }
 
-            let totCost = 0, totProfit = 0, totRemCOD = 0;
-            let profitKhoi = 0, profitLam = 0;
-            
+            // 2. TÍNH TỔNG TIỀN TRONG TÀI KHOẢN (Vốn góp + Thu từ đơn - Vốn chi - Rút/Chi tiêu)
             let totalAcc = totalFundAdded;
-            
             orders.forEach(o => {
                 const isCompleted = o.status && o.status.includes('Đã bán - Hoàn tất');
                 const isRefunded = o.status && o.status.includes('Hoàn hàng');
-                const totalCostSingle = (o.cost || 0) + (o.vnShip || 0);
+                const totalCostSingle = (Number(o.cost) || 0) + (Number(o.vnShip) || 0);
                 
                 if (isCompleted) {
-                    totalAcc += (o.total || 0);
+                    totalAcc += (Number(o.total) || 0);
                     totalAcc -= totalCostSingle;
                 } else if (isRefunded) {
-                    totalAcc += (o.deposit || 0);
+                    totalAcc += (Number(o.deposit) || 0);
                     totalAcc -= totalCostSingle;
                 } else {
-                    totalAcc += (o.deposit || 0);
+                    totalAcc += (Number(o.deposit) || 0);
                     totalAcc -= totalCostSingle;
                 }
             });
 
-            let totalWithdraws = withdraws.reduce((sum, w) => sum + (w.amount || 0), 0);
+            let totalWithdraws = withdraws.reduce((sum, w) => sum + (Number(w.amount) || 0), 0);
             totalAcc -= totalWithdraws;
 
-            document.getElementById('statTotalAccountBalance').innerText = totalAcc.toLocaleString() + 'đ';
+            const accBalEl = document.getElementById('statTotalAccountBalance');
+            if (accBalEl) {
+                accBalEl.innerText = totalAcc.toLocaleString() + 'đ';
+                accBalEl.className = totalAcc < 0 ? "text-lg font-black text-rose-500 block mt-1" : "text-lg font-black text-amber-400 block mt-1";
+            }
+
+            // 3. TÍNH CÁC Ô THỐNG KÊ DOANH THU & CHIA LÃI
+            let totCost = 0, totProfit = 0, totRemCOD = 0;
+            let profitKhoi = 0, profitLam = 0;
 
             monthOrders.forEach(o => {
                 const isCompleted = o.status && o.status.includes('Đã bán - Hoàn tất');
                 const isRefunded = o.status && o.status.includes('Hoàn hàng');
-                const totalCostSingle = (o.cost || 0) + (o.vnShip || 0);
+                const totalCostSingle = (Number(o.cost) || 0) + (Number(o.vnShip) || 0);
 
                 totCost += totalCostSingle;
 
                 if (isCompleted) {
-                    const singleOrderProfit = (o.total || 0) - totalCostSingle;
+                    const singleOrderProfit = (Number(o.total) || 0) - totalCostSingle;
                     totProfit += singleOrderProfit;
 
-                    if (o.owner === 'CHUNG') {
+                    if (o.owner === 'CHUNG' || !o.owner) {
                         profitKhoi += singleOrderProfit * 0.5;
                         profitLam += singleOrderProfit * 0.5;
-                    } else if (o.owner === 'Khoi') {
+                    } else if (o.owner === 'Khoi' || o.owner === 'KHOI') {
                         profitKhoi += singleOrderProfit * 0.6;
                         profitLam += singleOrderProfit * 0.4;
-                    } else if (o.owner === 'Lam') {
+                    } else if (o.owner === 'Lam' || o.owner === 'LAM') {
                         profitLam += singleOrderProfit * 0.6;
                         profitKhoi += singleOrderProfit * 0.4;
                     }
                 } else if (!isRefunded) {
-                    totRemCOD += ((o.total || 0) - (o.deposit || 0));
+                    totRemCOD += ((Number(o.total) || 0) - (Number(o.deposit) || 0));
                 }
             });
 
-            document.getElementById('statTotalOrders').innerText = monthOrders.length;
-            document.getElementById('statTotalCost').innerText = totCost.toLocaleString() + 'đ';
-            document.getElementById('statTotalProfitMonth').innerText = totProfit.toLocaleString() + 'đ';
-            document.getElementById('statTotalProfitNet').innerText = totProfit.toLocaleString() + 'đ';
-            document.getElementById('statTotalRemainingCOD').innerText = totRemCOD.toLocaleString() + 'đ';
-            document.getElementById('statProfitKhoi').innerText = Math.round(profitKhoi).toLocaleString() + 'đ';
-            document.getElementById('statProfitLam').innerText = Math.round(profitLam).toLocaleString() + 'đ';
+            // Gán dữ liệu vào DOM
+            const elTotalOrders = document.getElementById('statTotalOrders');
+            if (elTotalOrders) elTotalOrders.innerText = monthOrders.length;
+
+            const elTotalCost = document.getElementById('statTotalCost');
+            if (elTotalCost) elTotalCost.innerText = totCost.toLocaleString() + 'đ';
+
+            const elTotalProfitMonth = document.getElementById('statTotalProfitMonth');
+            if (elTotalProfitMonth) elTotalProfitMonth.innerText = totProfit.toLocaleString() + 'đ';
+
+            const elTotalProfitNet = document.getElementById('statTotalProfitNet');
+            if (elTotalProfitNet) elTotalProfitNet.innerText = totProfit.toLocaleString() + 'đ';
+
+            const elTotalRemainingCOD = document.getElementById('statTotalRemainingCOD');
+            if (elTotalRemainingCOD) elTotalRemainingCOD.innerText = totRemCOD.toLocaleString() + 'đ';
+
+            const elProfitKhoi = document.getElementById('statProfitKhoi');
+            if (elProfitKhoi) elProfitKhoi.innerText = Math.round(profitKhoi).toLocaleString() + 'đ';
+
+            const elProfitLam = document.getElementById('statProfitLam');
+            if (elProfitLam) elProfitLam.innerText = Math.round(profitLam).toLocaleString() + 'đ';
 
             if (monthOrders.length === 0) {
                 if (desktopTbody) desktopTbody.innerHTML = `<tr><td colspan="13" class="p-8 text-center text-slate-500">Không tìm thấy đơn hàng nào phù hợp.</td></tr>`;
@@ -2416,19 +2440,19 @@
                 desktopTbody.innerHTML = monthOrders.map((o) => {
                     const isCompleted = o.status && o.status.includes('Đã bán - Hoàn tất');
                     const isRefunded = o.status && o.status.includes('Hoàn hàng');
-                    const totalCostSingle = (o.cost || 0) + (o.vnShip || 0);
+                    const totalCostSingle = (Number(o.cost) || 0) + (Number(o.vnShip) || 0);
                     
-                    const orderProfit = isCompleted ? ((o.total || 0) - totalCostSingle) : 0;
-                    const remCOD = (isCompleted || isRefunded) ? 0 : ((o.total || 0) - (o.deposit || 0));
+                    const orderProfit = isCompleted ? ((Number(o.total) || 0) - totalCostSingle) : 0;
+                    const remCOD = (isCompleted || isRefunded) ? 0 : ((Number(o.total) || 0) - (Number(o.deposit) || 0));
                     
                     const daysCount = getDaysDiff(o.date);
                     const isDelayed = daysCount > 7 && !isCompleted && !isRefunded;
 
                     let kShare = 0, lShare = 0;
                     if (isCompleted) {
-                        if (o.owner === 'CHUNG') { kShare = orderProfit * 0.5; lShare = orderProfit * 0.5; }
-                        else if (o.owner === 'Khoi') { kShare = orderProfit * 0.6; lShare = orderProfit * 0.4; }
-                        else if (o.owner === 'Lam') { lShare = orderProfit * 0.6; kShare = orderProfit * 0.4; }
+                        if (o.owner === 'CHUNG' || !o.owner) { kShare = orderProfit * 0.5; lShare = orderProfit * 0.5; }
+                        else if (o.owner === 'Khoi' || o.owner === 'KHOI') { kShare = orderProfit * 0.6; lShare = orderProfit * 0.4; }
+                        else if (o.owner === 'Lam' || o.owner === 'LAM') { lShare = orderProfit * 0.6; kShare = orderProfit * 0.4; }
                     }
 
                     const realIdx = orders.indexOf(o);
@@ -2458,12 +2482,12 @@
                             </span>
                         </td>
                         <td class="p-3">
-                            <b class="text-amber-400 block">${(o.total||0).toLocaleString()}đ</b>
-                            <span class="text-rose-400 block">Vốn: ${(o.cost||0).toLocaleString()}đ</span>
-                            ${o.vnShip ? `<span class="text-indigo-400 text-[10px]">Ship VN: ${o.vnShip.toLocaleString()}đ</span>` : ''}
+                            <b class="text-amber-400 block">${(Number(o.total)||0).toLocaleString()}đ</b>
+                            <span class="text-rose-400 block">Vốn: ${(Number(o.cost)||0).toLocaleString()}đ</span>
+                            ${o.vnShip ? `<span class="text-indigo-400 text-[10px]">Ship VN: ${Number(o.vnShip).toLocaleString()}đ</span>` : ''}
                         </td>
                         <td class="p-3">
-                            <span class="text-emerald-400 block font-bold">Cọc: ${(o.deposit||0).toLocaleString()}đ</span>
+                            <span class="text-emerald-400 block font-bold">Cọc: ${(Number(o.deposit)||0).toLocaleString()}đ</span>
                             <span class="${remCOD>0?'text-amber-400':'text-slate-400'}">COD: ${remCOD.toLocaleString()}đ</span>
                             ${o.codReceived === 'YES' ? '<span class="text-[9px] text-emerald-400 font-bold block mt-0.5">✓ Đã thu COD</span>' : '<span class="text-[9px] text-slate-500 block mt-0.5"> Chưa nhận COD</span>'}
                         </td>
@@ -2494,9 +2518,9 @@
                 mobileCardsContainer.innerHTML = monthOrders.map((o) => {
                     const isCompleted = o.status && o.status.includes('Đã bán - Hoàn tất');
                     const isRefunded = o.status && o.status.includes('Hoàn hàng');
-                    const totalCostSingle = (o.cost || 0) + (o.vnShip || 0);
-                    const orderProfit = isCompleted ? ((o.total || 0) - totalCostSingle) : 0;
-                    const remCOD = (isCompleted || isRefunded) ? 0 : ((o.total || 0) - (o.deposit || 0));
+                    const totalCostSingle = (Number(o.cost) || 0) + (Number(o.vnShip) || 0);
+                    const orderProfit = isCompleted ? ((Number(o.total) || 0) - totalCostSingle) : 0;
+                    const remCOD = (isCompleted || isRefunded) ? 0 : ((Number(o.total) || 0) - (Number(o.deposit) || 0));
                     const realIdx = orders.indexOf(o);
 
                     return `
@@ -2522,8 +2546,8 @@
                                 <span class="text-slate-400 font-mono text-[11px]"><i class="fas fa-phone mr-1 text-[9px] text-amber-500"></i>${o.phone}</span>
                             </div>
                             <div class="text-right">
-                                <b class="text-amber-400 text-sm block">${(o.total||0).toLocaleString()}đ</b>
-                                <span class="text-emerald-400 font-semibold text-[10px]">Cọc: ${(o.deposit||0).toLocaleString()}đ</span>
+                                <b class="text-amber-400 text-sm block">${(Number(o.total)||0).toLocaleString()}đ</b>
+                                <span class="text-emerald-400 font-semibold text-[10px]">Cọc: ${(Number(o.deposit)||0).toLocaleString()}đ</span>
                             </div>
                         </div>
 
@@ -2564,7 +2588,7 @@
             if (!selectedOrderForMsg) return;
             const o = selectedOrderForMsg;
             const type = document.getElementById('msgTypeSelect').value;
-            const remCOD = (o.total || 0) - (o.deposit || 0);
+            const remCOD = (Number(o.total) || 0) - (Number(o.deposit) || 0);
 
             let txt = "";
             if (type === 'CONFIRM') {
@@ -2580,8 +2604,8 @@
 • Sản phẩm: ${o.product} (Size: ${o.size})
 
 💰 CHI TIẾT THANH TOÁN:
-• Tổng tiền hàng: ${(o.total||0).toLocaleString()}đ
-• Số tiền đã cọc: ${(o.deposit||0).toLocaleString()}đ
+• Tổng tiền hàng: ${(Number(o.total)||0).toLocaleString()}đ
+• Số tiền đã cọc: ${(Number(o.deposit)||0).toLocaleString()}đ
 • Số tiền COD thanh toán khi nhận: ${remCOD.toLocaleString()}đ
 
 🗓 Dự kiến hàng về kho Hà Nội & giao tới bạn: khoảng 2 tuần (${formattedEstDate}).
@@ -2629,8 +2653,8 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
                     <td class="p-3 font-bold text-white">${item.product}</td>
                     <td class="p-3 text-slate-300">${item.size}</td>
                     <td class="p-3"><b class="text-amber-400 bg-slate-950 px-2 py-1 rounded border border-slate-800">${item.qty} cái</b></td>
-                    <td class="p-3 text-rose-400 font-bold">${(item.cost||0).toLocaleString()}đ</td>
-                    <td class="p-3 text-emerald-400 font-bold">${(item.price||0).toLocaleString()}đ</td>
+                    <td class="p-3 text-rose-400 font-bold">${(Number(item.cost)||0).toLocaleString()}đ</td>
+                    <td class="p-3 text-emerald-400 font-bold">${(Number(item.price)||0).toLocaleString()}đ</td>
                     <td class="p-3 text-right">
                         <button onclick="createOrderFromStock(${idx})" class="text-amber-400 hover:underline mr-2"><i class="fas fa-cart-plus mr-1"></i> Xuất Đơn</button>
                         <button onclick="deleteInventory(${idx})" class="text-rose-400 hover:underline"><i class="fas fa-trash"></i></button>
@@ -2706,7 +2730,7 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
 
             tbody.innerHTML = customers.map((c, idx) => {
                 const totalSpent = orders.filter(o => o.phone === c.phone && o.status && o.status.includes('Đã bán - Hoàn tất'))
-                                         .reduce((sum, o) => sum + (o.total || 0), 0);
+                                         .reduce((sum, o) => sum + (Number(o.total) || 0), 0);
                 
                 const isAutoVIP = totalSpent >= 2000000;
                 
@@ -2952,7 +2976,7 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
 
         function openPrintModal(idx) {
             const o = orders[idx];
-            const codAmt = (o.total || 0) - (o.deposit || 0);
+            const codAmt = (Number(o.total) || 0) - (Number(o.deposit) || 0);
 
             document.getElementById('lblOrderCode').innerText = o.id;
             document.getElementById('lblCustName').innerText = o.customer;
@@ -3018,7 +3042,7 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
                         <span class="text-[10px] text-slate-500 block">${w.date}</span>
                     </div>
                     <div class="flex items-center space-x-2">
-                        <b class="text-rose-400">-${(w.amount||0).toLocaleString()}đ</b>
+                        <b class="text-rose-400">-${(Number(w.amount)||0).toLocaleString()}đ</b>
                         <button onclick="deleteWithdraw(${idx})" class="text-rose-500 hover:text-rose-300 text-xs"><i class="fas fa-trash"></i></button>
                     </div>
                 </div>
@@ -3075,7 +3099,7 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
                         <span class="text-[10px] text-slate-500 block">${f.date || ''}</span>
                     </div>
                     <div class="flex items-center space-x-2">
-                        <b class="text-emerald-400">+${(f.amount||0).toLocaleString()}đ</b>
+                        <b class="text-emerald-400">+${(Number(f.amount)||0).toLocaleString()}đ</b>
                         <button onclick="deleteFund(${idx})" class="text-rose-500 hover:text-rose-300 text-xs"><i class="fas fa-trash"></i></button>
                     </div>
                 </div>
@@ -3109,7 +3133,7 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
                         <thead>
                             <tr>
                                 <th>Mã Đơn</th><th>Ngày</th><th>Mã VĐ TQ</th><th>Mã VĐ VN</th><th>Link Mua Taobao</th><th>Người Phụ Trách</th>
-                                <th>Khách Hàng</th><th>SĐT</th><th>Địa Chỉ</th><th>Sản Phẩm</th><th>Size</th>
+                                <th>Khách Hàng</th><th>SĐT</th><th>Địa Chỉ</th><th>SẢN PHẨM</th><th>Size</th>
                                 <th>Giá Bán</th><th>Vốn TQ</th><th>Ship VN</th><th>Đã Cọc</th><th>Lãi Ròng</th><th>Lãi Khôi</th><th>Lãi Lâm</th><th>Trạng Thái</th>
                             </tr>
                         </thead>
@@ -3118,13 +3142,13 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
 
             orders.forEach(o => {
                 const isCompleted = o.status && o.status.includes('Đã bán - Hoàn tất');
-                const totalCostSingle = (o.cost||0) + (o.vnShip||0);
-                const profit = isCompleted ? ((o.total||0) - totalCostSingle) : 0;
+                const totalCostSingle = (Number(o.cost)||0) + (Number(o.vnShip)||0);
+                const profit = isCompleted ? ((Number(o.total)||0) - totalCostSingle) : 0;
                 let kShare = 0, lShare = 0;
                 if (isCompleted) {
-                    if (o.owner === 'CHUNG') { kShare = profit * 0.5; lShare = profit * 0.5; }
-                    else if (o.owner === 'Khoi') { kShare = profit * 0.6; lShare = profit * 0.4; }
-                    else if (o.owner === 'Lam') { lShare = profit * 0.6; kShare = profit * 0.4; }
+                    if (o.owner === 'CHUNG' || !o.owner) { kShare = profit * 0.5; lShare = profit * 0.5; }
+                    else if (o.owner === 'Khoi' || o.owner === 'KHOI') { kShare = profit * 0.6; lShare = profit * 0.4; }
+                    else if (o.owner === 'Lam' || o.owner === 'LAM') { lShare = profit * 0.6; kShare = profit * 0.4; }
                 }
 
                 tableHtml += `
@@ -3132,7 +3156,7 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
                         <td>${o.id}</td><td>${o.date}</td><td>${o.tracking||''}</td><td>${o.vnTracking||''}</td><td>${o.buyUrl||''}</td>
                         <td>${o.owner === 'Khoi' ? 'Khôi' : o.owner === 'Lam' ? 'Lâm' : 'Chung'}</td>
                         <td>${o.customer}</td><td>'${o.phone}</td><td>${o.address}</td><td>${o.product}</td><td>${o.size}</td>
-                        <td>${o.total||0}</td><td>${o.cost||0}</td><td>${o.vnShip||0}</td><td>${o.deposit||0}</td><td>${profit}</td>
+                        <td>${Number(o.total)||0}</td><td>${Number(o.cost)||0}</td><td>${Number(o.vnShip)||0}</td><td>${Number(o.deposit)||0}</td><td>${profit}</td>
                         <td>${Math.round(kShare)}</td><td>${Math.round(lShare)}</td><td>${o.status}</td>
                     </tr>
                 `;
