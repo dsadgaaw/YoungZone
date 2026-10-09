@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>YoungZone Sports - App Quản Lý Đơn Hàng & Tài Chính (Khôi & Lâm)</title>
+    <title>YoungZone Sports - App Quản Lý Đơn Hàng & Tài Chính</title>
 
     <link rel="manifest" href="manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -24,7 +24,6 @@
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0b0f19; color: #f8fafc; -webkit-tap-highlight-color: transparent; }
         .gold-gradient { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
-        .card-glow:hover { box-shadow: 0 0 20px rgba(245, 158, 11, 0.2); }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #0f172a; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
@@ -114,7 +113,7 @@
                     <div>
                         <div class="flex items-center space-x-2">
                             <span class="bg-amber-500 text-slate-950 font-black px-2.5 py-1 rounded text-xl italic tracking-tighter">YoungZone</span>
-                            <h1 class="text-sm font-extrabold text-white leading-none">QUẢN TRỊ NỘI BỘ PRO MAX v4.2</h1>
+                            <h1 class="text-sm font-extrabold text-white leading-none">QUẢN TRỊ NỘI BỘ PRO MAX v4.4</h1>
                         </div>
                         <div class="flex items-center space-x-2 mt-1">
                             <span id="roleBadge" class="text-[10px] text-amber-400 font-semibold">Vai trò: Admin</span>
@@ -131,7 +130,6 @@
                         <span id="unreadNotifBadge" class="absolute -top-1 -right-1 bg-rose-600 text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center hidden">0</span>
                     </button>
 
-                    <!-- TAB MENU TRÊN DESKTOP -->
                     <div class="hidden md:flex items-center space-x-1 flex-wrap">
                         <button onclick="switchTab('dashboard')" id="navDashboard" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-500 text-slate-950 transition">
                             <i class="fas fa-chart-line mr-1"></i> Đơn Hàng
@@ -178,21 +176,6 @@
 
         <!-- TAB ĐƠN HÀNG -->
         <div id="tabDashboard" class="max-w-7xl mx-auto px-4 mt-6">
-            <div class="bg-gradient-to-r from-slate-900 via-amber-950/40 to-slate-900 border border-amber-500/30 rounded-2xl p-4 mb-4 flex flex-wrap justify-between items-center gap-3">
-                <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 text-lg">
-                        <i class="fas fa-sparkles"></i>
-                    </div>
-                    <div>
-                        <div class="flex items-center space-x-2">
-                            <span class="bg-amber-500 text-slate-950 font-black text-[10px] px-2 py-0.5 rounded uppercase">Cập Nhật Mới v4.2</span>
-                            <b class="text-sm font-bold text-white">Đã thêm ô lưu Link Mua Hàng Sản Phẩm dành riêng cho Admin!</b>
-                        </div>
-                        <p class="text-xs text-slate-400 mt-0.5">Giá nhập đổi Tệ tự động ra VNĐ + Bảo mật link mua hàng tuyệt đối không hiển thị cho Khách.</p>
-                    </div>
-                </div>
-            </div>
-
             <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 mb-4 flex flex-wrap justify-between items-center gap-4">
                 <div class="flex flex-wrap items-center gap-3">
                     <div class="flex items-center space-x-2 bg-slate-950 border border-slate-700 px-3 py-1.5 rounded-xl">
@@ -206,7 +189,7 @@
                         <span class="text-xs font-bold text-slate-300">Tỷ Giá Tệ:</span>
                         <input type="number" id="globalRmbRate" value="3810" onchange="updateRmbRate(this.value)" class="bg-transparent text-xs text-amber-400 font-bold w-16 focus:outline-none">
                         <span class="text-[10px] text-slate-500">đ</span>
-                        <button onclick="fetchAutoRmbRate(true)" class="text-amber-400 hover:text-amber-300 transition text-xs ml-1" title="Cập nhật tỷ giá Tệ mới nhất hôm nay">
+                        <button onclick="fetchAutoRmbRate(true)" class="text-amber-400 hover:text-amber-300 transition text-xs ml-1" title="Cập nhật tỷ giá">
                             <i class="fas fa-rotate"></i>
                         </button>
                     </div>
@@ -229,11 +212,11 @@
                 </div>
             </div>
 
-            <!-- CÁC Ô CHỈ SỐ THỐNG KÊ ĐÃ ĐƯỢC LIÊN KẾT ĐỒNG BỘ CHUẨN FIREBASE -->
+            <!-- 9 Ô CHỈ SỐ THỐNG KÊ FIREBASE -->
             <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
                 <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex justify-between items-center">
                     <div>
-                        <span class="text-xs text-slate-400 block font-semibold">Tổng Vốn Đã Góp</span>
+                        <span class="text-xs text-slate-400 block font-semibold">1. Tổng Vốn Đã Góp</span>
                         <span id="displayCapital" class="text-lg font-black text-emerald-400 mt-1 block">0đ</span>
                         <button onclick="openFundModal()" class="text-[11px] text-amber-400 font-bold hover:underline mt-1 block">+ THÊM VỐN GÓP</button>
                     </div>
@@ -242,7 +225,7 @@
 
                 <div class="bg-slate-900 border border-amber-500/40 p-4 rounded-2xl flex justify-between items-center shadow-lg shadow-amber-500/5">
                     <div>
-                        <span class="text-xs text-amber-400 block font-bold">TỔNG TIỀN TRONG TÀI KHOẢN</span>
+                        <span class="text-xs text-amber-400 block font-bold">2. TỔNG TIỀN TÀI KHOẢN</span>
                         <span id="statTotalAccountBalance" class="text-lg font-black text-amber-400 block mt-1">0đ</span>
                         <button onclick="openWithdrawModal()" class="text-[11px] text-rose-400 font-bold hover:underline mt-0.5 block">- RÚT TIỀN / CHI TIÊU</button>
                     </div>
@@ -251,27 +234,27 @@
 
                 <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex justify-between items-center">
                     <div>
-                        <span class="text-xs text-slate-400 block font-semibold">LÃI HOÀN TẤT: KHÔI</span>
+                        <span class="text-xs text-slate-400 block font-semibold">3. LÃI HOÀN TẤT: KHÔI</span>
                         <span id="statProfitKhoi" class="text-lg font-black text-blue-400 mt-1 block">0đ</span>
-                        <span class="text-[10px] text-slate-500 block">(Chỉ tính đơn đã xong)</span>
+                        <span class="text-[10px] text-slate-500 block">(Đã xong)</span>
                     </div>
                     <div class="w-9 h-9 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400"><i class="fas fa-user-check"></i></div>
                 </div>
 
                 <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex justify-between items-center">
                     <div>
-                        <span class="text-xs text-slate-400 block font-semibold">LÃI HOÀN TẤT: LÂM</span>
+                        <span class="text-xs text-slate-400 block font-semibold">4. LÃI HOÀN TẤT: LÂM</span>
                         <span id="statProfitLam" class="text-lg font-black text-purple-400 mt-1 block">0đ</span>
-                        <span class="text-[10px] text-slate-500 block">(Chỉ tính đơn đã xong)</span>
+                        <span class="text-[10px] text-slate-500 block">(Đã xong)</span>
                     </div>
                     <div class="w-9 h-9 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400"><i class="fas fa-user-check"></i></div>
                 </div>
 
                 <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex justify-between items-center col-span-2 md:col-span-1">
                     <div>
-                        <span class="text-xs text-slate-400 block font-semibold">DƯ NỢ COD CẦN THU</span>
+                        <span class="text-xs text-slate-400 block font-semibold">5. DƯ NỢ COD CẦN THU</span>
                         <span id="statTotalRemainingCOD" class="text-lg font-black text-amber-400 mt-1 block">0đ</span>
-                        <span class="text-[10px] text-slate-500 block">Khách còn trả khi nhận</span>
+                        <span class="text-[10px] text-slate-500 block">Khách còn trả</span>
                     </div>
                     <div class="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400"><i class="fas fa-hand-holding-dollar"></i></div>
                 </div>
@@ -280,7 +263,7 @@
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                 <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex justify-between items-center">
                     <div>
-                        <span class="text-xs text-slate-400 block font-semibold">Số Đơn Trong Tháng</span>
+                        <span class="text-xs text-slate-400 block font-semibold">6. Số Đơn Trong Tháng</span>
                         <b id="statTotalOrders" class="text-xl font-black text-white mt-1 block">0</b>
                     </div>
                     <div class="w-8 h-8 rounded-xl bg-slate-800 flex items-center justify-center text-slate-400"><i class="fas fa-box"></i></div>
@@ -288,7 +271,7 @@
 
                 <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex justify-between items-center">
                     <div>
-                        <span class="text-xs text-slate-400 block font-semibold">Tổng Lãi Thực Nhận (Đơn Xong)</span>
+                        <span class="text-xs text-slate-400 block font-semibold">7. Lãi Thực Nhận (Đơn Xong)</span>
                         <b id="statTotalProfitMonth" class="text-xl font-black text-amber-400 mt-1 block">0đ</b>
                     </div>
                     <div class="w-8 h-8 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-400"><i class="fas fa-coins"></i></div>
@@ -296,7 +279,7 @@
 
                 <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex justify-between items-center">
                     <div>
-                        <span class="text-xs text-slate-400 block font-semibold">Tổng Vốn Hàng Nhập</span>
+                        <span class="text-xs text-slate-400 block font-semibold">8. Tổng Vốn Hàng Nhập</span>
                         <b id="statTotalCost" class="text-xl font-black text-rose-400 mt-1 block">0đ</b>
                     </div>
                     <div class="w-8 h-8 rounded-xl bg-rose-500/10 flex items-center justify-center text-rose-400"><i class="fas fa-receipt"></i></div>
@@ -304,7 +287,7 @@
 
                 <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex justify-between items-center">
                     <div>
-                        <span class="text-xs text-slate-400 block font-semibold">LÃI RÒNG (ĐÃ HOÀN TẤT)</span>
+                        <span class="text-xs text-slate-400 block font-semibold">9. LÃI RÒNG (ĐÃ HOÀN TẤT)</span>
                         <b id="statTotalProfitNet" class="text-xl font-black text-emerald-400 mt-1 block">0đ</b>
                     </div>
                     <div class="w-8 h-8 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-400"><i class="fas fa-chart-line"></i></div>
@@ -380,7 +363,7 @@
             <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 mb-6">
                 <div class="mb-4">
                     <h2 class="text-base font-bold text-white"><i class="fas fa-link text-amber-500 mr-2"></i>Quản Lý Link Mua Hàng Sản Phẩm (Taobao / 1688)</h2>
-                    <p class="text-xs text-slate-400">Lưu lại đường link mua nguồn hàng của từng khách. Bấm 1 click để mở lại trang Taobao gốc mà không phải tìm kiếm lại từ đầu.</p>
+                    <p class="text-xs text-slate-400">Lưu lại đường link mua nguồn hàng của từng khách. Bấm 1 click để mở lại trang Taobao gốc.</p>
                 </div>
 
                 <div class="overflow-x-auto">
@@ -402,10 +385,8 @@
 
         <!-- TAB QUẢN LÝ MÓN HÀNG WEB & DANH MỤC -->
         <div id="tabWebProducts" class="max-w-7xl mx-auto px-4 mt-6 hidden space-y-6">
-            
             <div class="bg-slate-900 border border-amber-500/40 rounded-2xl p-4 text-xs space-y-3">
                 <h3 class="font-bold text-amber-400 flex items-center"><i class="fas fa-wand-magic-sparkles mr-2"></i>Công Cụ Tính Giá Bán Web Hàng Loạt</h3>
-                
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex flex-wrap items-center justify-between gap-2">
                         <div>
@@ -413,9 +394,9 @@
                             <span class="text-[10px] text-slate-400">Giá bán = (Giá vốn + Tiền ship) × (1 + % Lợi nhuận)</span>
                         </div>
                         <div class="flex items-center space-x-1 flex-wrap gap-1">
-                            <input type="number" id="shipAmountInput" value="50000" placeholder="Tiền ship" class="w-20 bg-slate-900 border border-slate-700 p-1.5 rounded text-indigo-400 font-bold" title="Tiền Ship VNĐ">
+                            <input type="number" id="shipAmountInput" value="50000" placeholder="Tiền ship" class="w-20 bg-slate-900 border border-slate-700 p-1.5 rounded text-indigo-400 font-bold">
                             <span class="text-slate-400 font-bold">+</span>
-                            <input type="number" id="percentProfitInput" value="20" placeholder="% Lãi" class="w-16 bg-slate-900 border border-slate-700 p-1.5 rounded text-amber-400 font-bold" title="Phần trăm lợi nhuận %">
+                            <input type="number" id="percentProfitInput" value="20" placeholder="% Lãi" class="w-16 bg-slate-900 border border-slate-700 p-1.5 rounded text-amber-400 font-bold">
                             <span class="text-amber-400 font-bold">%</span>
                             <button onclick="applyPercentageProfitToAll()" class="bg-amber-500 text-slate-950 font-bold px-3 py-1.5 rounded-lg whitespace-nowrap hover:bg-amber-400 transition">Áp Dụng Tất Cả</button>
                         </div>
@@ -622,7 +603,7 @@
             </div>
         </div>
 
-        <!-- BOTTOM NAVIGATION BAR DÀNH RIÊNG CHO MOBILE -->
+        <!-- BOTTOM NAVIGATION BAR MOBILE -->
         <div class="fixed bottom-0 left-0 right-0 bg-slate-900/95 border-t border-slate-800 backdrop-blur-md z-40 md:hidden flex justify-around items-center py-2 px-1 text-[10px]">
             <button onclick="switchTab('dashboard')" class="flex flex-col items-center text-amber-400">
                 <i class="fas fa-chart-line text-base"></i>
@@ -665,17 +646,17 @@
                     <button onclick="requestNotificationPermission()" class="flex-1 gold-gradient text-slate-950 font-bold py-1.5 rounded-lg text-xs hover:opacity-90">
                         <i class="fas fa-bell mr-1"></i> Bật Chuông Thông Báo
                     </button>
-                    <button onclick="playNotificationSound(); showToast('🔔 Đã phát âm báo iOS (Ping/Ding)!');" class="bg-slate-800 hover:bg-slate-700 text-amber-400 border border-amber-500/30 font-bold px-3 py-1.5 rounded-lg text-xs">
-                        <i class="fas fa-play mr-1"></i> Thử Chuông IP
+                    <button onclick="playNotificationSound(); showToast('🔔 Đã phát âm báo!');" class="bg-slate-800 hover:bg-slate-700 text-amber-400 border border-amber-500/30 font-bold px-3 py-1.5 rounded-lg text-xs">
+                        <i class="fas fa-play mr-1"></i> Thử Chuông
                     </button>
                 </div>
             </div>
 
-            <p class="text-xs text-slate-400 mb-3">Danh sách các đơn hàng mới phát sinh từ khách đặt Web/App theo thời gian thực:</p>
+            <p class="text-xs text-slate-400 mb-3">Danh sách thông báo phát sinh:</p>
             <div id="notificationsList" class="max-h-72 overflow-y-auto space-y-2 text-xs"></div>
             
             <button onclick="clearNotifications()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-2 rounded-xl text-xs mt-4 transition">
-                <i class="fas fa-trash-can mr-1"></i> Xóa Tất Cả Lịch Sử Thông Báo
+                <i class="fas fa-trash-can mr-1"></i> Xóa Tất Cả Lịch Sử
             </button>
         </div>
     </div>
@@ -719,7 +700,7 @@
                 <div class="bg-indigo-950/40 p-2.5 rounded-xl border border-indigo-500/40">
                     <label class="block text-indigo-300 mb-1 font-bold flex items-center justify-between">
                         <span><i class="fas fa-link mr-1.5 text-indigo-400"></i>Link Nguồn Mua Hàng (Taobao / 1688) *</span>
-                        <span class="text-[9px] bg-rose-500/20 text-rose-300 px-1.5 py-0.5 rounded font-bold border border-rose-500/30">🔒 Chỉ Admin thấy (Khách không xem được)</span>
+                        <span class="text-[9px] bg-rose-500/20 text-rose-300 px-1.5 py-0.5 rounded font-bold border border-rose-500/30">🔒 Chỉ Admin thấy</span>
                     </label>
                     <input type="url" id="webProdBuyUrl" placeholder="https://detail.1688.com/offer/... hoặc https://item.taobao.com/..." class="w-full bg-slate-950 border border-indigo-500/50 rounded-lg p-2.5 text-indigo-300 font-mono text-[11px] focus:outline-none focus:border-amber-400">
                 </div>
@@ -1168,7 +1149,6 @@
         function playNotificationSound() {
             try {
                 const ctx = new (window.AudioContext || window.webkitAudioContext)();
-                
                 const osc1 = ctx.createOscillator();
                 const gain1 = ctx.createGain();
                 osc1.type = 'sine';
@@ -1179,17 +1159,6 @@
                 gain1.connect(ctx.destination);
                 osc1.start(ctx.currentTime);
                 osc1.stop(ctx.currentTime + 0.3);
-
-                const osc2 = ctx.createOscillator();
-                const gain2 = ctx.createGain();
-                osc2.type = 'sine';
-                osc2.frequency.setValueAtTime(1567.98, ctx.currentTime + 0.08);
-                gain2.gain.setValueAtTime(0.3, ctx.currentTime + 0.08);
-                gain2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
-                osc2.connect(gain2);
-                gain2.connect(ctx.destination);
-                osc2.start(ctx.currentTime + 0.08);
-                osc2.stop(ctx.currentTime + 0.5);
             } catch (e) { console.log(e); }
         }
 
@@ -1200,12 +1169,8 @@
                     if (permission === "granted") {
                         playNotificationSound();
                         showToast("🔔 Đã bật thông báo thành công!");
-                    } else if (permission === "denied") {
-                        showToast("❌ Bạn đã chặn thông báo trên trình duyệt!");
                     }
                 });
-            } else {
-                showToast("Trình duyệt không hỗ trợ Push Notification!");
             }
         }
 
@@ -1223,16 +1188,6 @@
                     statusEl.innerText = "Chưa Bật";
                     statusEl.className = "text-[10px] font-bold px-2 py-0.5 rounded bg-slate-800 text-slate-400";
                 }
-            }
-        }
-
-        function sendDesktopNotification(title, body) {
-            playNotificationSound();
-            if ("Notification" in window && Notification.permission === "granted") {
-                new Notification(title, {
-                    body: body,
-                    icon: "https://cdn-icons-png.flaticon.com/512/5328/5328325.png"
-                });
             }
         }
 
@@ -1273,7 +1228,13 @@
         let webProdGalleryBase64Arr = [];
         let webProdSizeBase64Image = '';
         let sizeChartBase64Image = '';
-        let initialLoadDone = false;
+        
+        // CỜ VÀ BỘ ĐẾM THEO DÕI KHỞI TẠO ĐỂ TỰ ĐỘNG RESET TRANG KHI DỮ LIỆU THAY ĐỔI
+        let isInitialDataLoaded = false;
+        let initialLoadCount = 0;
+        let lastOrdersHash = '';
+        let lastFundsHash = '';
+        let lastWithdrawsHash = '';
 
         let orders = [];
         let coupons = [];
@@ -1295,6 +1256,13 @@
             sizeChart: `• Size S: 45 - 55kg (Cao 1m50 - 1m62)\n• Size M: 55 - 65kg (Cao 1m63 - 1m70)\n• Size L: 65 - 75kg (Cao 1m71 - 1m78)\n• Size XL: 75 - 85kg (Cao 1m79 - 1m85)`,
             sizeImg: 'https://images.unsplash.com/photo-1518609878373-06d740f60d8b?w=500'
         };
+
+        // HÀM ÉP CHUYỂN ĐỔI DỮ LIỆU FIREBASE SANG DẠNG MẢNG CHUẨN
+        function parseFirebaseData(snapshotVal) {
+            if (!snapshotVal) return [];
+            if (Array.isArray(snapshotVal)) return snapshotVal.filter(Boolean);
+            return Object.values(snapshotVal);
+        }
 
         document.addEventListener('DOMContentLoaded', () => {
             const today = new Date();
@@ -1318,28 +1286,18 @@
                 
                 if (data && data.rates && data.rates.VND) {
                     const rawRate = data.rates.VND;
-                    const margin = 180;
-                    const calculatedRate = Math.round(rawRate + margin);
+                    const calculatedRate = Math.round(rawRate + 180);
                     
                     if (calculatedRate > 3000 && calculatedRate < 6000) {
-                        const oldRate = globalRMBRate;
                         globalRMBRate = calculatedRate;
-                        
                         document.getElementById('globalRmbRate').value = globalRMBRate;
                         if(document.getElementById('lblRmbRateInModal')) document.getElementById('lblRmbRateInModal').innerText = globalRMBRate.toLocaleString();
-                        
                         db.ref('youngzone_rmb_rate').set(globalRMBRate);
-                        
-                        if (isManualClick) {
-                            showToast(`Đã tự động cập nhật tỷ giá Tệ mới nhất hôm nay: 1 ¥ = ${globalRMBRate}đ`);
-                        } else if (oldRate !== globalRMBRate) {
-                            showToast(`Tỷ giá Tệ hôm nay tự động cập nhật: 1 ¥ = ${globalRMBRate}đ`);
-                        }
+                        if (isManualClick) showToast(`Tỷ giá Tệ cập nhật: 1 ¥ = ${globalRMBRate}đ`);
                     }
                 }
             } catch (err) {
-                console.log('Không thể tự động tải tỷ giá Tệ:', err);
-                if (isManualClick) showToast('Không thể kết nối API tỷ giá. Vui lòng thử lại!');
+                if (isManualClick) showToast('Không thể kết nối API tỷ giá!');
             }
         }
 
@@ -1380,7 +1338,6 @@
                     localStorage.setItem('yz_saved_user', user);
                 } else {
                     sessionStorage.setItem('yz_user_role', 'ADMIN');
-                    localStorage.removeItem('yz_user_role');
                 }
             } else {
                 currentUserRole = 'STAFF';
@@ -1389,14 +1346,13 @@
                     localStorage.setItem('yz_saved_user', user);
                 } else {
                     sessionStorage.setItem('yz_user_role', 'STAFF');
-                    localStorage.removeItem('yz_user_role');
                 }
             }
 
             applyRolePermissions();
             document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('appContainer').classList.remove('hidden');
-            showToast(`Đăng nhập thành công! (Quyền: ${currentUserRole})`);
+            showToast(`Đăng nhập thành công!`);
         }
 
         function checkLoginSession() {
@@ -1431,58 +1387,88 @@
             }
         }
 
+        // LẮNG NGHE REALTIME KHÔNG TRỄ & CHÍNH XÁC TỪNG Ô THỐNG KÊ
         function initFirebaseListeners() {
+            // 1. ĐƠN HÀNG
             db.ref('youngzone_orders').on('value', (snapshot) => {
-                const data = snapshot.val();
-                const newOrdersList = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
+                const rawVal = snapshot.val();
+                const newOrdersList = parseFirebaseData(rawVal);
+                const currentHash = JSON.stringify(newOrdersList);
 
-                if (initialLoadDone && newOrdersList.length > orders.length) {
-                    const latestOrder = newOrdersList[0];
-                    if (latestOrder) {
-                        const notifItem = {
-                            id: latestOrder.id,
-                            customer: latestOrder.customer || 'Khách Web',
-                            product: latestOrder.product || 'Sản phẩm',
-                            total: latestOrder.total || 0,
-                            time: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
-                        };
-                        notificationsList.unshift(notifItem);
-                        updateNotifBadge();
-
-                        sendDesktopNotification(
-                            `🔥 ĐƠN ORDER MỚI TỪ KHÁCH!`,
-                            `Khách: ${latestOrder.customer || 'Khách Web'} (${latestOrder.phone || ''})\nSản phẩm: ${latestOrder.product || ''}\nTổng tiền: ${(latestOrder.total || 0).toLocaleString()}đ`
-                        );
-                        showToast(`🔔 CÓ ĐƠN MỚI VỪA CỌC: [${latestOrder.id}] - ${latestOrder.customer}`);
-                    }
+                if (isInitialDataLoaded && lastOrdersHash !== '' && lastOrdersHash !== currentHash) {
+                    window.location.reload();
+                    return;
                 }
-                initialLoadDone = true;
 
+                lastOrdersHash = currentHash;
                 orders = newOrdersList;
                 saveAllToLocalStorage();
                 renderDashboard();
                 renderBuyLinksTable();
                 renderOrderPhotosGrid();
                 updateFirebaseStatus(true);
+                
+                checkAndMarkLoaded();
             }, () => {
                 updateFirebaseStatus(false);
                 renderDashboard();
             });
 
+            // 2. VỐN GÓP
+            db.ref('youngzone_funds').on('value', (snapshot) => {
+                const rawVal = snapshot.val();
+                const newFunds = parseFirebaseData(rawVal);
+                const currentHash = JSON.stringify(newFunds);
+
+                if (isInitialDataLoaded && lastFundsHash !== '' && lastFundsHash !== currentHash) {
+                    window.location.reload();
+                    return;
+                }
+
+                lastFundsHash = currentHash;
+                funds = newFunds;
+                saveAllToLocalStorage();
+                renderFundHistory();
+                renderDashboard();
+
+                checkAndMarkLoaded();
+            });
+
+            // 3. CHI TIÊU / RÚT TIỀN
+            db.ref('youngzone_withdraws').on('value', (snapshot) => {
+                const rawVal = snapshot.val();
+                const newWithdraws = parseFirebaseData(rawVal);
+                const currentHash = JSON.stringify(newWithdraws);
+
+                if (isInitialDataLoaded && lastWithdrawsHash !== '' && lastWithdrawsHash !== currentHash) {
+                    window.location.reload();
+                    return;
+                }
+
+                lastWithdrawsHash = currentHash;
+                withdraws = newWithdraws;
+                saveAllToLocalStorage();
+                renderWithdrawHistory();
+                renderDashboard();
+
+                checkAndMarkLoaded();
+            });
+
+            // 4. MÓN HÀNG WEB
             db.ref('youngzone_web_products').on('value', (snapshot) => {
-                const data = snapshot.val();
-                webProducts = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
+                webProducts = parseFirebaseData(snapshot.val());
                 saveAllToLocalStorage();
                 renderWebProductsTable();
             });
 
+            // 5. MÃ GIẢM GIÁ
             db.ref('youngzone_web_vouchers').on('value', (snapshot) => {
-                const data = snapshot.val();
-                coupons = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
+                coupons = parseFirebaseData(snapshot.val());
                 saveAllToLocalStorage();
                 renderCouponsTable();
             });
 
+            // 6. CẤU HÌNH SIZE
             db.ref('youngzone_web_sidebar_config').on('value', (snapshot) => {
                 const data = snapshot.val();
                 if (data) {
@@ -1491,23 +1477,25 @@
                 }
             });
 
+            // 7. DANH MỤC
             db.ref('youngzone_web_categories').on('value', (snapshot) => {
                 const data = snapshot.val();
                 if (data) {
-                    categories = Array.isArray(data) ? data : Object.values(data);
+                    categories = parseFirebaseData(data);
                 }
                 saveAllToLocalStorage();
                 renderCategoriesTable();
                 updateCategorySelectOptions();
             });
 
+            // 8. KHO HÀNG SẮN
             db.ref('youngzone_inventory').on('value', (snapshot) => {
-                const data = snapshot.val();
-                inventory = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
+                inventory = parseFirebaseData(snapshot.val());
                 saveAllToLocalStorage();
                 renderInventoryTable();
             });
 
+            // 9. TỶ GIÁ TỆ
             db.ref('youngzone_rmb_rate').on('value', (snapshot) => {
                 const rate = snapshot.val();
                 if (rate !== null) {
@@ -1517,33 +1505,26 @@
                 }
             });
 
+            // 10. KHÁCH HÀNG CRM
             db.ref('youngzone_customers').on('value', (snapshot) => {
-                const data = snapshot.val();
-                customers = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
+                customers = parseFirebaseData(snapshot.val());
                 saveAllToLocalStorage();
                 renderCRMTable();
             });
 
+            // 11. NHẬT KÝ
             db.ref('youngzone_logs').on('value', (snapshot) => {
-                const data = snapshot.val();
-                logs = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
+                logs = parseFirebaseData(snapshot.val());
             });
+        }
 
-            db.ref('youngzone_funds').on('value', (snapshot) => {
-                const data = snapshot.val();
-                funds = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
-                saveAllToLocalStorage();
-                renderFundHistory();
-                renderDashboard();
-            });
-
-            db.ref('youngzone_withdraws').on('value', (snapshot) => {
-                const data = snapshot.val();
-                withdraws = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
-                saveAllToLocalStorage();
-                renderWithdrawHistory();
-                renderDashboard();
-            });
+        function checkAndMarkLoaded() {
+            initialLoadCount++;
+            if (initialLoadCount >= 3) {
+                setTimeout(() => {
+                    isInitialDataLoaded = true;
+                }, 1000);
+            }
         }
 
         function updateNotifBadge() {
@@ -1706,7 +1687,7 @@
                 if (!error) {
                     saveAllToLocalStorage();
                     renderWebProductsTable();
-                    showToast(`Đã tính giá bán tất cả = (Giá Vốn + ${fixedShip.toLocaleString()}đ ship) + ${percent}% lợi nhuận!`);
+                    showToast(`Đã tính giá bán tất cả!`);
                 }
             });
         }
@@ -1732,7 +1713,7 @@
             if (newCount !== null) {
                 selectedIdxs.forEach(idx => webProducts[idx].soldCount = parseInt(newCount) || 0);
                 db.ref('youngzone_web_products').set(webProducts);
-                showToast(`Đã cập nhật số lượng đã bán thành ${newCount} món!`);
+                showToast(`Đã cập nhật số lượng đã bán!`);
             }
         }
 
@@ -1921,7 +1902,6 @@
             }
         }
 
-        /* TÍNH TOÁN QUY ĐỔI GIÁ TỆ (¥) SANG VNĐ TRONG MODAL MÓN HÀNG WEB */
         function calcWebProdVndCost() {
             const rmbVal = parseFloat(document.getElementById('webProdRmbCost').value) || 0;
             const rate = globalRMBRate || 3810;
@@ -1994,7 +1974,7 @@
 
             const finalMainImg = webProdBase64Image || existingImg;
             if (!finalMainImg) {
-                showToast("Vui lòng tải lên ảnh chính cho sản phẩm!");
+                showToast("Vui lòng tải lên ảnh chính!");
                 btnSubmit.disabled = false;
                 btnSubmit.innerText = "Lưu Món Hàng Lên Web";
                 return;
@@ -2060,7 +2040,7 @@
 
             tbody.innerHTML = webProducts.map((p, idx) => {
                 const catObj = categories.find(c => c.code === p.category);
-                const displaySizes = (p.customSizes && p.customSizes.length > 0) ? p.customSizes.join(', ') : 'Mặc định (S, M, L, XL)';
+                const displaySizes = (p.customSizes && p.customSizes.length > 0) ? p.customSizes.join(', ') : 'Mặc định';
                 const displayColors = (p.customColors && p.customColors.length > 0) ? p.customColors.join(', ') : 'Mặc định';
 
                 const rmbText = p.rmbCost ? `${p.rmbCost}¥` : '';
@@ -2082,13 +2062,13 @@
                     <td class="p-3 font-bold text-amber-400">${p.price ? p.price.toLocaleString() : 0}đ</td>
                     <td class="p-3">
                         ${p.buyUrl 
-                            ? `<a href="${p.buyUrl}" target="_blank" class="bg-indigo-600/30 border border-indigo-500/50 text-indigo-300 px-2 py-1 rounded text-[10px] font-bold hover:bg-indigo-500 hover:text-white transition inline-block whitespace-nowrap" title="Bấm để mở trang mua nguồn gốc Taobao / 1688"><i class="fas fa-cart-shopping mr-1"></i>Link Mua</a>` 
+                            ? `<a href="${p.buyUrl}" target="_blank" class="bg-indigo-600/30 border border-indigo-500/50 text-indigo-300 px-2 py-1 rounded text-[10px] font-bold hover:bg-indigo-500 hover:text-white transition inline-block whitespace-nowrap" title="Bấm mở link Taobao / 1688"><i class="fas fa-cart-shopping mr-1"></i>Link Mua</a>` 
                             : `<span class="text-slate-600 italic">Chưa gắn</span>`
                         }
                     </td>
                     <td class="p-3 text-emerald-400 font-bold">${p.soldCount || 0} món</td>
                     <td class="p-3">
-                        ${p.sizeImg ? `<img src="${p.sizeImg}" onclick="openBillViewer('${p.sizeImg}')" class="w-8 h-8 object-cover rounded border border-amber-500/50 cursor-pointer" title="Bấm xem Bảng Size">` : '<span class="text-slate-600 italic">Chưa có</span>'}
+                        ${p.sizeImg ? `<img src="${p.sizeImg}" onclick="openBillViewer('${p.sizeImg}')" class="w-8 h-8 object-cover rounded border border-amber-500/50 cursor-pointer">` : '<span class="text-slate-600 italic">Chưa có</span>'}
                     </td>
                     <td class="p-3">
                         <span class="text-[10px] font-bold px-2 py-0.5 rounded ${p.isReadyStock ? 'bg-emerald-500/20 text-emerald-400' : 'bg-blue-500/20 text-blue-400'}">
@@ -2107,7 +2087,7 @@
             const p = webProducts[idx];
             updateCategorySelectOptions();
             document.getElementById('editWebProdIndex').value = idx;
-            document.getElementById('webProdModalTitle').innerText = "Chỉnh Sửa Món Hàng " + p.name;
+            document.getElementById('webProdModalTitle').innerText = "Chỉnh Sửa " + p.name;
             document.getElementById('webProdName').value = p.name;
             document.getElementById('webProdBuyUrl').value = p.buyUrl || '';
             document.getElementById('webProdTag').value = p.tag || '';
@@ -2180,7 +2160,7 @@
             saveAllToLocalStorage();
             renderCouponsTable();
             closeModal('couponModal');
-            showToast(`Đã lưu mã giảm giá [${code}] giảm ${val.toLocaleString()}đ lên Firebase!`);
+            showToast(`Đã lưu mã giảm giá [${code}] lên Firebase!`);
         }
 
         function renderCouponsTable() {
@@ -2262,7 +2242,7 @@
                 if (error) {
                     showToast("Lỗi khi lưu bảng size lên Firebase!");
                 } else {
-                    showToast("Đã đồng bộ thành công Bảng Size Chung lên Web Khách Hàng!");
+                    showToast("Đã đồng bộ Bảng Size Chung lên Web Khách Hàng!");
                 }
             });
         }
@@ -2294,7 +2274,7 @@
             return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
         }
 
-        /* --- HÀM TÍNH TOÁN & HIỂN THỊ CHỈ SỐ THỐNG KÊ ĐÃ ĐƯỢC ĐỒNG BỘ CHUẨN FIREBASE --- */
+        /* --- TÍNH TOÁN 9 Ô THỐNG KÊ TỰ ĐỘNG --- */
         function renderDashboard() {
             // 1. TỔNG VỐN ĐÃ GÓP
             let totalFundAdded = funds.reduce((sum, f) => sum + (Number(f.amount) || 0), 0);
@@ -2310,7 +2290,6 @@
 
             let delayedOrdersCount = 0;
 
-            // Lọc danh sách đơn hàng theo điều kiện
             const monthOrders = orders.filter(o => {
                 const matchMonth = o.date ? o.date.startsWith(selectedMonthStr) : true;
                 const matchOwner = currentFilterOwner === 'ALL' ? true : o.owner === currentFilterOwner;
@@ -2350,7 +2329,7 @@
                 if (alertBox) alertBox.classList.add('hidden');
             }
 
-            // 2. TÍNH TỔNG TIỀN TRONG TÀI KHOẢN (Vốn góp + Thu từ đơn - Vốn chi - Rút/Chi tiêu)
+            // 2. TỔNG TIỀN TÀI KHOẢN (Vốn góp + Cọc/Bán - Vốn nhập - Rút/Chi)
             let totalAcc = totalFundAdded;
             orders.forEach(o => {
                 const isCompleted = o.status && o.status.includes('Đã bán - Hoàn tất');
@@ -2378,7 +2357,7 @@
                 accBalEl.className = totalAcc < 0 ? "text-lg font-black text-rose-500 block mt-1" : "text-lg font-black text-amber-400 block mt-1";
             }
 
-            // 3. TÍNH CÁC Ô THỐNG KÊ DOANH THU & CHIA LÃI
+            // 3. DOANH THU & CHIA LÃI
             let totCost = 0, totProfit = 0, totRemCOD = 0;
             let profitKhoi = 0, profitLam = 0;
 
@@ -2408,7 +2387,7 @@
                 }
             });
 
-            // Gán dữ liệu vào DOM
+            // Gán dữ liệu hiển thị lên 9 Ô Thống Kê
             const elTotalOrders = document.getElementById('statTotalOrders');
             if (elTotalOrders) elTotalOrders.innerText = monthOrders.length;
 
@@ -2518,8 +2497,6 @@
                 mobileCardsContainer.innerHTML = monthOrders.map((o) => {
                     const isCompleted = o.status && o.status.includes('Đã bán - Hoàn tất');
                     const isRefunded = o.status && o.status.includes('Hoàn hàng');
-                    const totalCostSingle = (Number(o.cost) || 0) + (Number(o.vnShip) || 0);
-                    const orderProfit = isCompleted ? ((Number(o.total) || 0) - totalCostSingle) : 0;
                     const remCOD = (isCompleted || isRefunded) ? 0 : ((Number(o.total) || 0) - (Number(o.deposit) || 0));
                     const realIdx = orders.indexOf(o);
 
@@ -2620,7 +2597,7 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
         function copyMsgToClipboard() {
             const txt = document.getElementById('msgContentArea').value;
             navigator.clipboard.writeText(txt);
-            showToast("Đã copy tin nhắn đầy đủ thông tin gửi cho khách!");
+            showToast("Đã copy tin nhắn gửi khách!");
         }
 
         function openInventoryModal() { document.getElementById('inventoryModal').classList.remove('hidden'); }
@@ -2666,7 +2643,7 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
 
         function createOrderFromStock(idx) {
             const item = inventory[idx];
-            if (item.qty <= 0) { showToast("Sản phẩm này đã hết hàng trong kho!"); return; }
+            if (item.qty <= 0) { showToast("Sản phẩm này đã hết hàng!"); return; }
 
             openOrderModal();
             document.getElementById('formProduct').value = item.product;
@@ -2679,7 +2656,7 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
             item.qty -= 1;
             db.ref('youngzone_inventory').set(inventory);
             saveAllToLocalStorage();
-            showToast(`Đã xuất 1 ${item.product} từ Kho! Số lượng tồn còn lại: ${item.qty}`);
+            showToast(`Đã xuất 1 ${item.product} từ Kho! Tồn còn: ${item.qty}`);
         }
 
         function deleteInventory(idx) {
@@ -2706,7 +2683,7 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
             document.body.appendChild(dlAnchor);
             dlAnchor.click();
             dlAnchor.remove();
-            showToast("Đã xuất file dữ liệu sao lưu (JSON)!");
+            showToast("Đã xuất file sao lưu JSON!");
         }
 
         function lookupCustomerByPhone(phoneVal) {
@@ -2716,7 +2693,7 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
                 if (found) {
                     document.getElementById('formCustomer').value = found.name;
                     document.getElementById('formAddress').value = found.address;
-                    showToast(`Tự động điền thông tin khách cũ: [${found.name}]`);
+                    showToast(`Tự động điền khách cũ: [${found.name}]`);
                 }
             }
         }
@@ -2742,7 +2719,7 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
                     <td class="p-3 font-bold text-emerald-400">${totalSpent.toLocaleString()}đ</td>
                     <td class="p-3">
                         ${isAutoVIP 
-                            ? `<span class="bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2 py-1 rounded font-bold text-[10px]"><i class="fas fa-crown mr-1"></i>💎 VIP (Tích lũy > 2tr)</span>`
+                            ? `<span class="bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2 py-1 rounded font-bold text-[10px]"><i class="fas fa-crown mr-1"></i>💎 VIP (> 2tr)</span>`
                             : `<select onchange="updateCustomerType(${idx}, this.value)" class="bg-slate-950 border border-slate-700 text-xs text-amber-400 rounded px-2 py-1 font-bold">
                                 <option value="VIP" ${c.type==='VIP'?'selected':''}>VIP</option>
                                 <option value="NORMAL" ${(!c.type||c.type==='NORMAL')?'selected':''}>Thường</option>
@@ -2762,16 +2739,16 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
             customers[idx].type = newType;
             db.ref('youngzone_customers').set(customers);
             saveAllToLocalStorage();
-            showToast("Đã cập nhật phân loại khách hàng!");
+            showToast("Đã cập nhật hạng khách!");
         }
 
         function deleteCustomer(idx) {
-            showConfirmToast("Xóa thông tin khách hàng này?", () => {
+            showConfirmToast("Xóa khách hàng này?", () => {
                 customers.splice(idx, 1);
                 db.ref('youngzone_customers').set(customers);
                 saveAllToLocalStorage();
                 renderCRMTable();
-                showToast("Đã xóa khách hàng!");
+                showToast("Đã xóa khách!");
             });
         }
 
@@ -2794,11 +2771,8 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
             const totalBaseCost = formCost + vnShip;
 
             let profitMargin = 0.30;
-            if (totalBaseCost > 3000000) {
-                profitMargin = 0.20;
-            } else if (totalBaseCost >= 1000000) {
-                profitMargin = 0.25;
-            }
+            if (totalBaseCost > 3000000) profitMargin = 0.20;
+            else if (totalBaseCost >= 1000000) profitMargin = 0.25;
 
             const rawSellPrice = totalBaseCost * (1 + profitMargin);
             const roundedSellPrice = Math.ceil(rawSellPrice / 10000) * 10000;
@@ -2879,7 +2853,7 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
                 }
                 db.ref('youngzone_inventory').set(inventory);
                 renderInventoryTable();
-                showToast(`Đã tự động cộng 1 [${prodName} - Size ${prodSize}] vào Kho Hàng Sẵn do trả hàng!`);
+                showToast(`Đã tự động cộng 1 [${prodName}] vào Kho do trả hàng!`);
             }
 
             const orderObj = {
@@ -2912,17 +2886,12 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
             if (idx >= 0) {
                 orders[idx] = orderObj;
                 addLog(`Cập nhật đơn hàng [${orderObj.id}]`);
-                showToast("Cập nhật đơn hàng thành công!");
             } else {
                 orders.unshift(orderObj);
                 addLog(`Tạo đơn hàng mới [${orderObj.id}] - ${orderObj.product}`);
-                showToast("Tạo đơn hàng mới thành công!");
             }
 
             syncOrdersToFirebase();
-            renderDashboard();
-            renderBuyLinksTable();
-            renderOrderPhotosGrid();
             closeOrderModal();
         }
 
@@ -2959,18 +2928,7 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
                 const deletedId = orders[idx].id;
                 orders.splice(idx, 1);
                 addLog(`Xóa đơn hàng [${deletedId}]`);
-                
-                db.ref('youngzone_orders').set(orders, (error) => {
-                    if (error) {
-                        showToast("Lỗi khi kết nối xóa trên Firebase!");
-                    } else {
-                        saveAllToLocalStorage();
-                        renderDashboard();
-                        renderBuyLinksTable();
-                        renderOrderPhotosGrid();
-                        showToast(`Đã xóa thành công đơn hàng [${deletedId}] khỏi Firebase!`);
-                    }
-                });
+                db.ref('youngzone_orders').set(orders);
             });
         }
 
@@ -3021,18 +2979,14 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
             saveAllToLocalStorage();
             addLog(`Rút tiền/Chi tiêu: ${person} - ${amount.toLocaleString()}đ (${reason})`);
 
-            renderWithdrawHistory();
-            renderDashboard();
-
             document.getElementById('wdAmount').value = '';
             document.getElementById('wdReason').value = '';
-            showToast("Đã ghi nhận khoản rút tiền / chi tiêu!");
         }
 
         function renderWithdrawHistory() {
             const list = document.getElementById('withdrawHistoryList');
             if (withdraws.length === 0) {
-                list.innerHTML = `<div class="text-slate-500 text-center py-2">Chưa có khoản rút hoặc chi tiêu nào.</div>`;
+                list.innerHTML = `<div class="text-slate-500 text-center py-2">Chưa có khoản rút/chi tiêu nào.</div>`;
                 return;
             }
             list.innerHTML = withdraws.map((w, idx) => `
@@ -3053,10 +3007,6 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
             showConfirmToast("Xóa bản ghi rút tiền này?", () => {
                 withdraws.splice(idx, 1);
                 db.ref('youngzone_withdraws').set(withdraws);
-                saveAllToLocalStorage();
-                renderWithdrawHistory();
-                renderDashboard();
-                showToast("Đã xóa bản ghi!");
             });
         }
 
@@ -3078,12 +3028,8 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
             saveAllToLocalStorage();
             addLog(`Thêm vốn góp: ${person} +${amount.toLocaleString()}đ (${desc})`);
 
-            renderFundHistory();
-            renderDashboard();
-
             document.getElementById('fundAmount').value = '';
             document.getElementById('fundDesc').value = '';
-            showToast("Đã thêm tiền vốn góp thành công!");
         }
 
         function renderFundHistory() {
@@ -3110,10 +3056,6 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
             showConfirmToast("Xóa khoản góp vốn này?", () => {
                 funds.splice(idx, 1);
                 db.ref('youngzone_funds').set(funds);
-                saveAllToLocalStorage();
-                renderFundHistory();
-                renderDashboard();
-                showToast("Đã xóa khoản góp vốn!");
             });
         }
 
