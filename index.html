@@ -113,7 +113,7 @@
                     <div>
                         <div class="flex items-center space-x-2">
                             <span class="bg-amber-500 text-slate-950 font-black px-2.5 py-1 rounded text-xl italic tracking-tighter">YoungZone</span>
-                            <h1 class="text-sm font-extrabold text-white leading-none">QUẢN TRỊ NỘI BỘ PRO MAX v4.4</h1>
+                            <h1 class="text-sm font-extrabold text-white leading-none">QUẢN TRỊ NỘI BỘ PRO MAX v4.5</h1>
                         </div>
                         <div class="flex items-center space-x-2 mt-1">
                             <span id="roleBadge" class="text-[10px] text-amber-400 font-semibold">Vai trò: Admin</span>
@@ -212,7 +212,7 @@
                 </div>
             </div>
 
-            <!-- 9 Ô CHỈ SỐ THỐNG KÊ FIREBASE -->
+            <!-- 9 Ô CHỈ SỐ THỐNG KÊ FIREBASE REALTIME -->
             <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
                 <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex justify-between items-center">
                     <div>
@@ -553,7 +553,7 @@
         <div id="tabCRM" class="max-w-7xl mx-auto px-4 mt-6 hidden">
             <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 mb-6">
                 <h2 class="text-base font-bold text-white mb-2"><i class="fas fa-users text-amber-500 mr-2"></i>Danh Sách Khách Hàng CRM (Tự Động Tính Hạng VIP)</h2>
-                <p class="text-xs text-slate-400 mb-4">Tự động cộng dồn doanh số mua hàng thành công. Khách đạt <b>≥ 2.000.000đ</b> sẽ tự động nâng lên cấp <b>💎 VIP</b>!</p>
+                <p class="text-xs text-slate-400 mb-4">Tự động tổng hợp danh sách khách hàng. Khách có tổng tích lũy mua hàng <b>≥ 2.000.000đ</b> sẽ tự động nâng lên cấp <b>💎 VIP</b>!</p>
                 
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-xs text-slate-300">
@@ -801,11 +801,11 @@
                 <div class="grid grid-cols-2 gap-2">
                     <div>
                         <label class="block text-slate-300 text-[10px] mb-1 font-bold">Giá nhập gốc (Tệ ¥):</label>
-                        <input type="number" id="calcRmbGoods" oninput="calculateCostFromRmb()" placeholder="VD: 55" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-amber-400 font-bold">
+                        <input type="number" id="calcRmbGoods" oninput="calculateCostFromRmb(true)" placeholder="VD: 55" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-amber-400 font-bold">
                     </div>
                     <div>
                         <label class="block text-slate-300 text-[10px] mb-1 font-bold">Ship nội địa TQ (Tệ ¥):</label>
-                        <input type="number" id="calcRmbShip" oninput="calculateCostFromRmb()" placeholder="VD: 10" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white font-bold">
+                        <input type="number" id="calcRmbShip" oninput="calculateCostFromRmb(true)" placeholder="VD: 10" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white font-bold">
                     </div>
                 </div>
                 
@@ -815,7 +815,7 @@
                         <b id="lblCalculatedCostVnd" class="text-rose-400 text-sm">0đ</b>
                     </div>
                     <div class="flex justify-between items-center bg-slate-900 p-2 rounded border border-slate-800">
-                        <span class="text-slate-400 text-[11px]">Giá Bán Khách:</span>
+                        <span class="text-slate-400 text-[11px]">Giá Bán Khách (Gợi ý):</span>
                         <b id="lblCalculatedSellPriceVnd" class="text-emerald-400 text-sm">0đ</b>
                     </div>
                 </div>
@@ -897,15 +897,15 @@
                 <div class="grid grid-cols-4 gap-2">
                     <div>
                         <label class="block text-rose-400 mb-1 font-bold">Vốn Gốc (VNĐ)</label>
-                        <input type="number" id="formCost" oninput="calculateCostFromRmb()" required placeholder="293370" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-rose-400 font-bold">
+                        <input type="number" id="formCost" oninput="calculateCostFromRmb(false)" required placeholder="293370" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-rose-400 font-bold">
                     </div>
                     <div>
                         <label class="block text-indigo-400 mb-1 font-bold">Ship VN</label>
-                        <input type="number" id="formVnShip" value="50000" oninput="calculateCostFromRmb()" placeholder="50000" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-indigo-400 font-bold">
+                        <input type="number" id="formVnShip" value="50000" oninput="calculateCostFromRmb(false)" placeholder="50000" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-indigo-400 font-bold">
                     </div>
                     <div>
                         <label class="block text-amber-400 mb-1 font-bold">Giá Bán Khách</label>
-                        <input type="number" id="formTotal" oninput="autoCalculateDeposit(); calculateCostFromRmb();" required placeholder="447000" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-amber-400 font-bold">
+                        <input type="number" id="formTotal" oninput="onCustomTotalInput()" required placeholder="447000" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-amber-400 font-bold">
                     </div>
                     <div>
                         <label class="block text-emerald-400 mb-1 font-bold">Tiền Đã Cọc</label>
@@ -1228,13 +1228,6 @@
         let webProdGalleryBase64Arr = [];
         let webProdSizeBase64Image = '';
         let sizeChartBase64Image = '';
-        
-        // CỜ VÀ BỘ ĐẾM THEO DÕI KHỞI TẠO ĐỂ TỰ ĐỘNG RESET TRANG KHI DỮ LIỆU THAY ĐỔI
-        let isInitialDataLoaded = false;
-        let initialLoadCount = 0;
-        let lastOrdersHash = '';
-        let lastFundsHash = '';
-        let lastWithdrawsHash = '';
 
         let orders = [];
         let coupons = [];
@@ -1387,28 +1380,17 @@
             }
         }
 
-        // LẮNG NGHE REALTIME KHÔNG TRỄ & CHÍNH XÁC TỪNG Ô THỐNG KÊ
+        // LẮNG NGHE REALTIME KHÔNG TRỄ - TỰ ĐỘNG CẬP NHẬT GIAO DIỆN KHÔNG CẦN RESET TRANG
         function initFirebaseListeners() {
             // 1. ĐƠN HÀNG
             db.ref('youngzone_orders').on('value', (snapshot) => {
-                const rawVal = snapshot.val();
-                const newOrdersList = parseFirebaseData(rawVal);
-                const currentHash = JSON.stringify(newOrdersList);
-
-                if (isInitialDataLoaded && lastOrdersHash !== '' && lastOrdersHash !== currentHash) {
-                    window.location.reload();
-                    return;
-                }
-
-                lastOrdersHash = currentHash;
-                orders = newOrdersList;
+                orders = parseFirebaseData(snapshot.val());
                 saveAllToLocalStorage();
                 renderDashboard();
                 renderBuyLinksTable();
                 renderOrderPhotosGrid();
+                renderCRMTable();
                 updateFirebaseStatus(true);
-                
-                checkAndMarkLoaded();
             }, () => {
                 updateFirebaseStatus(false);
                 renderDashboard();
@@ -1416,42 +1398,18 @@
 
             // 2. VỐN GÓP
             db.ref('youngzone_funds').on('value', (snapshot) => {
-                const rawVal = snapshot.val();
-                const newFunds = parseFirebaseData(rawVal);
-                const currentHash = JSON.stringify(newFunds);
-
-                if (isInitialDataLoaded && lastFundsHash !== '' && lastFundsHash !== currentHash) {
-                    window.location.reload();
-                    return;
-                }
-
-                lastFundsHash = currentHash;
-                funds = newFunds;
+                funds = parseFirebaseData(snapshot.val());
                 saveAllToLocalStorage();
                 renderFundHistory();
                 renderDashboard();
-
-                checkAndMarkLoaded();
             });
 
             // 3. CHI TIÊU / RÚT TIỀN
             db.ref('youngzone_withdraws').on('value', (snapshot) => {
-                const rawVal = snapshot.val();
-                const newWithdraws = parseFirebaseData(rawVal);
-                const currentHash = JSON.stringify(newWithdraws);
-
-                if (isInitialDataLoaded && lastWithdrawsHash !== '' && lastWithdrawsHash !== currentHash) {
-                    window.location.reload();
-                    return;
-                }
-
-                lastWithdrawsHash = currentHash;
-                withdraws = newWithdraws;
+                withdraws = parseFirebaseData(snapshot.val());
                 saveAllToLocalStorage();
                 renderWithdrawHistory();
                 renderDashboard();
-
-                checkAndMarkLoaded();
             });
 
             // 4. MÓN HÀNG WEB
@@ -1516,15 +1474,6 @@
             db.ref('youngzone_logs').on('value', (snapshot) => {
                 logs = parseFirebaseData(snapshot.val());
             });
-        }
-
-        function checkAndMarkLoaded() {
-            initialLoadCount++;
-            if (initialLoadCount >= 3) {
-                setTimeout(() => {
-                    isInitialDataLoaded = true;
-                }, 1000);
-            }
         }
 
         function updateNotifBadge() {
@@ -1594,6 +1543,8 @@
         function syncOrdersToFirebase() {
             db.ref('youngzone_orders').set(orders);
             saveAllToLocalStorage();
+            renderDashboard();
+            renderCRMTable();
         }
 
         function updateRmbRate(val) {
@@ -2206,7 +2157,6 @@
             let newTotal = Math.max(0, currentTotal - discountAmount);
             document.getElementById('formTotal').value = Math.round(newTotal);
             autoCalculateDeposit();
-            calculateCostFromRmb();
 
             showToast(`Đã áp mã [${found.code}] giảm ${discountAmount.toLocaleString()}đ vào đơn!`);
         }
@@ -2274,7 +2224,7 @@
             return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
         }
 
-        /* --- TÍNH TOÁN 9 Ô THỐNG KÊ TỰ ĐỘNG --- */
+        /* --- TÍNH TOÁN 9 Ô THỐNG KÊ TỰ ĐỘNG CHÍNH XÁC REALTIME --- */
         function renderDashboard() {
             // 1. TỔNG VỐN ĐÃ GÓP
             let totalFundAdded = funds.reduce((sum, f) => sum + (Number(f.amount) || 0), 0);
@@ -2698,15 +2648,30 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
             }
         }
 
+        // CẢI TIẾN CRM: HIỂN THỊ ĐẦY ĐỦ TẤT CẢ KHÁCH HÀNG
         function renderCRMTable() {
             const tbody = document.getElementById('crmTableBody');
+            if (!tbody) return;
+
+            // Gom tất cả khách từ danh sách order nếu danh sách CRM chưa ghi nhận
+            orders.forEach(o => {
+                if (o.phone && !customers.some(c => c.phone === o.phone)) {
+                    customers.push({
+                        name: o.customer || 'Khách Hàng',
+                        phone: o.phone,
+                        address: o.address || '',
+                        type: 'NORMAL'
+                    });
+                }
+            });
+
             if (customers.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-500">Chưa có thông tin khách hàng.</td></tr>`;
                 return;
             }
 
             tbody.innerHTML = customers.map((c, idx) => {
-                const totalSpent = orders.filter(o => o.phone === c.phone && o.status && o.status.includes('Đã bán - Hoàn tất'))
+                const totalSpent = orders.filter(o => o.phone === c.phone && (!o.status || !o.status.includes('Hoàn hàng')))
                                          .reduce((sum, o) => sum + (Number(o.total) || 0), 0);
                 
                 const isAutoVIP = totalSpent >= 2000000;
@@ -2715,7 +2680,7 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
                 <tr>
                     <td class="p-3 font-bold text-white">${c.name}</td>
                     <td class="p-3 text-amber-400 font-bold">${c.phone}</td>
-                    <td class="p-3 text-slate-300">${c.address}</td>
+                    <td class="p-3 text-slate-300">${c.address || 'Chưa có'}</td>
                     <td class="p-3 font-bold text-emerald-400">${totalSpent.toLocaleString()}đ</td>
                     <td class="p-3">
                         ${isAutoVIP 
@@ -2752,7 +2717,8 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
             });
         }
 
-        function calculateCostFromRmb() {
+        // TÍNH TOÁN GIÁ CÓ HỖ TRỢ SỬA TỰ DO GIÁ BÁN KHÁCH
+        function calculateCostFromRmb(autoUpdateTotal = true) {
             const rmbGoods = parseFloat(document.getElementById('calcRmbGoods').value) || 0;
             const rmbShip = parseFloat(document.getElementById('calcRmbShip').value) || 0;
             const rate = globalRMBRate || 3810;
@@ -2780,7 +2746,7 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
             const totalEl = document.getElementById('formTotal');
             const sellPriceEl = document.getElementById('lblCalculatedSellPriceVnd');
 
-            if (totalEl && (rmbGoods > 0 || rmbShip > 0 || formCost > 0)) {
+            if (autoUpdateTotal && totalEl && (rmbGoods > 0 || rmbShip > 0 || formCost > 0)) {
                 totalEl.value = roundedSellPrice;
                 autoCalculateDeposit();
             }
@@ -2789,6 +2755,11 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
                 sellPriceEl.innerText = roundedSellPrice.toLocaleString() + 'đ';
                 sellPriceEl.className = "text-emerald-400 text-sm font-bold";
             }
+        }
+
+        // KHI NGƯỜI DÙNG TỰ SỬA GIÁ BÁN TRỰC TIẾP TRÊN FORM
+        function onCustomTotalInput() {
+            autoCalculateDeposit();
         }
 
         function setDepositRatio(ratio) {
@@ -2893,6 +2864,7 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
 
             syncOrdersToFirebase();
             closeOrderModal();
+            showToast("Lưu đơn hàng thành công!");
         }
 
         function editOrder(idx) {
@@ -2918,7 +2890,7 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
             tempBase64Bill = o.billImg || '';
             tempBase64PreShip = o.preShipImg || '';
 
-            calculateCostFromRmb();
+            calculateCostFromRmb(false);
             document.getElementById('orderModal').classList.remove('hidden');
         }
 
@@ -2929,6 +2901,7 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
                 orders.splice(idx, 1);
                 addLog(`Xóa đơn hàng [${deletedId}]`);
                 db.ref('youngzone_orders').set(orders);
+                showToast("Đã xóa đơn hàng!");
             });
         }
 
@@ -2981,6 +2954,7 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
 
             document.getElementById('wdAmount').value = '';
             document.getElementById('wdReason').value = '';
+            showToast("Đã ghi sổ khoản rút/chi tiêu thành công!");
         }
 
         function renderWithdrawHistory() {
@@ -3007,6 +2981,7 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
             showConfirmToast("Xóa bản ghi rút tiền này?", () => {
                 withdraws.splice(idx, 1);
                 db.ref('youngzone_withdraws').set(withdraws);
+                showToast("Đã xóa bản ghi rút tiền!");
             });
         }
 
@@ -3030,6 +3005,7 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
 
             document.getElementById('fundAmount').value = '';
             document.getElementById('fundDesc').value = '';
+            showToast("Đã thêm vốn góp thành công!");
         }
 
         function renderFundHistory() {
@@ -3056,6 +3032,7 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
             showConfirmToast("Xóa khoản góp vốn này?", () => {
                 funds.splice(idx, 1);
                 db.ref('youngzone_funds').set(funds);
+                showToast("Đã xóa khoản góp vốn!");
             });
         }
 
