@@ -1250,7 +1250,6 @@
             sizeImg: 'https://images.unsplash.com/photo-1518609878373-06d740f60d8b?w=500'
         };
 
-        // HÀM ÉP CHUYỂN ĐỔI DỮ LIỆU FIREBASE SANG DẠNG MẢNG CHUẨN
         function parseFirebaseData(snapshotVal) {
             if (!snapshotVal) return [];
             if (Array.isArray(snapshotVal)) return snapshotVal.filter(Boolean);
@@ -1380,9 +1379,7 @@
             }
         }
 
-        // LẮNG NGHE REALTIME KHÔNG TRỄ - TỰ ĐỘNG CẬP NHẬT GIAO DIỆN KHÔNG CẦN RESET TRANG
         function initFirebaseListeners() {
-            // 1. ĐƠN HÀNG
             db.ref('youngzone_orders').on('value', (snapshot) => {
                 orders = parseFirebaseData(snapshot.val());
                 saveAllToLocalStorage();
@@ -1396,7 +1393,6 @@
                 renderDashboard();
             });
 
-            // 2. VỐN GÓP
             db.ref('youngzone_funds').on('value', (snapshot) => {
                 funds = parseFirebaseData(snapshot.val());
                 saveAllToLocalStorage();
@@ -1404,7 +1400,6 @@
                 renderDashboard();
             });
 
-            // 3. CHI TIÊU / RÚT TIỀN
             db.ref('youngzone_withdraws').on('value', (snapshot) => {
                 withdraws = parseFirebaseData(snapshot.val());
                 saveAllToLocalStorage();
@@ -1412,21 +1407,18 @@
                 renderDashboard();
             });
 
-            // 4. MÓN HÀNG WEB
             db.ref('youngzone_web_products').on('value', (snapshot) => {
                 webProducts = parseFirebaseData(snapshot.val());
                 saveAllToLocalStorage();
                 renderWebProductsTable();
             });
 
-            // 5. MÃ GIẢM GIÁ
             db.ref('youngzone_web_vouchers').on('value', (snapshot) => {
                 coupons = parseFirebaseData(snapshot.val());
                 saveAllToLocalStorage();
                 renderCouponsTable();
             });
 
-            // 6. CẤU HÌNH SIZE
             db.ref('youngzone_web_sidebar_config').on('value', (snapshot) => {
                 const data = snapshot.val();
                 if (data) {
@@ -1435,7 +1427,6 @@
                 }
             });
 
-            // 7. DANH MỤC
             db.ref('youngzone_web_categories').on('value', (snapshot) => {
                 const data = snapshot.val();
                 if (data) {
@@ -1446,14 +1437,12 @@
                 updateCategorySelectOptions();
             });
 
-            // 8. KHO HÀNG SẮN
             db.ref('youngzone_inventory').on('value', (snapshot) => {
                 inventory = parseFirebaseData(snapshot.val());
                 saveAllToLocalStorage();
                 renderInventoryTable();
             });
 
-            // 9. TỶ GIÁ TỆ
             db.ref('youngzone_rmb_rate').on('value', (snapshot) => {
                 const rate = snapshot.val();
                 if (rate !== null) {
@@ -1463,14 +1452,12 @@
                 }
             });
 
-            // 10. KHÁCH HÀNG CRM
             db.ref('youngzone_customers').on('value', (snapshot) => {
                 customers = parseFirebaseData(snapshot.val());
                 saveAllToLocalStorage();
                 renderCRMTable();
             });
 
-            // 11. NHẬT KÝ
             db.ref('youngzone_logs').on('value', (snapshot) => {
                 logs = parseFirebaseData(snapshot.val());
             });
@@ -1540,8 +1527,8 @@
             }
         }
 
-        function syncOrdersToFirebase() {
-            db.ref('youngzone_orders').set(orders);
+        async function syncOrdersToFirebase() {
+            await db.ref('youngzone_orders').set(orders);
             saveAllToLocalStorage();
             renderDashboard();
             renderCRMTable();
@@ -2648,12 +2635,10 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
             }
         }
 
-        // CẢI TIẾN CRM: HIỂN THỊ ĐẦY ĐỦ TẤT CẢ KHÁCH HÀNG
         function renderCRMTable() {
             const tbody = document.getElementById('crmTableBody');
             if (!tbody) return;
 
-            // Gom tất cả khách từ danh sách order nếu danh sách CRM chưa ghi nhận
             orders.forEach(o => {
                 if (o.phone && !customers.some(c => c.phone === o.phone)) {
                     customers.push({
@@ -2717,7 +2702,6 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
             });
         }
 
-        // TÍNH TOÁN GIÁ CÓ HỖ TRỢ SỬA TỰ DO GIÁ BÁN KHÁCH
         function calculateCostFromRmb(autoUpdateTotal = true) {
             const rmbGoods = parseFloat(document.getElementById('calcRmbGoods').value) || 0;
             const rmbShip = parseFloat(document.getElementById('calcRmbShip').value) || 0;
@@ -2757,7 +2741,6 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
             }
         }
 
-        // KHI NGƯỜI DÙNG TỰ SỬA GIÁ BÁN TRỰC TIẾP TRÊN FORM
         function onCustomTotalInput() {
             autoCalculateDeposit();
         }
@@ -2795,76 +2778,104 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
 
         function closeOrderModal() { document.getElementById('orderModal').classList.add('hidden'); }
 
-        function handleSaveOrder(e) {
+        /* HÀM LƯU ĐƠN HÀNG BẤT ĐỒNG BỘ: TỰ ĐỘNG ĐÓNG MODAL VÀ CẬP NHẬT VỐN NGAY LẬP TỨC */
+        async function handleSaveOrder(e) {
             e.preventDefault();
-            const idx = parseInt(document.getElementById('editIndex').value);
-            const name = document.getElementById('formCustomer').value.trim();
-            const phone = document.getElementById('formPhone').value.trim();
-            const address = document.getElementById('formAddress').value.trim();
-            const prodName = document.getElementById('formProduct').value.trim();
-            const prodSize = document.getElementById('formSize').value.trim();
-            const statusVal = document.getElementById('formStatus').value;
+            
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalBtnText = submitBtn ? submitBtn.innerText : '';
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerText = "Đang lưu dữ liệu...";
+            }
 
-            const existingBill = idx >= 0 ? (orders[idx].billImg || '') : '';
-            const existingPreShip = idx >= 0 ? (orders[idx].preShipImg || '') : '';
+            try {
+                const idx = parseInt(document.getElementById('editIndex').value);
+                const name = document.getElementById('formCustomer').value.trim();
+                const phone = document.getElementById('formPhone').value.trim();
+                const address = document.getElementById('formAddress').value.trim();
+                const prodName = document.getElementById('formProduct').value.trim();
+                const prodSize = document.getElementById('formSize').value.trim();
+                const statusVal = document.getElementById('formStatus').value;
 
-            if (statusVal === 'Hoàn hàng') {
-                const invFound = inventory.find(i => i.product.toLowerCase() === prodName.toLowerCase() && i.size === prodSize);
-                if (invFound) {
-                    invFound.qty += 1;
-                } else {
-                    inventory.unshift({
-                        id: Date.now(),
-                        product: prodName,
-                        size: prodSize,
-                        qty: 1,
-                        cost: parseInt(document.getElementById('formCost').value) || 0,
-                        price: parseInt(document.getElementById('formTotal').value) || 0
-                    });
+                const existingBill = idx >= 0 ? (orders[idx].billImg || '') : '';
+                const existingPreShip = idx >= 0 ? (orders[idx].preShipImg || '') : '';
+
+                if (statusVal === 'Hoàn hàng') {
+                    const invFound = inventory.find(i => i.product.toLowerCase() === prodName.toLowerCase() && i.size === prodSize);
+                    if (invFound) {
+                        invFound.qty += 1;
+                    } else {
+                        inventory.unshift({
+                            id: Date.now(),
+                            product: prodName,
+                            size: prodSize,
+                            qty: 1,
+                            cost: parseInt(document.getElementById('formCost').value) || 0,
+                            price: parseInt(document.getElementById('formTotal').value) || 0
+                        });
+                    }
+                    await db.ref('youngzone_inventory').set(inventory);
+                    renderInventoryTable();
                 }
-                db.ref('youngzone_inventory').set(inventory);
-                renderInventoryTable();
-                showToast(`Đã tự động cộng 1 [${prodName}] vào Kho do trả hàng!`);
+
+                const orderObj = {
+                    id: idx >= 0 ? orders[idx].id : 'YZ-' + Math.floor(1000 + Math.random() * 9000),
+                    date: document.getElementById('formDate').value,
+                    owner: document.getElementById('formOwner').value,
+                    customer: name,
+                    phone: phone,
+                    address: address,
+                    tracking: document.getElementById('formTracking').value,
+                    vnTracking: document.getElementById('formVnTracking').value,
+                    buyUrl: document.getElementById('formBuyUrl').value.trim(),
+                    codReceived: document.getElementById('formCodReceived').value,
+                    product: prodName,
+                    size: prodSize,
+                    total: parseInt(document.getElementById('formTotal').value) || 0,
+                    deposit: parseInt(document.getElementById('formDeposit').value) || 0,
+                    cost: parseInt(document.getElementById('formCost').value) || 0,
+                    vnShip: parseInt(document.getElementById('formVnShip').value) || 0,
+                    billImg: tempBase64Bill || existingBill,
+                    preShipImg: tempBase64PreShip || existingPreShip,
+                    status: statusVal
+                };
+
+                if (!customers.some(c => c.phone === phone)) {
+                    customers.push({ name, phone, address, type: 'NORMAL' });
+                    await db.ref('youngzone_customers').set(customers);
+                }
+
+                if (idx >= 0) {
+                    orders[idx] = orderObj;
+                    addLog(`Cập nhật đơn hàng [${orderObj.id}]`);
+                } else {
+                    orders.unshift(orderObj);
+                    addLog(`Tạo đơn hàng mới [${orderObj.id}] - ${orderObj.product}`);
+                }
+
+                // Lưu dữ liệu Firebase
+                await db.ref('youngzone_orders').set(orders);
+                saveAllToLocalStorage();
+
+                // Đóng Modal ngay lập tức
+                closeOrderModal();
+
+                // Cập nhật lại giao diện và thông số vốn trên màn hình
+                renderDashboard();
+                renderCRMTable();
+
+                showToast("✅ Đã lưu đơn hàng & Cập nhật vốn thành công!");
+
+            } catch (err) {
+                console.error("Lỗi khi lưu đơn:", err);
+                showToast("❌ Có lỗi xảy ra khi lưu: " + err.message);
+            } finally {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = originalBtnText;
+                }
             }
-
-            const orderObj = {
-                id: idx >= 0 ? orders[idx].id : 'YZ-' + Math.floor(1000 + Math.random() * 9000),
-                date: document.getElementById('formDate').value,
-                owner: document.getElementById('formOwner').value,
-                customer: name,
-                phone: phone,
-                address: address,
-                tracking: document.getElementById('formTracking').value,
-                vnTracking: document.getElementById('formVnTracking').value,
-                buyUrl: document.getElementById('formBuyUrl').value.trim(),
-                codReceived: document.getElementById('formCodReceived').value,
-                product: prodName,
-                size: prodSize,
-                total: parseInt(document.getElementById('formTotal').value),
-                deposit: parseInt(document.getElementById('formDeposit').value),
-                cost: parseInt(document.getElementById('formCost').value),
-                vnShip: parseInt(document.getElementById('formVnShip').value) || 50000,
-                billImg: tempBase64Bill || existingBill,
-                preShipImg: tempBase64PreShip || existingPreShip,
-                status: statusVal
-            };
-
-            if (!customers.some(c => c.phone === phone)) {
-                customers.push({ name, phone, address, type: 'NORMAL' });
-                db.ref('youngzone_customers').set(customers);
-            }
-
-            if (idx >= 0) {
-                orders[idx] = orderObj;
-                addLog(`Cập nhật đơn hàng [${orderObj.id}]`);
-            } else {
-                orders.unshift(orderObj);
-                addLog(`Tạo đơn hàng mới [${orderObj.id}] - ${orderObj.product}`);
-            }
-
-            syncOrdersToFirebase();
-            closeOrderModal();
-            showToast("Lưu đơn hàng thành công!");
         }
 
         function editOrder(idx) {
