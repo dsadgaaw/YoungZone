@@ -113,7 +113,7 @@
                     <div>
                         <div class="flex items-center space-x-2">
                             <span class="bg-amber-500 text-slate-950 font-black px-2.5 py-1 rounded text-xl italic tracking-tighter">YoungZone</span>
-                            <h1 class="text-sm font-extrabold text-white leading-none">QUẢN TRỊ NỘI BỘ PRO MAX v4.5</h1>
+                            <h1 class="text-sm font-extrabold text-white leading-none">QUẢN TRỊ NỘI BỘ PRO MAX v4.6</h1>
                         </div>
                         <div class="flex items-center space-x-2 mt-1">
                             <span id="roleBadge" class="text-[10px] text-amber-400 font-semibold">Vai trò: Admin</span>
@@ -2213,13 +2213,45 @@
             return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
         }
 
-        /* --- TÍNH TOÁN 9 Ô THỐNG KÊ TỰ ĐỘNG CHÍNH XÁC REALTIME --- */
+        /* --- TÍNH TOÁN 9 Ô THỐNG KÊ TỰ ĐỘNG CỰC KỲ CHUẨN XÁC REALTIME --- */
         function renderDashboard() {
-            // 1. TỔNG VỐN ĐÃ GÓP
+            // 1. TỔNG VỐN ĐÃ GÓP SỔ QUỸ (Xuyên suốt)
             let totalFundAdded = funds.reduce((sum, f) => sum + (Number(f.amount) || 0), 0);
             const capitalEl = document.getElementById('displayCapital');
             if (capitalEl) capitalEl.innerText = totalFundAdded.toLocaleString() + 'đ';
 
+            // 2. TỔNG TIỀN TÀI KHOẢN TÍCH LŨY (TẤT CẢ ĐƠN HÀNG XUYÊN SUỐT - DÒNG TIỀN THỰC TẾ TRONG TÀI KHOẢN)
+            // Công thức: Tiền trong tài khoản = Vốn Góp + Tổng Tiền Thực Thu Từng Đơn (Cọc hoặc Đã Hoàn Tất) - Tổng Chi Phí Nhập Hàng - Tổng Tiền Rút
+            let totalAcc = totalFundAdded;
+            orders.forEach(o => {
+                const isCompleted = o.status && o.status.includes('Đã bán - Hoàn tất');
+                const isRefunded = o.status && o.status.includes('Hoàn hàng');
+                const isWrongItem = o.status && o.status.includes('Shop giao sai đơn');
+                const totalCostSingle = (Number(o.cost) || 0) + (Number(o.vnShip) || 0);
+
+                if (isCompleted) {
+                    totalAcc += (Number(o.total) || 0); // Đã xong: Thu đủ 100% giá bán
+                } else if (isRefunded || isWrongItem) {
+                    totalAcc += (Number(o.deposit) || 0); // Hoàn/Sai đơn: Chỉ giữ tiền cọc (Giá bán = 0đ)
+                } else {
+                    totalAcc += (Number(o.deposit) || 0); // Đang xử lý: Thu tiền cọc
+                }
+
+                // Luôn trừ chi phí nhập hàng thực tế
+                totalAcc -= totalCostSingle;
+            });
+
+            // Trừ tiền rút / chi tiêu
+            let totalWithdraws = withdraws.reduce((sum, w) => sum + (Number(w.amount) || 0), 0);
+            totalAcc -= totalWithdraws;
+
+            const accBalEl = document.getElementById('statTotalAccountBalance');
+            if (accBalEl) {
+                accBalEl.innerText = totalAcc.toLocaleString() + 'đ';
+                accBalEl.className = totalAcc < 0 ? "text-lg font-black text-rose-500 block mt-1" : "text-lg font-black text-amber-400 block mt-1";
+            }
+
+            // BỘ LỌC ĐƠN HÀNG THEO THÁNG & BỘ LỌC TÌM KIẾM
             const selectedMonthStr = document.getElementById('filterMonth').value;
             const searchKw = document.getElementById('searchInput').value.trim().toLowerCase();
             const statusFilter = document.getElementById('filterStatus').value;
@@ -2269,40 +2301,7 @@
                 if (alertBox) alertBox.classList.add('hidden');
             }
 
-            // 2. TỔNG TIỀN TÀI KHOẢN (Vốn góp + Cọc/Bán - Vốn nhập - Lỗ sai hàng - Rút/Chi)
-            let totalAcc = totalFundAdded;
-            orders.forEach(o => {
-                const isCompleted = o.status && o.status.includes('Đã bán - Hoàn tất');
-                const isRefunded = o.status && o.status.includes('Hoàn hàng');
-                const isWrongItem = o.status && o.status.includes('Shop giao sai đơn');
-                const totalCostSingle = (Number(o.cost) || 0) + (Number(o.vnShip) || 0);
-                
-                if (isCompleted) {
-                    totalAcc += (Number(o.total) || 0);
-                    totalAcc -= totalCostSingle;
-                } else if (isRefunded) {
-                    totalAcc += (Number(o.deposit) || 0);
-                    totalAcc -= totalCostSingle;
-                } else if (isWrongItem) {
-                    // Đơn shop giao sai: Trừ luôn vốn nhập tiền hàng + ship VN (Coi như lỗ trắng tiền vốn)
-                    totalAcc += (Number(o.deposit) || 0);
-                    totalAcc -= totalCostSingle;
-                } else {
-                    totalAcc += (Number(o.deposit) || 0);
-                    totalAcc -= totalCostSingle;
-                }
-            });
-
-            let totalWithdraws = withdraws.reduce((sum, w) => sum + (Number(w.amount) || 0), 0);
-            totalAcc -= totalWithdraws;
-
-            const accBalEl = document.getElementById('statTotalAccountBalance');
-            if (accBalEl) {
-                accBalEl.innerText = totalAcc.toLocaleString() + 'đ';
-                accBalEl.className = totalAcc < 0 ? "text-lg font-black text-rose-500 block mt-1" : "text-lg font-black text-amber-400 block mt-1";
-            }
-
-            // 3. DOANH THU & CHIA LÃI
+            // 3. TÍNH DOANH THU & CHIA LÃI LÂM KHÔI
             let totCost = 0, totProfit = 0, totRemCOD = 0;
             let profitKhoi = 0, profitLam = 0;
 
@@ -2329,8 +2328,8 @@
                         profitKhoi += singleOrderProfit * 0.4;
                     }
                 } else if (isWrongItem) {
-                    // Tính lỗ vốn cho đơn giao sai
-                    const lossAmount = -totalCostSingle;
+                    // Đơn shop giao sai: Tính lỗ = Tiền Cọc - Tổng Chi Phí Nhập Hàng
+                    const lossAmount = (Number(o.deposit) || 0) - totalCostSingle;
                     totProfit += lossAmount;
 
                     if (o.owner === 'CHUNG' || !o.owner) {
@@ -2385,7 +2384,7 @@
                     
                     let orderProfit = 0;
                     if (isCompleted) orderProfit = (Number(o.total) || 0) - totalCostSingle;
-                    else if (isWrongItem) orderProfit = -totalCostSingle;
+                    else if (isWrongItem) orderProfit = (Number(o.deposit) || 0) - totalCostSingle;
 
                     const remCOD = (isCompleted || isRefunded || isWrongItem) ? 0 : ((Number(o.total) || 0) - (Number(o.deposit) || 0));
                     
@@ -2807,7 +2806,6 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
 
         function closeOrderModal() { document.getElementById('orderModal').classList.add('hidden'); }
 
-        /* HÀM LƯU ĐƠN HÀNG CHUẨN XÁC: CHỈ LƯU KHI BẤM NÚT LƯU, TỰ ĐỘNG ĐÓNG MODAL VÀ CẬP NHẬT VỐN NGAY LẬP TỨC */
         async function handleSaveOrder(e) {
             e.preventDefault();
             
@@ -2865,7 +2863,6 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
                     addLog(`Tạo đơn hàng mới [${orderObj.id}] - ${orderObj.product}`);
                 }
 
-                // Lưu dữ liệu máy & Firebase
                 saveAllToLocalStorage();
                 try {
                     await db.ref('youngzone_orders').set(orders);
@@ -2873,10 +2870,8 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
                     console.warn("Chưa đồng bộ được Firebase, đã lưu dữ liệu ở bộ nhớ local:", fbErr);
                 }
 
-                // Đóng Modal ngay lập tức
                 closeOrderModal();
 
-                // Cập nhật lại giao diện và thông số vốn trên màn hình
                 renderDashboard();
                 renderCRMTable();
 
@@ -3092,7 +3087,7 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
                 
                 let profit = 0;
                 if (isCompleted) profit = (Number(o.total)||0) - totalCostSingle;
-                else if (isWrongItem) profit = -totalCostSingle;
+                else if (isWrongItem) profit = (Number(o.deposit)||0) - totalCostSingle;
 
                 let kShare = 0, lShare = 0;
                 if (isCompleted || isWrongItem) {
