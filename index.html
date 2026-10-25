@@ -309,6 +309,7 @@
                         <option value="ARRIVED">3. Đã về kho Hà Nội - Đang giao</option>
                         <option value="COMPLETED">4. Đã bán - Hoàn tất</option>
                         <option value="REFUNDED">5. Hoàn hàng</option>
+                        <option value="WRONG_ITEM">6. Shop giao sai đơn (Lỗ vốn)</option>
                         <option value="UNPAID_COD">Chưa Nhận Tiền COD từ ĐVVC</option>
                     </select>
                 </div>
@@ -938,6 +939,7 @@
                         <option value="Đã về kho Hà Nội - Đang giao">3. Đã về kho Hà Nội - Đang giao</option>
                         <option value="Đã bán - Hoàn tất">4. Đã bán - Hoàn tất</option>
                         <option value="Hoàn hàng">5. Hoàn hàng (Trả hàng)</option>
+                        <option value="Shop giao sai đơn (Lỗ vốn)">6. Shop giao sai đơn (Lỗ vốn)</option>
                     </select>
                 </div>
                 <button type="submit" class="w-full gold-gradient text-slate-950 font-bold py-3 rounded-xl text-sm mt-2 hover:opacity-90">Lưu Đơn Hàng Dữ Liệu</button>
@@ -2244,10 +2246,11 @@
                 else if (statusFilter === 'ARRIVED') matchStatus = o.status && o.status.includes('về kho Hà Nội');
                 else if (statusFilter === 'COMPLETED') matchStatus = o.status && o.status.includes('Đã bán - Hoàn tất');
                 else if (statusFilter === 'REFUNDED') matchStatus = o.status && o.status.includes('Hoàn hàng');
+                else if (statusFilter === 'WRONG_ITEM') matchStatus = o.status && o.status.includes('Shop giao sai đơn');
                 else if (statusFilter === 'UNPAID_COD') matchStatus = o.codReceived !== 'YES';
 
                 const days = getDaysDiff(o.date);
-                const isDone = o.status && (o.status.includes('Đã bán - Hoàn tất') || o.status.includes('Hoàn hàng'));
+                const isDone = o.status && (o.status.includes('Đã bán - Hoàn tất') || o.status.includes('Hoàn hàng') || o.status.includes('Shop giao sai đơn'));
                 const isDelayed = days > 7 && !isDone;
 
                 if (isDelayed) delayedOrdersCount++;
@@ -2266,17 +2269,22 @@
                 if (alertBox) alertBox.classList.add('hidden');
             }
 
-            // 2. TỔNG TIỀN TÀI KHOẢN (Vốn góp + Cọc/Bán - Vốn nhập - Rút/Chi)
+            // 2. TỔNG TIỀN TÀI KHOẢN (Vốn góp + Cọc/Bán - Vốn nhập - Lỗ sai hàng - Rút/Chi)
             let totalAcc = totalFundAdded;
             orders.forEach(o => {
                 const isCompleted = o.status && o.status.includes('Đã bán - Hoàn tất');
                 const isRefunded = o.status && o.status.includes('Hoàn hàng');
+                const isWrongItem = o.status && o.status.includes('Shop giao sai đơn');
                 const totalCostSingle = (Number(o.cost) || 0) + (Number(o.vnShip) || 0);
                 
                 if (isCompleted) {
                     totalAcc += (Number(o.total) || 0);
                     totalAcc -= totalCostSingle;
                 } else if (isRefunded) {
+                    totalAcc += (Number(o.deposit) || 0);
+                    totalAcc -= totalCostSingle;
+                } else if (isWrongItem) {
+                    // Đơn shop giao sai: Trừ luôn vốn nhập tiền hàng + ship VN (Coi như lỗ trắng tiền vốn)
                     totalAcc += (Number(o.deposit) || 0);
                     totalAcc -= totalCostSingle;
                 } else {
@@ -2301,6 +2309,7 @@
             monthOrders.forEach(o => {
                 const isCompleted = o.status && o.status.includes('Đã bán - Hoàn tất');
                 const isRefunded = o.status && o.status.includes('Hoàn hàng');
+                const isWrongItem = o.status && o.status.includes('Shop giao sai đơn');
                 const totalCostSingle = (Number(o.cost) || 0) + (Number(o.vnShip) || 0);
 
                 totCost += totalCostSingle;
@@ -2318,6 +2327,21 @@
                     } else if (o.owner === 'Lam' || o.owner === 'LAM') {
                         profitLam += singleOrderProfit * 0.6;
                         profitKhoi += singleOrderProfit * 0.4;
+                    }
+                } else if (isWrongItem) {
+                    // Tính lỗ vốn cho đơn giao sai
+                    const lossAmount = -totalCostSingle;
+                    totProfit += lossAmount;
+
+                    if (o.owner === 'CHUNG' || !o.owner) {
+                        profitKhoi += lossAmount * 0.5;
+                        profitLam += lossAmount * 0.5;
+                    } else if (o.owner === 'Khoi' || o.owner === 'KHOI') {
+                        profitKhoi += lossAmount * 0.6;
+                        profitLam += lossAmount * 0.4;
+                    } else if (o.owner === 'Lam' || o.owner === 'LAM') {
+                        profitLam += lossAmount * 0.6;
+                        profitKhoi += lossAmount * 0.4;
                     }
                 } else if (!isRefunded) {
                     totRemCOD += ((Number(o.total) || 0) - (Number(o.deposit) || 0));
@@ -2356,16 +2380,20 @@
                 desktopTbody.innerHTML = monthOrders.map((o) => {
                     const isCompleted = o.status && o.status.includes('Đã bán - Hoàn tất');
                     const isRefunded = o.status && o.status.includes('Hoàn hàng');
+                    const isWrongItem = o.status && o.status.includes('Shop giao sai đơn');
                     const totalCostSingle = (Number(o.cost) || 0) + (Number(o.vnShip) || 0);
                     
-                    const orderProfit = isCompleted ? ((Number(o.total) || 0) - totalCostSingle) : 0;
-                    const remCOD = (isCompleted || isRefunded) ? 0 : ((Number(o.total) || 0) - (Number(o.deposit) || 0));
+                    let orderProfit = 0;
+                    if (isCompleted) orderProfit = (Number(o.total) || 0) - totalCostSingle;
+                    else if (isWrongItem) orderProfit = -totalCostSingle;
+
+                    const remCOD = (isCompleted || isRefunded || isWrongItem) ? 0 : ((Number(o.total) || 0) - (Number(o.deposit) || 0));
                     
                     const daysCount = getDaysDiff(o.date);
-                    const isDelayed = daysCount > 7 && !isCompleted && !isRefunded;
+                    const isDelayed = daysCount > 7 && !isCompleted && !isRefunded && !isWrongItem;
 
                     let kShare = 0, lShare = 0;
-                    if (isCompleted) {
+                    if (isCompleted || isWrongItem) {
                         if (o.owner === 'CHUNG' || !o.owner) { kShare = orderProfit * 0.5; lShare = orderProfit * 0.5; }
                         else if (o.owner === 'Khoi' || o.owner === 'KHOI') { kShare = orderProfit * 0.6; lShare = orderProfit * 0.4; }
                         else if (o.owner === 'Lam' || o.owner === 'LAM') { lShare = orderProfit * 0.6; kShare = orderProfit * 0.4; }
@@ -2407,7 +2435,7 @@
                             <span class="${remCOD>0?'text-amber-400':'text-slate-400'}">COD: ${remCOD.toLocaleString()}đ</span>
                             ${o.codReceived === 'YES' ? '<span class="text-[9px] text-emerald-400 font-bold block mt-0.5">✓ Đã thu COD</span>' : '<span class="text-[9px] text-slate-500 block mt-0.5"> Chưa nhận COD</span>'}
                         </td>
-                        <td class="p-3"><b class="${isCompleted?'text-emerald-400':'text-slate-500'} text-sm">${orderProfit.toLocaleString()}đ</b></td>
+                        <td class="p-3"><b class="${orderProfit < 0 ? 'text-rose-500' : isCompleted ? 'text-emerald-400' : 'text-slate-500'} text-sm">${orderProfit.toLocaleString()}đ</b></td>
                         <td class="p-3">
                             <span class="text-[10px] text-blue-400 block font-semibold">Khôi: ${Math.round(kShare).toLocaleString()}đ</span>
                             <span class="text-[10px] text-purple-400 block font-semibold">Lâm: ${Math.round(lShare).toLocaleString()}đ</span>
@@ -2416,7 +2444,7 @@
                             ${o.billImg ? `<img src="${o.billImg}" onclick="openBillViewer('${o.billImg}')" class="w-8 h-8 object-cover rounded-lg border border-amber-500/50 cursor-pointer hover:scale-110 transition" title="Xem bill">` : '<span class="text-slate-600 italic">Không</span>'}
                         </td>
                         <td class="p-3">
-                            <span class="text-[10px] font-bold px-2 py-0.5 rounded ${isCompleted?'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30':isRefunded?'bg-rose-500/20 text-rose-400 border border-rose-500/30':'bg-amber-500/10 text-amber-400 border border-amber-500/30'}">
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded ${isCompleted?'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30':isWrongItem?'bg-rose-600/30 text-rose-300 border border-rose-500/50':isRefunded?'bg-rose-500/20 text-rose-400 border border-rose-500/30':'bg-amber-500/10 text-amber-400 border border-amber-500/30'}">
                                 ${o.status}
                             </span>
                         </td>
@@ -2434,7 +2462,8 @@
                 mobileCardsContainer.innerHTML = monthOrders.map((o) => {
                     const isCompleted = o.status && o.status.includes('Đã bán - Hoàn tất');
                     const isRefunded = o.status && o.status.includes('Hoàn hàng');
-                    const remCOD = (isCompleted || isRefunded) ? 0 : ((Number(o.total) || 0) - (Number(o.deposit) || 0));
+                    const isWrongItem = o.status && o.status.includes('Shop giao sai đơn');
+                    const remCOD = (isCompleted || isRefunded || isWrongItem) ? 0 : ((Number(o.total) || 0) - (Number(o.deposit) || 0));
                     const realIdx = orders.indexOf(o);
 
                     return `
@@ -2449,7 +2478,7 @@
                                 </div>
                                 <span class="text-[10px] text-slate-500 block">${o.date}</span>
                             </div>
-                            <span class="text-[9px] font-bold px-2 py-0.5 rounded-full ${isCompleted?'bg-emerald-500/20 text-emerald-400':isRefunded?'bg-rose-500/20 text-rose-400':'bg-amber-500/10 text-amber-400'}">
+                            <span class="text-[9px] font-bold px-2 py-0.5 rounded-full ${isCompleted?'bg-emerald-500/20 text-emerald-400':isWrongItem?'bg-rose-600/30 text-rose-300':isRefunded?'bg-rose-500/20 text-rose-400':'bg-amber-500/10 text-amber-400'}">
                                 ${o.status}
                             </span>
                         </div>
@@ -2656,7 +2685,7 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
             }
 
             tbody.innerHTML = customers.map((c, idx) => {
-                const totalSpent = orders.filter(o => o.phone === c.phone && (!o.status || !o.status.includes('Hoàn hàng')))
+                const totalSpent = orders.filter(o => o.phone === c.phone && (!o.status || (!o.status.includes('Hoàn hàng') && !o.status.includes('Shop giao sai đơn'))))
                                          .reduce((sum, o) => sum + (Number(o.total) || 0), 0);
                 
                 const isAutoVIP = totalSpent >= 2000000;
@@ -2778,7 +2807,7 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
 
         function closeOrderModal() { document.getElementById('orderModal').classList.add('hidden'); }
 
-        /* HÀM LƯU ĐƠN HÀNG BẤT ĐỒNG BỘ: TỰ ĐỘNG ĐÓNG MODAL VÀ CẬP NHẬT VỐN NGAY LẬP TỨC */
+        /* HÀM LƯU ĐƠN HÀNG CHUẨN XÁC: CHỈ LƯU KHI BẤM NÚT LƯU, TỰ ĐỘNG ĐÓNG MODAL VÀ CẬP NHẬT VỐN NGAY LẬP TỨC */
         async function handleSaveOrder(e) {
             e.preventDefault();
             
@@ -2800,24 +2829,6 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
 
                 const existingBill = idx >= 0 ? (orders[idx].billImg || '') : '';
                 const existingPreShip = idx >= 0 ? (orders[idx].preShipImg || '') : '';
-
-                if (statusVal === 'Hoàn hàng') {
-                    const invFound = inventory.find(i => i.product.toLowerCase() === prodName.toLowerCase() && i.size === prodSize);
-                    if (invFound) {
-                        invFound.qty += 1;
-                    } else {
-                        inventory.unshift({
-                            id: Date.now(),
-                            product: prodName,
-                            size: prodSize,
-                            qty: 1,
-                            cost: parseInt(document.getElementById('formCost').value) || 0,
-                            price: parseInt(document.getElementById('formTotal').value) || 0
-                        });
-                    }
-                    await db.ref('youngzone_inventory').set(inventory);
-                    renderInventoryTable();
-                }
 
                 const orderObj = {
                     id: idx >= 0 ? orders[idx].id : 'YZ-' + Math.floor(1000 + Math.random() * 9000),
@@ -2843,7 +2854,7 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
 
                 if (!customers.some(c => c.phone === phone)) {
                     customers.push({ name, phone, address, type: 'NORMAL' });
-                    await db.ref('youngzone_customers').set(customers);
+                    try { await db.ref('youngzone_customers').set(customers); } catch(err){}
                 }
 
                 if (idx >= 0) {
@@ -2854,9 +2865,13 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
                     addLog(`Tạo đơn hàng mới [${orderObj.id}] - ${orderObj.product}`);
                 }
 
-                // Lưu dữ liệu Firebase
-                await db.ref('youngzone_orders').set(orders);
+                // Lưu dữ liệu máy & Firebase
                 saveAllToLocalStorage();
+                try {
+                    await db.ref('youngzone_orders').set(orders);
+                } catch(fbErr) {
+                    console.warn("Chưa đồng bộ được Firebase, đã lưu dữ liệu ở bộ nhớ local:", fbErr);
+                }
 
                 // Đóng Modal ngay lập tức
                 closeOrderModal();
@@ -3072,10 +3087,15 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
 
             orders.forEach(o => {
                 const isCompleted = o.status && o.status.includes('Đã bán - Hoàn tất');
+                const isWrongItem = o.status && o.status.includes('Shop giao sai đơn');
                 const totalCostSingle = (Number(o.cost)||0) + (Number(o.vnShip)||0);
-                const profit = isCompleted ? ((Number(o.total)||0) - totalCostSingle) : 0;
+                
+                let profit = 0;
+                if (isCompleted) profit = (Number(o.total)||0) - totalCostSingle;
+                else if (isWrongItem) profit = -totalCostSingle;
+
                 let kShare = 0, lShare = 0;
-                if (isCompleted) {
+                if (isCompleted || isWrongItem) {
                     if (o.owner === 'CHUNG' || !o.owner) { kShare = profit * 0.5; lShare = profit * 0.5; }
                     else if (o.owner === 'Khoi' || o.owner === 'KHOI') { kShare = profit * 0.6; lShare = profit * 0.4; }
                     else if (o.owner === 'Lam' || o.owner === 'LAM') { lShare = profit * 0.6; kShare = profit * 0.4; }
