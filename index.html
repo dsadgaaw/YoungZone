@@ -1295,6 +1295,27 @@
             }
         }
 
+        
+        /* --- CHỨC NĂNG CẬP NHẬT GIAO DIỆN TỨC THÌ REALTIME TRÊN TOÀN BỘ TAB --- */
+        function refreshAllViews() {
+            saveAllToLocalStorage();
+            renderDashboard();
+            renderBuyLinksTable();
+            renderOrderPhotosGrid();
+            renderWebProductsTable();
+            renderCategoriesTable();
+            renderCouponsTable();
+            renderInventoryTable();
+            renderCRMTable();
+            if (document.getElementById('fundModal') && !document.getElementById('fundModal').classList.contains('hidden')) {
+                renderFundHistory();
+            }
+            if (document.getElementById('withdrawModal') && !document.getElementById('withdrawModal').classList.contains('hidden')) {
+                renderWithdrawHistory();
+            }
+            updateNotifBadge();
+        }
+
         function saveAllToLocalStorage() {
             localStorage.setItem('youngzone_orders', JSON.stringify(orders));
             localStorage.setItem('youngzone_vouchers', JSON.stringify(coupons));
@@ -1384,41 +1405,31 @@
         function initFirebaseListeners() {
             db.ref('youngzone_orders').on('value', (snapshot) => {
                 orders = parseFirebaseData(snapshot.val());
-                saveAllToLocalStorage();
-                renderDashboard();
-                renderBuyLinksTable();
-                renderOrderPhotosGrid();
-                renderCRMTable();
+                refreshAllViews();
                 updateFirebaseStatus(true);
             }, () => {
                 updateFirebaseStatus(false);
-                renderDashboard();
+                refreshAllViews();
             });
 
             db.ref('youngzone_funds').on('value', (snapshot) => {
                 funds = parseFirebaseData(snapshot.val());
-                saveAllToLocalStorage();
-                renderFundHistory();
-                renderDashboard();
+                refreshAllViews();
             });
 
             db.ref('youngzone_withdraws').on('value', (snapshot) => {
                 withdraws = parseFirebaseData(snapshot.val());
-                saveAllToLocalStorage();
-                renderWithdrawHistory();
-                renderDashboard();
+                refreshAllViews();
             });
 
             db.ref('youngzone_web_products').on('value', (snapshot) => {
                 webProducts = parseFirebaseData(snapshot.val());
-                saveAllToLocalStorage();
-                renderWebProductsTable();
+                refreshAllViews();
             });
 
             db.ref('youngzone_web_vouchers').on('value', (snapshot) => {
                 coupons = parseFirebaseData(snapshot.val());
-                saveAllToLocalStorage();
-                renderCouponsTable();
+                refreshAllViews();
             });
 
             db.ref('youngzone_web_sidebar_config').on('value', (snapshot) => {
@@ -1434,15 +1445,13 @@
                 if (data) {
                     categories = parseFirebaseData(data);
                 }
-                saveAllToLocalStorage();
-                renderCategoriesTable();
                 updateCategorySelectOptions();
+                refreshAllViews();
             });
 
             db.ref('youngzone_inventory').on('value', (snapshot) => {
                 inventory = parseFirebaseData(snapshot.val());
-                saveAllToLocalStorage();
-                renderInventoryTable();
+                refreshAllViews();
             });
 
             db.ref('youngzone_rmb_rate').on('value', (snapshot) => {
@@ -1456,8 +1465,7 @@
 
             db.ref('youngzone_customers').on('value', (snapshot) => {
                 customers = parseFirebaseData(snapshot.val());
-                saveAllToLocalStorage();
-                renderCRMTable();
+                refreshAllViews();
             });
 
             db.ref('youngzone_logs').on('value', (snapshot) => {
@@ -1962,9 +1970,8 @@
                 if (error) {
                     showToast("Lỗi kết nối Firebase: " + error.message);
                 } else {
-                    saveAllToLocalStorage();
-                    renderWebProductsTable();
                     closeModal('webProductModal');
+                    refreshAllViews();
                     showToast("Đã lưu sản phẩm thành công!");
                 }
             });
@@ -2077,8 +2084,7 @@
             showConfirmToast("Xóa món hàng này khỏi Web cửa hàng?", () => {
                 webProducts.splice(idx, 1);
                 db.ref('youngzone_web_products').set(webProducts);
-                saveAllToLocalStorage();
-                renderWebProductsTable();
+                refreshAllViews();
                 showToast("Đã xóa món hàng!");
             });
         }
@@ -2578,9 +2584,8 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
                 price: parseInt(document.getElementById('invPrice').value)
             });
             db.ref('youngzone_inventory').set(inventory);
-            saveAllToLocalStorage();
-            renderInventoryTable();
             closeModal('inventoryModal');
+            refreshAllViews();
             showToast("Đã nhập sản phẩm vào Kho Hàng Sẵn!");
         }
 
@@ -2628,8 +2633,7 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
             showConfirmToast("Xóa sản phẩm này khỏi Kho?", () => {
                 inventory.splice(idx, 1);
                 db.ref('youngzone_inventory').set(inventory);
-                saveAllToLocalStorage();
-                renderInventoryTable();
+                refreshAllViews();
                 showToast("Đã xóa khỏi kho!");
             });
         }
@@ -2872,10 +2876,14 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
 
                 closeOrderModal();
 
-                renderDashboard();
-                renderCRMTable();
+                // Tự động chuyển bộ lọc tháng sang tháng của đơn hàng vừa tạo/sửa để hiển thị tức thì
+                if (orderObj.date && document.getElementById('filterMonth')) {
+                    document.getElementById('filterMonth').value = orderObj.date.slice(0, 7);
+                }
 
-                showToast("✅ Đã lưu đơn hàng & Cập nhật vốn thành công!");
+                refreshAllViews();
+
+                showToast("✅ Đã lưu đơn hàng & Cập nhật tức thì thành công!");
 
             } catch (err) {
                 console.error("Lỗi khi lưu đơn:", err);
@@ -2922,6 +2930,7 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
                 orders.splice(idx, 1);
                 addLog(`Xóa đơn hàng [${deletedId}]`);
                 db.ref('youngzone_orders').set(orders);
+                refreshAllViews();
                 showToast("Đã xóa đơn hàng!");
             });
         }
@@ -2970,11 +2979,12 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
 
             withdraws.unshift({ date, person, amount, reason });
             db.ref('youngzone_withdraws').set(withdraws);
-            saveAllToLocalStorage();
             addLog(`Rút tiền/Chi tiêu: ${person} - ${amount.toLocaleString()}đ (${reason})`);
 
             document.getElementById('wdAmount').value = '';
             document.getElementById('wdReason').value = '';
+            refreshAllViews();
+            renderWithdrawHistory();
             showToast("Đã ghi sổ khoản rút/chi tiêu thành công!");
         }
 
@@ -3002,6 +3012,8 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
             showConfirmToast("Xóa bản ghi rút tiền này?", () => {
                 withdraws.splice(idx, 1);
                 db.ref('youngzone_withdraws').set(withdraws);
+                refreshAllViews();
+                renderWithdrawHistory();
                 showToast("Đã xóa bản ghi rút tiền!");
             });
         }
@@ -3021,11 +3033,12 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
 
             funds.unshift({ date, person, amount, desc });
             db.ref('youngzone_funds').set(funds);
-            saveAllToLocalStorage();
             addLog(`Thêm vốn góp: ${person} +${amount.toLocaleString()}đ (${desc})`);
 
             document.getElementById('fundAmount').value = '';
             document.getElementById('fundDesc').value = '';
+            refreshAllViews();
+            renderFundHistory();
             showToast("Đã thêm vốn góp thành công!");
         }
 
@@ -3053,6 +3066,8 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
             showConfirmToast("Xóa khoản góp vốn này?", () => {
                 funds.splice(idx, 1);
                 db.ref('youngzone_funds').set(funds);
+                refreshAllViews();
+                renderFundHistory();
                 showToast("Đã xóa khoản góp vốn!");
             });
         }
