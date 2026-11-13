@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>YoungZone Sports - App Quản Lý Đơn Hàng & Tài Chính</title>
+    <title>YoungZone Sports - Quản Lý Đơn Hàng & Tài Chính</title>
 
     <link rel="manifest" href="manifest.json">
     <meta name="mobile-web-app-capable" content="yes">
@@ -19,12 +19,12 @@
     <!-- Firebase SDK (v9 Compatibility Mode) -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0b0f19; color: #f8fafc; -webkit-tap-highlight-color: transparent; }
         .gold-gradient { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+        .card-surface { background-color: #111827; border: 1px solid #1f2937; }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #0f172a; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
@@ -45,16 +45,16 @@
             background: #1e293b;
             color: #f8fafc;
             border-left: 4px solid #f59e0b;
-            padding: 12px 20px;
-            border-radius: 8px;
+            padding: 12px 18px;
+            border-radius: 10px;
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
             font-size: 13px;
             font-weight: 600;
-            min-width: 280px;
+            min-width: 260px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            animation: slideInRight 0.3s ease;
+            animation: slideInRight 0.25s ease;
         }
         .toast-confirm {
             border-left-color: #ef4444;
@@ -76,30 +76,31 @@
         }
     </style>
 </head>
-<body class="min-h-screen pb-24 md:pb-16">
+<body class="min-h-screen pb-24 md:pb-12">
 
     <div id="toast-container"></div>
 
     <!-- MÀN HÌNH ĐĂNG NHẬP -->
     <div id="loginScreen" class="fixed inset-0 bg-slate-950 z-50 flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 p-8 rounded-2xl max-w-sm w-full text-center shadow-2xl">
-            <span class="bg-amber-500 text-slate-950 font-black px-3 py-1 rounded text-2xl italic tracking-tighter inline-block mb-2">YoungZone</span>
-            <h2 class="text-sm font-bold text-white mb-6">ĐĂNG NHẬP HỆ THỐNG QUẢN TRỊ</h2>
+            <span class="bg-amber-500 text-slate-950 font-black px-3.5 py-1.5 rounded-lg text-2xl italic tracking-tighter inline-block mb-3">YoungZone</span>
+            <h2 class="text-base font-bold text-white mb-1">Quản Trị Nội Bộ</h2>
+            <p class="text-xs text-slate-400 mb-6">Đồng bộ dữ liệu realtime cho Khôi &amp; Lâm</p>
             <form onsubmit="handleLogin(event)" class="space-y-4 text-xs text-left">
                 <div>
-                    <label class="block text-slate-400 mb-1 font-semibold">Tên đăng nhập / Email</label>
-                    <input type="text" id="loginUser" required placeholder="Nhập tên đăng nhập..." class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white focus:outline-none focus:border-amber-500">
+                    <label class="block text-slate-300 mb-1.5 font-semibold">Tên đăng nhập (admin / khoi / lam)</label>
+                    <input type="text" id="loginUser" required placeholder="Nhập tên đăng nhập..." class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white text-sm focus:outline-none focus:border-amber-500">
                 </div>
                 <div>
-                    <label class="block text-slate-400 mb-1 font-semibold">Mật khẩu</label>
-                    <input type="password" id="loginPass" required placeholder="••••••••" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white focus:outline-none focus:border-amber-500">
+                    <label class="block text-slate-300 mb-1.5 font-semibold">Mật khẩu</label>
+                    <input type="password" id="loginPass" required placeholder="••••••••" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white text-sm focus:outline-none focus:border-amber-500">
                 </div>
                 <div class="flex items-center space-x-2 pt-1">
                     <input type="checkbox" id="rememberMe" class="w-4 h-4 rounded bg-slate-950 border-slate-700 text-amber-500 focus:ring-0 cursor-pointer">
                     <label for="rememberMe" class="text-slate-300 font-semibold cursor-pointer select-none">Ghi nhớ đăng nhập</label>
                 </div>
-                <button type="submit" class="w-full gold-gradient text-slate-950 font-extrabold py-3 rounded-xl text-xs hover:opacity-90 transition mt-2">
-                    ĐĂNG NHẬP HỆ THỐNG
+                <button type="submit" class="w-full gold-gradient text-slate-950 font-extrabold py-3 rounded-xl text-sm hover:opacity-90 transition mt-2">
+                    ĐĂNG NHẬP
                 </button>
             </form>
         </div>
@@ -107,203 +108,195 @@
 
     <!-- MAIN APP CONTENT -->
     <div id="appContainer" class="hidden">
-        <!-- HEADER CHÍNH -->
-        <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-40 backdrop-blur-md bg-opacity-90">
-            <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-3">
-                <div class="flex items-center space-x-3">
+        <!-- HEADER GỌN GÀNG -->
+        <header class="bg-slate-900/95 border-b border-slate-800 sticky top-0 z-40 backdrop-blur-md">
+            <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center gap-3">
+                <div class="flex items-center gap-3">
+                    <span class="bg-amber-500 text-slate-950 font-black px-2.5 py-1 rounded-lg text-lg italic tracking-tighter">YoungZone</span>
                     <div>
-                        <div class="flex items-center space-x-2">
-                            <span class="bg-amber-500 text-slate-950 font-black px-2.5 py-1 rounded text-xl italic tracking-tighter">YoungZone</span>
-                            <h1 class="text-sm font-extrabold text-white leading-none">QUẢN TRỊ NỘI BỘ PRO MAX v4.7</h1>
-                        </div>
-                        <div class="flex items-center space-x-2 mt-1">
-                            <span id="roleBadge" class="text-[10px] text-amber-400 font-semibold">Vai trò: Admin</span>
-                            <span id="firebaseStatus" class="text-[9px] px-1.5 py-0.5 rounded font-bold bg-slate-800 text-slate-400 border border-slate-700">
-                                <i class="fas fa-spinner fa-spin mr-1"></i>Đang kết nối Firebase...
+                        <h1 class="text-sm font-extrabold text-white leading-tight">Quản Lý Shop &amp; Tài Chính</h1>
+                        <div class="flex items-center gap-2 mt-0.5">
+                            <span id="roleBadge" class="text-[11px] text-amber-400 font-semibold">Admin</span>
+                            <span class="text-slate-600">•</span>
+                            <span id="firebaseStatus" class="text-[11px] px-2 py-0.5 rounded-full font-semibold bg-slate-800 text-slate-400">
+                                <i class="fas fa-spinner fa-spin mr-1"></i>Đang kết nối...
                             </span>
                         </div>
                     </div>
                 </div>
 
-                <div class="flex items-center space-x-2 flex-wrap gap-1">
-                    <button onclick="openNotificationsModal()" class="relative bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 border border-amber-500/40 font-bold w-8 h-8 rounded-xl text-xs transition flex items-center justify-center" title="Xem Thông Báo Đơn Mới">
+                <div class="flex items-center gap-2">
+                    <button onclick="openNotificationsModal()" class="relative bg-slate-800 hover:bg-slate-700 text-amber-400 border border-slate-700 font-bold w-9 h-9 rounded-xl text-sm transition flex items-center justify-center" title="Thông báo đơn mới">
                         <i class="fas fa-bell"></i>
-                        <span id="unreadNotifBadge" class="absolute -top-1 -right-1 bg-rose-600 text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center hidden">0</span>
+                        <span id="unreadNotifBadge" class="absolute -top-1 -right-1 bg-rose-600 text-white text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center hidden">0</span>
                     </button>
 
-                    <div class="hidden md:flex items-center space-x-1 flex-wrap">
-                        <button onclick="switchTab('dashboard')" id="navDashboard" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-500 text-slate-950 transition">
-                            <i class="fas fa-chart-line mr-1"></i> Đơn Hàng
-                        </button>
-                        <button onclick="switchTab('buyLinks')" id="navBuyLinks" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 border border-slate-700 hover:text-white transition">
-                            <i class="fas fa-link mr-1"></i> Link Mua Taobao
-                        </button>
-                        <button onclick="switchTab('webProducts')" id="navWebProducts" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 border border-slate-700 hover:text-white transition">
-                            <i class="fas fa-shirt mr-1"></i> Món Hàng Web
-                        </button>
-                        <button onclick="switchTab('orderPhotos')" id="navOrderPhotos" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 border border-slate-700 hover:text-white transition">
-                            <i class="fas fa-camera mr-1"></i> Quản Lý Ảnh Đơn
-                        </button>
-                        <button onclick="switchTab('coupons')" id="navCoupons" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 border border-slate-700 hover:text-white transition">
-                            <i class="fas fa-ticket mr-1"></i> Mã Giảm Giá
-                        </button>
-                        <button onclick="switchTab('inventory')" id="navInventory" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 border border-slate-700 hover:text-white transition">
-                            <i class="fas fa-boxes-stacked mr-1"></i> Kho & Hàng Đã Đăng
-                        </button>
-                        <button onclick="switchTab('crm')" id="navCRM" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 border border-slate-700 hover:text-white transition">
-                            <i class="fas fa-users mr-1"></i> CRM Khách
-                        </button>
-                        <button onclick="switchTab('sizePrice')" id="navSizePrice" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 border border-slate-700 hover:text-white transition">
-                            <i class="fas fa-ruler-combined mr-1"></i> Bảng Size Chung
-                        </button>
-                        <button onclick="exportBackupJSON()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-2.5 py-1.5 rounded-xl text-xs transition" title="Backup">
-                            <i class="fas fa-download"></i>
-                        </button>
-                        <button onclick="exportToExcel()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-2.5 py-1.5 rounded-xl text-xs transition" title="Xuất Excel">
-                            <i class="fas fa-file-excel"></i>
-                        </button>
-                    </div>
-
-                    <button onclick="openOrderModal()" class="md:hidden gold-gradient text-slate-950 font-extrabold px-3 py-1.5 rounded-xl text-xs">
-                        <i class="fas fa-plus mr-1"></i> Tạo Đơn
+                    <button onclick="exportBackupJSON()" class="hidden sm:flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-indigo-300 border border-slate-700 font-semibold px-3 py-2 rounded-xl text-xs transition" title="Sao lưu JSON">
+                        <i class="fas fa-download"></i><span class="hidden lg:inline">Backup</span>
                     </button>
-
-                    <button onclick="handleLogout()" class="bg-rose-600 hover:bg-rose-500 text-white font-bold px-2.5 py-1.5 rounded-xl text-xs transition" title="Đăng xuất">
+                    <button onclick="exportToExcel()" class="hidden sm:flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-slate-700 font-semibold px-3 py-2 rounded-xl text-xs transition" title="Xuất Excel">
+                        <i class="fas fa-file-excel"></i><span class="hidden lg:inline">Excel</span>
+                    </button>
+                    <button onclick="openOrderModal()" class="gold-gradient text-slate-950 font-extrabold px-3.5 py-2 rounded-xl text-xs hover:opacity-90 transition">
+                        <i class="fas fa-plus mr-1"></i>Tạo Đơn
+                    </button>
+                    <button onclick="handleLogout()" class="bg-slate-800 hover:bg-rose-600 text-slate-300 hover:text-white border border-slate-700 font-bold w-9 h-9 rounded-xl text-xs transition flex items-center justify-center" title="Đăng xuất">
                         <i class="fas fa-right-from-bracket"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- THANH CHUYỂN TAB DESKTOP -->
+            <div class="hidden md:block border-t border-slate-800/80 bg-slate-950/60">
+                <div class="max-w-7xl mx-auto px-4 py-2 flex items-center gap-1.5 overflow-x-auto">
+                    <button onclick="switchTab('dashboard')" id="navDashboard" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-amber-500 text-slate-950 transition whitespace-nowrap">
+                        <i class="fas fa-chart-line mr-1.5"></i>Đơn Hàng &amp; Tài Chính
+                    </button>
+                    <button onclick="switchTab('inventory')" id="navInventory" class="px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:bg-slate-800 hover:text-white transition whitespace-nowrap">
+                        <i class="fas fa-boxes-stacked mr-1.5"></i>Kho &amp; Hàng Đã Đăng
+                    </button>
+                    <button onclick="switchTab('webProducts')" id="navWebProducts" class="px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:bg-slate-800 hover:text-white transition whitespace-nowrap">
+                        <i class="fas fa-shirt mr-1.5"></i>Sản Phẩm Web
+                    </button>
+                    <button onclick="switchTab('buyLinks')" id="navBuyLinks" class="px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:bg-slate-800 hover:text-white transition whitespace-nowrap">
+                        <i class="fas fa-link mr-1.5"></i>Link Taobao
+                    </button>
+                    <button onclick="switchTab('orderPhotos')" id="navOrderPhotos" class="px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:bg-slate-800 hover:text-white transition whitespace-nowrap">
+                        <i class="fas fa-camera mr-1.5"></i>Ảnh Đơn Hàng
+                    </button>
+                    <button onclick="switchTab('crm')" id="navCRM" class="px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:bg-slate-800 hover:text-white transition whitespace-nowrap">
+                        <i class="fas fa-users mr-1.5"></i>Khách Hàng
+                    </button>
+                    <button onclick="switchTab('coupons')" id="navCoupons" class="px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:bg-slate-800 hover:text-white transition whitespace-nowrap">
+                        <i class="fas fa-ticket mr-1.5"></i>Mã Giảm Giá
+                    </button>
+                    <button onclick="switchTab('sizePrice')" id="navSizePrice" class="px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:bg-slate-800 hover:text-white transition whitespace-nowrap">
+                        <i class="fas fa-ruler-combined mr-1.5"></i>Bảng Size Web
                     </button>
                 </div>
             </div>
         </header>
 
-        <!-- TAB ĐƠN HÀNG -->
-        <div id="tabDashboard" class="max-w-7xl mx-auto px-4 mt-6">
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 mb-4 flex flex-wrap justify-between items-center gap-4">
-                <div class="flex flex-wrap items-center gap-3">
-                    <div class="flex items-center space-x-2 bg-slate-950 border border-slate-700 px-3 py-1.5 rounded-xl">
-                        <i class="fas fa-calendar-alt text-amber-500 text-xs"></i>
-                        <span class="text-xs font-bold text-slate-300">Tháng:</span>
+        <!-- TAB ĐƠN HÀNG & TÀI CHÍNH -->
+        <div id="tabDashboard" class="max-w-7xl mx-auto px-4 mt-5 space-y-5">
+            <!-- BỘ LỌC NHANH -->
+            <div class="card-surface rounded-2xl p-4 flex flex-wrap justify-between items-center gap-3">
+                <div class="flex flex-wrap items-center gap-2.5">
+                    <div class="flex items-center gap-2 bg-slate-950 border border-slate-700/80 px-3 py-2 rounded-xl">
+                        <i class="fas fa-calendar-alt text-amber-400 text-xs"></i>
+                        <span class="text-xs font-semibold text-slate-400">Tháng:</span>
                         <input type="month" id="filterMonth" onchange="renderDashboard()" class="bg-transparent text-xs text-amber-400 font-bold focus:outline-none">
                     </div>
 
-                    <div class="flex items-center space-x-2 bg-slate-950 border border-slate-700 px-3 py-1.5 rounded-xl">
-                        <i class="fas fa-yen-sign text-amber-500 text-xs"></i>
-                        <span class="text-xs font-bold text-slate-300">Tỷ Giá Tệ:</span>
-                        <input type="number" id="globalRmbRate" value="3810" onchange="updateRmbRate(this.value)" class="bg-transparent text-xs text-amber-400 font-bold w-16 focus:outline-none">
-                        <span class="text-[10px] text-slate-500">đ</span>
-                        <button onclick="fetchAutoRmbRate(true)" class="text-amber-400 hover:text-amber-300 transition text-xs ml-1" title="Cập nhật tỷ giá">
+                    <div class="flex items-center gap-2 bg-slate-950 border border-slate-700/80 px-3 py-2 rounded-xl">
+                        <i class="fas fa-yen-sign text-amber-400 text-xs"></i>
+                        <span class="text-xs font-semibold text-slate-400">Tỷ giá:</span>
+                        <input type="number" id="globalRmbRate" value="3810" onchange="updateRmbRate(this.value)" class="bg-transparent text-xs text-amber-400 font-bold w-14 focus:outline-none">
+                        <span class="text-xs text-slate-500">đ</span>
+                        <button onclick="fetchAutoRmbRate(true)" class="text-amber-400 hover:text-amber-300 transition text-xs" title="Cập nhật tỷ giá tự động">
                             <i class="fas fa-rotate"></i>
                         </button>
                     </div>
 
-                    <div class="flex items-center space-x-1.5 flex-wrap gap-1">
-                        <button onclick="filterOwner('ALL')" id="btnFilterALL" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-500 text-slate-950">Tất Cả</button>
-                        <button onclick="filterOwner('Khoi')" id="btnFilterKhoi" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 border border-slate-700">Khách Khôi</button>
-                        <button onclick="filterOwner('Lam')" id="btnFilterLam" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 border border-slate-700">Khách Lâm</button>
-                        <button onclick="filterOwner('CHUNG')" id="btnFilterCHUNG" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 border border-slate-700">Nguồn Chung</button>
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                        <button onclick="filterOwner('ALL')" id="btnFilterALL" class="px-3 py-2 rounded-xl text-xs font-bold bg-amber-500 text-slate-950">Tất Cả</button>
+                        <button onclick="filterOwner('Khoi')" id="btnFilterKhoi" class="px-3 py-2 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300 hover:text-white">Khách Khôi</button>
+                        <button onclick="filterOwner('Lam')" id="btnFilterLam" class="px-3 py-2 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300 hover:text-white">Khách Lâm</button>
+                        <button onclick="filterOwner('CHUNG')" id="btnFilterCHUNG" class="px-3 py-2 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300 hover:text-white">Nguồn Chung</button>
                     </div>
                 </div>
 
-                <div class="flex items-center space-x-2">
-                    <button onclick="openLogsModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold px-3 py-2 rounded-xl text-xs border border-slate-700 transition">
-                        <i class="fas fa-clock-rotate-left mr-1"></i> Nhật Ký
-                    </button>
-                    <button onclick="openOrderModal()" class="gold-gradient text-slate-950 font-extrabold px-4 py-2 rounded-xl text-xs hover:opacity-90 transition">
-                        <i class="fas fa-plus mr-1.5"></i> Tạo Đơn Mới
+                <div class="flex items-center gap-2">
+                    <button onclick="openLogsModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold px-3.5 py-2 rounded-xl text-xs border border-slate-700 transition">
+                        <i class="fas fa-clock-rotate-left mr-1.5"></i>Nhật Ký
                     </button>
                 </div>
             </div>
 
-            <!-- 9 Ô CHỈ SỐ THỐNG KÊ FIREBASE REALTIME -->
-            <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
-                <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex justify-between items-center">
-                    <div>
-                        <span class="text-xs text-slate-400 block font-semibold">1. Tổng Vốn Đã Góp</span>
-                        <span id="displayCapital" class="text-lg font-black text-emerald-400 mt-1 block">0đ</span>
-                        <button onclick="openFundModal()" class="text-[11px] text-amber-400 font-bold hover:underline mt-1 block">+ THÊM VỐN GÓP</button>
+            <!-- 4 CHỈ SỐ TÀI CHÍNH CHÍNH -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
+                <div class="card-surface p-4 rounded-2xl flex flex-col justify-between">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs text-slate-400 font-semibold">Tổng Vốn Đã Góp</span>
+                        <span class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-xs"><i class="fas fa-sack-dollar"></i></span>
                     </div>
-                    <div class="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400"><i class="fas fa-sack-dollar"></i></div>
+                    <span id="displayCapital" class="text-xl font-extrabold text-emerald-400 mt-2">0đ</span>
+                    <button onclick="openFundModal()" class="text-xs text-amber-400 font-bold hover:underline mt-2 text-left">+ Thêm / Xem vốn góp</button>
                 </div>
 
-                <div class="bg-slate-900 border border-amber-500/40 p-4 rounded-2xl flex justify-between items-center shadow-lg shadow-amber-500/5">
-                    <div>
-                        <span class="text-xs text-amber-400 block font-bold">2. TỔNG TIỀN TÀI KHOẢN</span>
-                        <span id="statTotalAccountBalance" class="text-lg font-black text-amber-400 block mt-1">0đ</span>
-                        <button onclick="openWithdrawModal()" class="text-[11px] text-rose-400 font-bold hover:underline mt-0.5 block">- RÚT TIỀN / CHI TIÊU</button>
+                <div class="bg-slate-900 border border-amber-500/40 p-4 rounded-2xl flex flex-col justify-between shadow-lg shadow-amber-500/5">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs text-amber-400 font-bold">Tiền Trong Tài Khoản</span>
+                        <span class="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center text-xs"><i class="fas fa-vault"></i></span>
                     </div>
-                    <div class="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400"><i class="fas fa-vault"></i></div>
+                    <span id="statTotalAccountBalance" class="text-xl font-extrabold text-amber-400 mt-2">0đ</span>
+                    <button onclick="openWithdrawModal()" class="text-xs text-rose-400 font-bold hover:underline mt-2 text-left">- Rút tiền / Chi tiêu</button>
                 </div>
 
-                <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex justify-between items-center">
-                    <div>
-                        <span class="text-xs text-slate-400 block font-semibold">3. LÃI HOÀN TẤT: KHÔI</span>
-                        <span id="statProfitKhoi" class="text-lg font-black text-blue-400 mt-1 block">0đ</span>
-                        <span class="text-[10px] text-slate-500 block">(Đã xong)</span>
+                <div class="card-surface p-4 rounded-2xl flex flex-col justify-between">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs text-slate-400 font-semibold">Dư Nợ COD Cần Thu</span>
+                        <span class="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center text-xs"><i class="fas fa-hand-holding-dollar"></i></span>
                     </div>
-                    <div class="w-9 h-9 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400"><i class="fas fa-user-check"></i></div>
+                    <span id="statTotalRemainingCOD" class="text-xl font-extrabold text-white mt-2">0đ</span>
+                    <span class="text-[11px] text-slate-500 mt-2">Tiền khách còn trả khi nhận</span>
                 </div>
 
-                <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex justify-between items-center">
-                    <div>
-                        <span class="text-xs text-slate-400 block font-semibold">4. LÃI HOÀN TẤT: LÂM</span>
-                        <span id="statProfitLam" class="text-lg font-black text-purple-400 mt-1 block">0đ</span>
-                        <span class="text-[10px] text-slate-500 block">(Đã xong)</span>
+                <div class="card-surface p-4 rounded-2xl flex flex-col justify-between">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs text-slate-400 font-semibold">Lãi Ròng Tháng (Đã Xong)</span>
+                        <span class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-xs"><i class="fas fa-chart-line"></i></span>
                     </div>
-                    <div class="w-9 h-9 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400"><i class="fas fa-user-check"></i></div>
-                </div>
-
-                <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex justify-between items-center col-span-2 md:col-span-1">
-                    <div>
-                        <span class="text-xs text-slate-400 block font-semibold">5. DƯ NỢ COD CẦN THU</span>
-                        <span id="statTotalRemainingCOD" class="text-lg font-black text-amber-400 mt-1 block">0đ</span>
-                        <span class="text-[10px] text-slate-500 block">Khách còn trả</span>
-                    </div>
-                    <div class="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400"><i class="fas fa-hand-holding-dollar"></i></div>
+                    <span id="statTotalProfitNet" class="text-xl font-extrabold text-emerald-400 mt-2">0đ</span>
+                    <span class="text-[11px] text-slate-500 mt-2">Thực nhận sau trừ vốn &amp; ship</span>
                 </div>
             </div>
 
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex justify-between items-center">
+            <!-- 4 CHỈ SỐ CHIA LÃI & ĐƠN THÁNG -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
+                <div class="card-surface px-4 py-3 rounded-2xl flex items-center justify-between">
                     <div>
-                        <span class="text-xs text-slate-400 block font-semibold">6. Số Đơn Trong Tháng</span>
-                        <b id="statTotalOrders" class="text-xl font-black text-white mt-1 block">0</b>
+                        <span class="text-xs text-slate-400 font-semibold block">Lãi Khôi (Hoàn tất)</span>
+                        <b id="statProfitKhoi" class="text-lg font-extrabold text-blue-400 mt-0.5 block">0đ</b>
                     </div>
-                    <div class="w-8 h-8 rounded-xl bg-slate-800 flex items-center justify-center text-slate-400"><i class="fas fa-box"></i></div>
+                    <i class="fas fa-user-check text-blue-400/60 text-lg"></i>
                 </div>
 
-                <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex justify-between items-center">
+                <div class="card-surface px-4 py-3 rounded-2xl flex items-center justify-between">
                     <div>
-                        <span class="text-xs text-slate-400 block font-semibold">7. Lãi Thực Nhận (Đơn Xong)</span>
-                        <b id="statTotalProfitMonth" class="text-xl font-black text-amber-400 mt-1 block">0đ</b>
+                        <span class="text-xs text-slate-400 font-semibold block">Lãi Lâm (Hoàn tất)</span>
+                        <b id="statProfitLam" class="text-lg font-extrabold text-purple-400 mt-0.5 block">0đ</b>
                     </div>
-                    <div class="w-8 h-8 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-400"><i class="fas fa-coins"></i></div>
+                    <i class="fas fa-user-check text-purple-400/60 text-lg"></i>
                 </div>
 
-                <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex justify-between items-center">
+                <div class="card-surface px-4 py-3 rounded-2xl flex items-center justify-between">
                     <div>
-                        <span class="text-xs text-slate-400 block font-semibold">8. Tổng Vốn Hàng Nhập</span>
-                        <b id="statTotalCost" class="text-xl font-black text-rose-400 mt-1 block">0đ</b>
+                        <span class="text-xs text-slate-400 font-semibold block">Số Đơn Trong Tháng</span>
+                        <b id="statTotalOrders" class="text-lg font-extrabold text-white mt-0.5 block">0</b>
                     </div>
-                    <div class="w-8 h-8 rounded-xl bg-rose-500/10 flex items-center justify-center text-rose-400"><i class="fas fa-receipt"></i></div>
+                    <i class="fas fa-box text-slate-500 text-lg"></i>
                 </div>
 
-                <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex justify-between items-center">
+                <div class="card-surface px-4 py-3 rounded-2xl flex items-center justify-between">
                     <div>
-                        <span class="text-xs text-slate-400 block font-semibold">9. LÃI RÒNG (ĐÃ HOÀN TẤT)</span>
-                        <b id="statTotalProfitNet" class="text-xl font-black text-emerald-400 mt-1 block">0đ</b>
+                        <span class="text-xs text-slate-400 font-semibold block">Tổng Vốn Hàng Nhập</span>
+                        <b id="statTotalCost" class="text-lg font-extrabold text-rose-400 mt-0.5 block">0đ</b>
                     </div>
-                    <div class="w-8 h-8 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-400"><i class="fas fa-chart-line"></i></div>
+                    <i class="fas fa-receipt text-rose-400/60 text-lg"></i>
                 </div>
             </div>
 
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3 mb-6 flex flex-wrap justify-between items-center gap-3 text-xs">
-                <div class="flex items-center space-x-2 flex-1 min-w-[240px]">
-                    <i class="fas fa-magnifying-glass text-amber-500"></i>
-                    <input type="text" id="searchInput" oninput="renderDashboard()" placeholder="Tìm Tên khách, SĐT, Mã đơn, Mã vận đơn TQ/VN..." class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-white focus:outline-none focus:border-amber-500">
+            <!-- TÌM KIẾM & LỌC TRẠNG THÁI -->
+            <div class="card-surface rounded-2xl p-3.5 flex flex-wrap justify-between items-center gap-3 text-xs">
+                <div class="flex items-center gap-2.5 flex-1 min-w-[240px] bg-slate-950 border border-slate-700/80 rounded-xl px-3 py-2">
+                    <i class="fas fa-magnifying-glass text-amber-400"></i>
+                    <input type="text" id="searchInput" oninput="renderDashboard()" placeholder="Tìm tên khách, SĐT, mã đơn, mã vận đơn TQ/VN..." class="w-full bg-transparent text-white text-xs focus:outline-none">
                 </div>
 
-                <div class="flex items-center space-x-2 w-full sm:w-auto">
+                <div class="flex items-center gap-2 w-full sm:w-auto">
                     <span class="text-slate-400 font-semibold whitespace-nowrap">Trạng thái:</span>
-                    <select id="filterStatus" onchange="renderDashboard()" class="w-full sm:w-auto bg-slate-950 border border-slate-700 text-amber-400 rounded-xl px-3 py-1.5 font-bold focus:outline-none">
+                    <select id="filterStatus" onchange="renderDashboard()" class="w-full sm:w-auto bg-slate-950 border border-slate-700/80 text-amber-400 rounded-xl px-3 py-2 font-bold focus:outline-none">
                         <option value="ALL">Tất Cả Trạng Thái</option>
                         <option value="ORDERING">1. Đã cọc - Đang mua Taobao</option>
                         <option value="SHIPPING">2. Đang vận chuyển Trung - Việt</option>
@@ -316,43 +309,42 @@
                 </div>
             </div>
 
-            <div id="delayedOrdersAlertBox" class="hidden bg-rose-500/10 border border-rose-500/30 rounded-2xl p-4 mb-6 text-xs text-rose-300 flex items-center justify-between gap-3">
-                <div class="flex items-center space-x-2">
+            <div id="delayedOrdersAlertBox" class="hidden bg-rose-500/10 border border-rose-500/30 rounded-2xl p-4 text-xs text-rose-300 flex items-center justify-between gap-3">
+                <div class="flex items-center gap-3">
                     <i class="fas fa-triangle-exclamation text-rose-500 text-lg"></i>
                     <div>
-                        <b class="text-white block font-bold">CẢNH BÁO ĐƠN ORDER QUÁ 7 NGÀY CHƯA XONG:</b>
-                        <span id="delayedOrdersCountText">Có 0 đơn hàng đang bị chậm trễ tiến độ vận chuyển!</span>
+                        <b class="text-white block font-bold">Cảnh báo đơn order quá 7 ngày chưa xong</b>
+                        <span id="delayedOrdersCountText">Có 0 đơn hàng đang bị chậm tiến độ!</span>
                     </div>
                 </div>
-                <button id="btnToggleDelayed" onclick="filterDelayedOnly()" class="bg-rose-600 hover:bg-rose-500 text-white font-bold px-3 py-1.5 rounded-xl text-xs whitespace-nowrap">Xem Đơn Trễ</button>
+                <button id="btnToggleDelayed" onclick="filterDelayedOnly()" class="bg-rose-600 hover:bg-rose-500 text-white font-bold px-3.5 py-2 rounded-xl text-xs whitespace-nowrap">Xem Đơn Trễ</button>
             </div>
 
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl mb-8">
+            <!-- BẢNG ĐƠN HÀNG -->
+            <div class="card-surface rounded-2xl overflow-hidden shadow-xl">
                 <div class="p-4 border-b border-slate-800 flex justify-between items-center">
-                    <h3 class="text-sm font-bold text-white"><i class="fas fa-list-check text-amber-500 mr-2"></i>Danh Sách Đơn Hàng YoungZone</h3>
-                    <span class="text-xs text-emerald-400 font-semibold"><i class="fas fa-cloud mr-1"></i>Firebase Realtime Sync</span>
+                    <h3 class="text-sm font-bold text-white"><i class="fas fa-list-check text-amber-400 mr-2"></i>Danh Sách Đơn Hàng</h3>
+                    <span class="text-xs text-slate-400">Tự động đồng bộ giữa 2 máy</span>
                 </div>
 
                 <div class="hidden md:block overflow-x-auto">
                     <table class="w-full text-left text-xs text-slate-300">
                         <thead class="bg-slate-950 text-slate-400 uppercase font-semibold border-b border-slate-800">
                             <tr>
-                                <th class="p-3">Mã Đơn / Ngày</th>
-                                <th class="p-3">Mã VĐ TQ / VN</th>
-                                <th class="p-3">Khách Hàng & SĐT</th>
-                                <th class="p-3">Sản Phẩm & Size</th>
-                                <th class="p-3">Link Taobao</th>
-                                <th class="p-3">Người Phụ Trách</th>
-                                <th class="p-3">Giá Bán / Vốn</th>
-                                <th class="p-3">Cọc / Thu COD</th>
-                                <th class="p-3">Lãi Ròng</th>
-                                <th class="p-3">Chia Lãi (Khôi/Lâm)</th>
-                                <th class="p-3">Bill Cọc</th>
-                                <th class="p-3">Trạng Thái</th>
-                                <th class="p-3 text-right">Thao Tác</th>
+                                <th class="p-3.5">Đơn / Ngày</th>
+                                <th class="p-3.5">Khách Hàng</th>
+                                <th class="p-3.5">Sản Phẩm</th>
+                                <th class="p-3.5">Vận Đơn</th>
+                                <th class="p-3.5">Phụ Trách</th>
+                                <th class="p-3.5">Bán / Vốn</th>
+                                <th class="p-3.5">Cọc / COD</th>
+                                <th class="p-3.5">Lãi &amp; Chia</th>
+                                <th class="p-3.5">Bill</th>
+                                <th class="p-3.5">Trạng Thái</th>
+                                <th class="p-3.5 text-right">Thao Tác</th>
                             </tr>
                         </thead>
-                        <tbody id="adminTableBody" class="divide-y divide-slate-800/60"></tbody>
+                        <tbody id="adminTableBody" class="divide-y divide-slate-800/70"></tbody>
                     </table>
                 </div>
 
@@ -361,22 +353,22 @@
         </div>
 
         <!-- TAB LINK MUA TAOBAO -->
-        <div id="tabBuyLinks" class="max-w-7xl mx-auto px-4 mt-6 hidden">
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 mb-6">
+        <div id="tabBuyLinks" class="max-w-7xl mx-auto px-4 mt-5 hidden">
+            <div class="card-surface rounded-2xl p-5">
                 <div class="mb-4">
-                    <h2 class="text-base font-bold text-white"><i class="fas fa-link text-amber-500 mr-2"></i>Quản Lý Link Mua Hàng Sản Phẩm (Taobao / 1688)</h2>
-                    <p class="text-xs text-slate-400">Lưu lại đường link mua nguồn hàng của từng khách. Bấm 1 click để mở lại trang Taobao gốc.</p>
+                    <h2 class="text-base font-bold text-white"><i class="fas fa-link text-amber-400 mr-2"></i>Link Mua Hàng Taobao / 1688 Theo Đơn</h2>
+                    <p class="text-xs text-slate-400 mt-0.5">Bấm 1 lần để mở lại link nguồn hàng gốc của từng đơn khách đặt.</p>
                 </div>
 
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-xs text-slate-300">
                         <thead class="bg-slate-950 text-slate-400 uppercase font-semibold border-b border-slate-800">
                             <tr>
-                                <th class="p-3">Mã Đơn</th>
-                                <th class="p-3">Khách Hàng & SĐT</th>
-                                <th class="p-3">Tên Sản Phẩm & Size</th>
-                                <th class="p-3">Đường Link Mua Gốc</th>
-                                <th class="p-3 text-right">Hành Động</th>
+                                <th class="p-3.5">Mã Đơn</th>
+                                <th class="p-3.5">Khách Hàng &amp; SĐT</th>
+                                <th class="p-3.5">Sản Phẩm &amp; Size</th>
+                                <th class="p-3.5">Link Nguồn</th>
+                                <th class="p-3.5 text-right">Mở Link</th>
                             </tr>
                         </thead>
                         <tbody id="buyLinksTableBody" class="divide-y divide-slate-800"></tbody>
@@ -386,54 +378,53 @@
         </div>
 
         <!-- TAB QUẢN LÝ MÓN HÀNG WEB & DANH MỤC -->
-        <div id="tabWebProducts" class="max-w-7xl mx-auto px-4 mt-6 hidden space-y-6">
-            <div class="bg-slate-900 border border-amber-500/40 rounded-2xl p-4 text-xs space-y-3">
+        <div id="tabWebProducts" class="max-w-7xl mx-auto px-4 mt-5 hidden space-y-5">
+            <div class="card-surface border-amber-500/30 rounded-2xl p-4 text-xs space-y-3">
                 <h3 class="font-bold text-amber-400 flex items-center"><i class="fas fa-wand-magic-sparkles mr-2"></i>Công Cụ Tính Giá Bán Web Hàng Loạt</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex flex-wrap items-center justify-between gap-2">
                         <div>
                             <span class="block font-bold text-white">Cập nhật giá bán tất cả theo %:</span>
-                            <span class="text-[10px] text-slate-400">Giá bán = (Giá vốn + Tiền ship) × (1 + % Lợi nhuận)</span>
+                            <span class="text-[11px] text-slate-400">(Giá vốn + Ship) × (1 + % Lãi)</span>
                         </div>
-                        <div class="flex items-center space-x-1 flex-wrap gap-1">
-                            <input type="number" id="shipAmountInput" value="50000" placeholder="Tiền ship" class="w-20 bg-slate-900 border border-slate-700 p-1.5 rounded text-indigo-400 font-bold">
-                            <span class="text-slate-400 font-bold">+</span>
-                            <input type="number" id="percentProfitInput" value="20" placeholder="% Lãi" class="w-16 bg-slate-900 border border-slate-700 p-1.5 rounded text-amber-400 font-bold">
+                        <div class="flex items-center gap-1.5 flex-wrap">
+                            <input type="number" id="shipAmountInput" value="50000" placeholder="Ship" class="w-20 bg-slate-900 border border-slate-700 p-1.5 rounded-lg text-indigo-400 font-bold">
+                            <span class="text-slate-400">+</span>
+                            <input type="number" id="percentProfitInput" value="20" placeholder="% Lãi" class="w-16 bg-slate-900 border border-slate-700 p-1.5 rounded-lg text-amber-400 font-bold">
                             <span class="text-amber-400 font-bold">%</span>
-                            <button onclick="applyPercentageProfitToAll()" class="bg-amber-500 text-slate-950 font-bold px-3 py-1.5 rounded-lg whitespace-nowrap hover:bg-amber-400 transition">Áp Dụng Tất Cả</button>
+                            <button onclick="applyPercentageProfitToAll()" class="bg-amber-500 text-slate-950 font-bold px-3 py-1.5 rounded-lg hover:bg-amber-400 transition">Áp Dụng</button>
                         </div>
                     </div>
 
                     <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-center justify-between gap-2">
                         <div>
-                            <span class="block font-bold text-white">Sửa hàng loạt các món được tích chọn:</span>
-                            <span class="text-[10px] text-slate-400">Chọn nhiều món ở bảng dưới rồi bấm nút</span>
+                            <span class="block font-bold text-white">Sửa nhanh các món đã tích:</span>
+                            <span class="text-[11px] text-slate-400">Chọn ở bảng dưới rồi bấm nút</span>
                         </div>
-                        <div class="flex items-center space-x-1">
-                            <button onclick="batchSetHot(true)" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-2.5 py-1.5 rounded-lg">Gắn Tag HOT</button>
-                            <button onclick="batchSetSoldCount()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-2.5 py-1.5 rounded-lg">Đổi Đã Bán</button>
+                        <div class="flex items-center gap-1.5">
+                            <button onclick="batchSetHot(true)" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-3 py-1.5 rounded-lg">Gắn HOT</button>
+                            <button onclick="batchSetSoldCount()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3 py-1.5 rounded-lg">Đổi Đã Bán</button>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+            <div class="card-surface rounded-2xl p-5">
                 <div class="flex justify-between items-center mb-4">
                     <div>
-                        <h2 class="text-base font-bold text-white"><i class="fas fa-layer-group text-amber-500 mr-2"></i>Quản Lý Danh Mục Sản Phẩm</h2>
-                        <p class="text-xs text-slate-400">Các danh mục hiển thị trên hệ thống (Áo Đấu, Giày, Đồ Gym, Crocs...).</p>
+                        <h2 class="text-base font-bold text-white"><i class="fas fa-layer-group text-amber-400 mr-2"></i>Danh Mục Sản Phẩm Web</h2>
                     </div>
                     <button onclick="openCategoryModal()" class="gold-gradient text-slate-950 font-bold px-4 py-2 rounded-xl text-xs hover:opacity-90">
-                        <i class="fas fa-plus mr-1"></i> Thêm Danh Mục Mới
+                        <i class="fas fa-plus mr-1"></i>Thêm Danh Mục
                     </button>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-xs text-slate-300">
                         <thead class="bg-slate-950 text-slate-400 uppercase font-semibold border-b border-slate-800">
                             <tr>
-                                <th class="p-3">Mã Danh Mục</th>
+                                <th class="p-3">Mã</th>
                                 <th class="p-3">Tên Danh Mục</th>
-                                <th class="p-3">Icon FontAwesome</th>
+                                <th class="p-3">Icon</th>
                                 <th class="p-3 text-right">Thao Tác</th>
                             </tr>
                         </thead>
@@ -442,14 +433,13 @@
                 </div>
             </div>
 
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+            <div class="card-surface rounded-2xl p-5">
                 <div class="flex justify-between items-center mb-4">
                     <div>
-                        <h2 class="text-base font-bold text-white"><i class="fas fa-shirt text-amber-500 mr-2"></i>Quản Lý Món Hàng, Thẻ Tag & Size / Màu Sắc Web</h2>
-                        <p class="text-xs text-slate-400">Danh sách tất cả mẫu đồ thể thao, dép Crocs... hiển thị trên trang bán hàng chính.</p>
+                        <h2 class="text-base font-bold text-white"><i class="fas fa-shirt text-amber-400 mr-2"></i>Danh Sách Món Hàng Web</h2>
                     </div>
                     <button onclick="openWebProductModal()" class="gold-gradient text-slate-950 font-bold px-4 py-2 rounded-xl text-xs hover:opacity-90">
-                        <i class="fas fa-plus mr-1"></i> Thêm Món Hàng Mới
+                        <i class="fas fa-plus mr-1"></i>Thêm Món Hàng
                     </button>
                 </div>
 
@@ -458,18 +448,18 @@
                         <thead class="bg-slate-950 text-slate-400 uppercase font-semibold border-b border-slate-800">
                             <tr>
                                 <th class="p-3"><input type="checkbox" id="selectAllWebProds" onchange="toggleSelectAllWebProds(this)"></th>
-                                <th class="p-3">Ảnh Mẫu</th>
+                                <th class="p-3">Ảnh</th>
                                 <th class="p-3">Tên Món Hàng</th>
-                                <th class="p-3">Thẻ Tag Món Hàng</th>
+                                <th class="p-3">Tag</th>
                                 <th class="p-3">Danh Mục</th>
-                                <th class="p-3">Màu Sắc Cài Đặt</th>
-                                <th class="p-3">Kích Thước (Size)</th>
-                                <th class="p-3">Giá Vốn Nhập</th>
-                                <th class="p-3">Giá Niêm Yết</th>
-                                <th class="p-3">Link Mua (Admin)</th>
+                                <th class="p-3">Màu Sắc</th>
+                                <th class="p-3">Size</th>
+                                <th class="p-3">Giá Vốn</th>
+                                <th class="p-3">Giá Bán</th>
+                                <th class="p-3">Link Mua</th>
                                 <th class="p-3">Đã Bán</th>
-                                <th class="p-3">Ảnh Bảng Size</th>
-                                <th class="p-3">Loại Hàng</th>
+                                <th class="p-3">Bảng Size</th>
+                                <th class="p-3">Loại</th>
                                 <th class="p-3 text-right">Thao Tác</th>
                             </tr>
                         </thead>
@@ -480,11 +470,11 @@
         </div>
 
         <!-- TAB QUẢN LÝ BỘ ẢNH ĐƠN HÀNG -->
-        <div id="tabOrderPhotos" class="max-w-7xl mx-auto px-4 mt-6 hidden">
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 mb-6">
+        <div id="tabOrderPhotos" class="max-w-7xl mx-auto px-4 mt-5 hidden">
+            <div class="card-surface rounded-2xl p-5">
                 <div class="mb-4">
-                    <h2 class="text-base font-bold text-white"><i class="fas fa-camera text-amber-500 mr-2"></i>Quản Lý Bộ Ảnh Đơn Hàng (Ảnh Cọc & Ảnh Hàng Trước Khi Ship)</h2>
-                    <p class="text-xs text-slate-400">Lưu giữ hình ảnh bill chuyển khoản cọc và hình ảnh thực tế của hàng hóa trước khi bàn giao gửi đi cho từng đơn.</p>
+                    <h2 class="text-base font-bold text-white"><i class="fas fa-camera text-amber-400 mr-2"></i>Ảnh Cọc &amp; Ảnh Hàng Trước Khi Ship</h2>
+                    <p class="text-xs text-slate-400 mt-0.5">Bấm vào ảnh để phóng to kiểm tra đối chiếu.</p>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="orderPhotosGrid"></div>
@@ -492,15 +482,14 @@
         </div>
 
         <!-- TAB MÃ GIẢM GIÁ -->
-        <div id="tabCoupons" class="max-w-7xl mx-auto px-4 mt-6 hidden">
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 mb-6">
+        <div id="tabCoupons" class="max-w-7xl mx-auto px-4 mt-5 hidden">
+            <div class="card-surface rounded-2xl p-5">
                 <div class="flex justify-between items-center mb-4">
                     <div>
-                        <h2 class="text-base font-bold text-white"><i class="fas fa-ticket text-amber-500 mr-2"></i>Quản Lý Mã Giảm Giá & Sự Kiện Shop</h2>
-                        <p class="text-xs text-slate-400">Tạo mã Voucher khuyến mãi để áp dụng trực tiếp khi tạo đơn cho khách và đồng bộ với trang Web.</p>
+                        <h2 class="text-base font-bold text-white"><i class="fas fa-ticket text-amber-400 mr-2"></i>Mã Giảm Giá &amp; Voucher</h2>
                     </div>
                     <button onclick="openCouponModal()" class="gold-gradient text-slate-950 font-bold px-4 py-2 rounded-xl text-xs hover:opacity-90">
-                        <i class="fas fa-plus mr-1"></i> Tạo Mã Giảm Giá Mới
+                        <i class="fas fa-plus mr-1"></i>Tạo Mã Mới
                     </button>
                 </div>
 
@@ -510,7 +499,7 @@
                             <tr>
                                 <th class="p-3">Mã Voucher</th>
                                 <th class="p-3">Mức Giảm</th>
-                                <th class="p-3">Loại Giảm</th>
+                                <th class="p-3">Mô Tả</th>
                                 <th class="p-3 text-right">Thao Tác</th>
                             </tr>
                         </thead>
@@ -521,16 +510,16 @@
         </div>
 
         <!-- TAB QUẢN LÝ KHO HÀNG SẴN & HÀNG ĐÃ ĐĂNG LÊN SHOP -->
-        <div id="tabInventory" class="max-w-7xl mx-auto px-4 mt-6 hidden space-y-6">
+        <div id="tabInventory" class="max-w-7xl mx-auto px-4 mt-5 hidden space-y-5">
             <!-- PHẦN 1: KHO HÀNG SẴN TẠI HÀ NỘI -->
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+            <div class="card-surface rounded-2xl p-5">
                 <div class="flex flex-wrap justify-between items-center gap-3 mb-4">
                     <div>
-                        <h2 class="text-base font-bold text-white"><i class="fas fa-boxes-stacked text-amber-500 mr-2"></i>1. Kho Hàng Sẵn Tại Hà Nội</h2>
-                        <p class="text-xs text-slate-400">Tự động cộng tồn kho khi trả hàng hoặc nhập mới để xuất đơn ngay.</p>
+                        <h2 class="text-base font-bold text-white"><i class="fas fa-boxes-stacked text-amber-400 mr-2"></i>1. Kho Hàng Sẵn Tại Hà Nội</h2>
+                        <p class="text-xs text-slate-400 mt-0.5">Xuất đơn trực tiếp từ hàng sẵn có trong kho.</p>
                     </div>
                     <button onclick="openInventoryModal()" class="gold-gradient text-slate-950 font-bold px-4 py-2 rounded-xl text-xs hover:opacity-90">
-                        <i class="fas fa-plus mr-1"></i> Nhập Hàng Sẵn Vào Kho
+                        <i class="fas fa-plus mr-1"></i>Nhập Hàng Sẵn
                     </button>
                 </div>
 
@@ -540,9 +529,9 @@
                             <tr>
                                 <th class="p-3">Tên Sản Phẩm</th>
                                 <th class="p-3">Size</th>
-                                <th class="p-3">Số Lượng Tồn Kho</th>
-                                <th class="p-3">Giá Vốn Nhập</th>
-                                <th class="p-3">Giá Bán Niêm Yết</th>
+                                <th class="p-3">Tồn Kho</th>
+                                <th class="p-3">Giá Vốn</th>
+                                <th class="p-3">Giá Bán</th>
                                 <th class="p-3 text-right">Thao Tác</th>
                             </tr>
                         </thead>
@@ -552,19 +541,19 @@
             </div>
 
             <!-- PHẦN 2: QUẢN LÝ TẤT CẢ HÀNG ĐÃ ĐĂNG LÊN SHOP -->
-            <div class="bg-slate-900 border border-amber-500/40 rounded-2xl p-5 shadow-xl">
+            <div class="card-surface border-amber-500/30 rounded-2xl p-5">
                 <div class="flex flex-wrap justify-between items-center gap-3 mb-4">
                     <div>
-                        <h2 class="text-base font-bold text-amber-400"><i class="fas fa-store text-amber-500 mr-2"></i>2. Danh Sách Hàng Đã Đăng Lên Shop (Kho Mẫu & Dữ Liệu Gốc)</h2>
-                        <p class="text-xs text-slate-400">Lưu trữ trọn bộ thông tin các mẫu đã đăng bán: Giá nhập (Tệ/VNĐ), Giá bán, Link Taobao/1688, Tất cả các Size, Ảnh Bảng Size và Toàn bộ Ảnh Đơn/Ảnh Mẫu.</p>
+                        <h2 class="text-base font-bold text-amber-400"><i class="fas fa-store mr-2"></i>2. Kho Hàng Đã Đăng Lên Shop</h2>
+                        <p class="text-xs text-slate-400 mt-0.5">Lưu mẫu, link nguồn, ảnh bảng size &amp; ảnh mẫu. Khi bấm <b>Lên Đơn</b> có thể sửa lại giá tùy từng khách.</p>
                     </div>
-                    <div class="flex items-center space-x-2">
+                    <div class="flex items-center gap-2">
                         <div class="relative">
                             <i class="fas fa-search text-slate-500 absolute left-3 top-2.5 text-xs"></i>
-                            <input type="text" id="searchPostedItemsInput" oninput="renderPostedItemsTable()" placeholder="Tìm tên mẫu đã đăng..." class="bg-slate-950 border border-slate-700 rounded-xl pl-8 pr-3 py-1.5 text-xs text-white focus:outline-none focus:border-amber-500">
+                            <input type="text" id="searchPostedItemsInput" oninput="renderPostedItemsTable()" placeholder="Tìm mẫu đã đăng..." class="bg-slate-950 border border-slate-700 rounded-xl pl-8 pr-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500">
                         </div>
                         <button onclick="openPostedItemModal()" class="gold-gradient text-slate-950 font-extrabold px-4 py-2 rounded-xl text-xs hover:opacity-90 whitespace-nowrap">
-                            <i class="fas fa-plus mr-1"></i> Thêm Hàng Đã Đăng
+                            <i class="fas fa-plus mr-1"></i>Thêm Mẫu
                         </button>
                     </div>
                 </div>
@@ -573,14 +562,14 @@
                     <table class="w-full text-left text-xs text-slate-300">
                         <thead class="bg-slate-950 text-slate-400 uppercase font-semibold border-b border-slate-800">
                             <tr>
-                                <th class="p-3">Ảnh Đại Diện</th>
-                                <th class="p-3">Tên Mẫu Đã Đăng</th>
-                                <th class="p-3">Giá Nhập (Tệ / VNĐ)</th>
+                                <th class="p-3">Ảnh</th>
+                                <th class="p-3">Tên Mẫu</th>
+                                <th class="p-3">Giá Nhập</th>
                                 <th class="p-3">Giá Bán Shop</th>
-                                <th class="p-3">Link Taobao / 1688</th>
-                                <th class="p-3">Tất Cả Các Size</th>
+                                <th class="p-3">Link Nguồn</th>
+                                <th class="p-3">Size</th>
                                 <th class="p-3 text-center">Bảng Size</th>
-                                <th class="p-3 text-center">Tất Cả Ảnh Đơn / Mẫu</th>
+                                <th class="p-3 text-center">Album Ảnh</th>
                                 <th class="p-3 text-right">Thao Tác</th>
                             </tr>
                         </thead>
@@ -591,10 +580,10 @@
         </div>
 
         <!-- TAB CRM KHÁCH HÀNG -->
-        <div id="tabCRM" class="max-w-7xl mx-auto px-4 mt-6 hidden">
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 mb-6">
-                <h2 class="text-base font-bold text-white mb-2"><i class="fas fa-users text-amber-500 mr-2"></i>Danh Sách Khách Hàng CRM (Tự Động Tính Hạng VIP)</h2>
-                <p class="text-xs text-slate-400 mb-4">Tự động tổng hợp danh sách khách hàng. Khách có tổng tích lũy mua hàng <b>≥ 2.000.000đ</b> sẽ tự động nâng lên cấp <b>💎 VIP</b>!</p>
+        <div id="tabCRM" class="max-w-7xl mx-auto px-4 mt-5 hidden">
+            <div class="card-surface rounded-2xl p-5">
+                <h2 class="text-base font-bold text-white mb-1"><i class="fas fa-users text-amber-400 mr-2"></i>Danh Sách Khách Hàng</h2>
+                <p class="text-xs text-slate-400 mb-4">Khách có tổng chi tiêu <b>≥ 2.000.000đ</b> tự động lên hạng <b>💎 VIP</b>.</p>
 
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-xs text-slate-300">
@@ -603,8 +592,8 @@
                                 <th class="p-3">Tên Khách Hàng</th>
                                 <th class="p-3">Số Điện Thoại</th>
                                 <th class="p-3">Địa Chỉ</th>
-                                <th class="p-3">Tổng Chi Tiêu Tích Lũy</th>
-                                <th class="p-3">Phân Loại Hạng Khách</th>
+                                <th class="p-3">Tổng Chi Tiêu</th>
+                                <th class="p-3">Hạng Khách</th>
                                 <th class="p-3 text-right">Thao Tác</th>
                             </tr>
                         </thead>
@@ -615,21 +604,21 @@
         </div>
 
         <!-- TAB BẢNG SIZE CHUNG -->
-        <div id="tabSizePrice" class="max-w-7xl mx-auto px-4 mt-6 hidden space-y-6">
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
-                <div class="flex flex-wrap justify-between items-center gap-3 mb-4">
+        <div id="tabSizePrice" class="max-w-7xl mx-auto px-4 mt-5 hidden">
+            <div class="card-surface rounded-2xl p-6">
+                <div class="flex flex-wrap justify-between items-center gap-3 mb-5">
                     <div>
-                        <h2 class="text-lg font-bold text-white"><i class="fas fa-ruler-combined text-amber-500 mr-2"></i>Cấu Hình Bảng Size Chung Cho Trang Web</h2>
-                        <p class="text-xs text-slate-400">Thay đổi hình ảnh và chữ hướng dẫn chọn size chung hiển thị trực tiếp trên web khách hàng.</p>
+                        <h2 class="text-base font-bold text-white"><i class="fas fa-ruler-combined text-amber-400 mr-2"></i>Cấu Hình Bảng Size Chung Web</h2>
+                        <p class="text-xs text-slate-400 mt-0.5">Đồng bộ trực tiếp ảnh và nội dung bảng size lên trang bán hàng.</p>
                     </div>
                     <button onclick="saveSizeChartToFirebase()" class="gold-gradient text-slate-950 font-extrabold px-5 py-2.5 rounded-xl text-xs hover:opacity-90">
-                        <i class="fas fa-floppy-disk mr-1.5"></i> Lưu Bảng Size Chung Lên Web
+                        <i class="fas fa-floppy-disk mr-1.5"></i>Lưu Bảng Size Lên Web
                     </button>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
                     <div>
-                        <label class="block text-amber-400 mb-2 font-bold"><i class="fas fa-image mr-1"></i> Ảnh Bảng Size Quy Đổi Chung:</label>
+                        <label class="block text-amber-400 mb-2 font-bold"><i class="fas fa-image mr-1"></i>Ảnh Bảng Size Quy Đổi Chung:</label>
                         <input type="file" id="sizeChartImgFileInput" accept="image/*" onchange="convertSizeChartImg(this)" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-slate-300 cursor-pointer mb-3">
                         <div id="sizeChartImgPreviewBox" class="bg-slate-950 p-2 rounded-xl border border-slate-800 text-center">
                             <img id="sizeChartImgPreview" src="" class="max-h-56 mx-auto rounded-lg border border-slate-700">
@@ -637,7 +626,7 @@
                     </div>
 
                     <div>
-                        <label class="block text-amber-400 mb-2 font-bold"><i class="fas fa-file-lines mr-1"></i> Nội Dung Bảng Size Chung (Dạng Chữ):</label>
+                        <label class="block text-amber-400 mb-2 font-bold"><i class="fas fa-file-lines mr-1"></i>Nội Dung Bảng Size Chung:</label>
                         <textarea id="sizeChartTextArea" rows="10" placeholder="• Size S: 45 - 55kg..." class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white font-mono leading-relaxed focus:outline-none focus:border-amber-500"></textarea>
                     </div>
                 </div>
@@ -645,34 +634,34 @@
         </div>
 
         <!-- BOTTOM NAVIGATION BAR MOBILE -->
-        <div class="fixed bottom-0 left-0 right-0 bg-slate-900/95 border-t border-slate-800 backdrop-blur-md z-40 md:hidden flex items-center overflow-x-auto py-2 px-2 gap-4 text-[10px]">
+        <div class="fixed bottom-0 left-0 right-0 bg-slate-900/95 border-t border-slate-800 backdrop-blur-md z-40 md:hidden flex items-center overflow-x-auto py-2 px-3 gap-5 text-[10px]">
             <button onclick="switchTab('dashboard')" id="mNavDashboard" class="flex flex-col items-center shrink-0 text-amber-400 font-bold">
                 <i class="fas fa-chart-line text-base"></i>
                 <span class="mt-0.5">Đơn Hàng</span>
             </button>
-            <button onclick="switchTab('buyLinks')" id="mNavBuyLinks" class="flex flex-col items-center shrink-0 text-slate-400 hover:text-white">
-                <i class="fas fa-link text-base"></i>
-                <span class="mt-0.5">Link Taobao</span>
+            <button onclick="switchTab('inventory')" id="mNavInventory" class="flex flex-col items-center shrink-0 text-slate-400 hover:text-white">
+                <i class="fas fa-boxes-stacked text-base"></i>
+                <span class="mt-0.5">Kho Hàng</span>
             </button>
             <button onclick="switchTab('webProducts')" id="mNavWebProducts" class="flex flex-col items-center shrink-0 text-slate-400 hover:text-white">
                 <i class="fas fa-shirt text-base"></i>
                 <span class="mt-0.5">Sản Phẩm</span>
             </button>
+            <button onclick="switchTab('buyLinks')" id="mNavBuyLinks" class="flex flex-col items-center shrink-0 text-slate-400 hover:text-white">
+                <i class="fas fa-link text-base"></i>
+                <span class="mt-0.5">Link Taobao</span>
+            </button>
             <button onclick="switchTab('orderPhotos')" id="mNavOrderPhotos" class="flex flex-col items-center shrink-0 text-slate-400 hover:text-white">
                 <i class="fas fa-camera text-base"></i>
                 <span class="mt-0.5">Ảnh Đơn</span>
             </button>
+            <button onclick="switchTab('crm')" id="mNavCRM" class="flex flex-col items-center shrink-0 text-slate-400 hover:text-white">
+                <i class="fas fa-users text-base"></i>
+                <span class="mt-0.5">Khách Hàng</span>
+            </button>
             <button onclick="switchTab('coupons')" id="mNavCoupons" class="flex flex-col items-center shrink-0 text-slate-400 hover:text-white">
                 <i class="fas fa-ticket text-base"></i>
                 <span class="mt-0.5">Voucher</span>
-            </button>
-            <button onclick="switchTab('inventory')" id="mNavInventory" class="flex flex-col items-center shrink-0 text-slate-400 hover:text-white">
-                <i class="fas fa-boxes-stacked text-base"></i>
-                <span class="mt-0.5">Kho & Đã Đăng</span>
-            </button>
-            <button onclick="switchTab('crm')" id="mNavCRM" class="flex flex-col items-center shrink-0 text-slate-400 hover:text-white">
-                <i class="fas fa-users text-base"></i>
-                <span class="mt-0.5">CRM Khách</span>
             </button>
             <button onclick="switchTab('sizePrice')" id="mNavSizePrice" class="flex flex-col items-center shrink-0 text-slate-400 hover:text-white">
                 <i class="fas fa-ruler-combined text-base"></i>
@@ -720,7 +709,6 @@
                     <input type="text" id="piSizes" required placeholder="VD: XS, S, M, L, XL (hoặc 38, 39, 40, 41, 42, 43)" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-amber-300 font-mono font-bold">
                 </div>
 
-                <!-- ẢNH BẢNG SIZE -->
                 <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
                     <label class="block text-amber-400 mb-1 font-bold"><i class="fas fa-table-list mr-1"></i>Ảnh Bảng Size Của Mẫu Này:</label>
                     <input type="file" id="piSizeChartFile" accept="image/*" onchange="convertPiSizeChart(this)" class="w-full text-slate-400 text-xs cursor-pointer">
@@ -730,10 +718,9 @@
                     </div>
                 </div>
 
-                <!-- TẤT CẢ CÁC ẢNH ĐƠN / ẢNH MẪU -->
                 <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
                     <div class="flex justify-between items-center mb-1">
-                        <label class="block text-emerald-400 font-bold"><i class="fas fa-images mr-1"></i>Tất Cả Các Ảnh Đơn / Ảnh Mẫu / Ảnh Thật (Chọn nhiều ảnh):</label>
+                        <label class="block text-emerald-400 font-bold"><i class="fas fa-images mr-1"></i>Tất Cả Các Ảnh Đơn / Ảnh Mẫu (Chọn nhiều ảnh):</label>
                         <span id="piImagesCountBadge" class="text-[10px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded font-bold">0 ảnh</span>
                     </div>
                     <input type="file" id="piAllImagesFiles" accept="image/*" multiple onchange="convertPiMultipleImages(this)" class="w-full text-slate-400 text-xs cursor-pointer">
@@ -741,8 +728,8 @@
                 </div>
 
                 <div>
-                    <label class="block text-slate-400 mb-1 font-semibold">Ghi Chú Thêm (Chất liệu, Form dáng, Thời gian về hàng...)</label>
-                    <textarea id="piNote" rows="2" placeholder="VD: Form Âu rộng, nên lùi 1 size so với size Việt Nam..." class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-white"></textarea>
+                    <label class="block text-slate-400 mb-1 font-semibold">Ghi Chú Thêm</label>
+                    <textarea id="piNote" rows="2" placeholder="VD: Form Âu rộng, nên lùi 1 size..." class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-white"></textarea>
                 </div>
 
                 <button type="submit" id="btnSavePostedItem" class="w-full gold-gradient text-slate-950 font-extrabold py-3 rounded-xl text-xs hover:opacity-90 mt-2">
@@ -757,7 +744,7 @@
         <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-3xl w-full p-5 relative max-h-[90vh] flex flex-col">
             <div class="flex justify-between items-center border-b border-slate-800 pb-3 mb-3">
                 <div>
-                    <h3 class="text-sm font-bold text-amber-400" id="albumViewerTitle">Bộ Sưu Tập Ảnh Đơn & Ảnh Mẫu</h3>
+                    <h3 class="text-sm font-bold text-amber-400" id="albumViewerTitle">Bộ Sưu Tập Ảnh Đơn &amp; Ảnh Mẫu</h3>
                     <span class="text-[11px] text-slate-400" id="albumViewerSubtitle">Bấm vào từng ảnh để phóng to toàn màn hình</span>
                 </div>
                 <button onclick="closeModal('albumViewerModal')" class="text-slate-400 hover:text-white bg-slate-800 w-8 h-8 rounded-lg flex items-center justify-center"><i class="fas fa-xmark text-lg"></i></button>
@@ -772,17 +759,17 @@
             <button onclick="closeModal('notificationsModal')" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fas fa-xmark text-xl"></i></button>
             <div class="flex items-center space-x-2 mb-3">
                 <i class="fas fa-bell text-amber-400 text-lg"></i>
-                <h3 class="text-base font-bold text-white">Trung Tâm Cảnh Báo & Thông Báo Đơn Mới</h3>
+                <h3 class="text-base font-bold text-white">Thông Báo Đơn Mới</h3>
             </div>
 
             <div class="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 mb-4 space-y-2">
                 <div class="flex items-center justify-between">
-                    <span class="text-xs text-amber-300 font-bold"><i class="fas fa-volume-high mr-1"></i> Cài Đặt Cảnh Báo Trình Duyệt:</span>
+                    <span class="text-xs text-amber-300 font-bold"><i class="fas fa-volume-high mr-1"></i> Cảnh báo trình duyệt:</span>
                     <span id="notifPermissionStatus" class="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-800 text-slate-400">Chưa Bật</span>
                 </div>
                 <div class="flex space-x-2">
                     <button onclick="requestNotificationPermission()" class="flex-1 gold-gradient text-slate-950 font-bold py-1.5 rounded-lg text-xs hover:opacity-90">
-                        <i class="fas fa-bell mr-1"></i> Bật Chuông Thông Báo
+                        <i class="fas fa-bell mr-1"></i> Bật Chuông
                     </button>
                     <button onclick="playNotificationSound(); showToast('🔔 Đã phát âm báo!');" class="bg-slate-800 hover:bg-slate-700 text-amber-400 border border-amber-500/30 font-bold px-3 py-1.5 rounded-lg text-xs">
                         <i class="fas fa-play mr-1"></i> Thử Chuông
@@ -790,7 +777,6 @@
                 </div>
             </div>
 
-            <p class="text-xs text-slate-400 mb-3">Danh sách thông báo phát sinh:</p>
             <div id="notificationsList" class="max-h-72 overflow-y-auto space-y-2 text-xs"></div>
 
             <button onclick="clearNotifications()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-2 rounded-xl text-xs mt-4 transition">
@@ -818,7 +804,7 @@
                     <label class="block text-slate-400 mb-1 font-semibold">Icon FontAwesome *</label>
                     <input type="text" id="catIconInput" required placeholder="fa-shirt" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-slate-300 font-mono">
                 </div>
-                <button type="submit" class="w-full gold-gradient text-slate-950 font-bold py-2.5 rounded-xl text-xs hover:opacity-90 mt-2">Lưu Danh Mục Lên Firebase</button>
+                <button type="submit" class="w-full gold-gradient text-slate-950 font-bold py-2.5 rounded-xl text-xs hover:opacity-90 mt-2">Lưu Danh Mục</button>
             </form>
         </div>
     </div>
@@ -837,32 +823,32 @@
 
                 <div class="bg-indigo-950/40 p-2.5 rounded-xl border border-indigo-500/40">
                     <label class="block text-indigo-300 mb-1 font-bold flex items-center justify-between">
-                        <span><i class="fas fa-link mr-1.5 text-indigo-400"></i>Link Nguồn Mua Hàng (Taobao / 1688) *</span>
-                        <span class="text-[9px] bg-rose-500/20 text-rose-300 px-1.5 py-0.5 rounded font-bold border border-rose-500/30">🔒 Chỉ Admin thấy</span>
+                        <span><i class="fas fa-link mr-1.5 text-indigo-400"></i>Link Nguồn (Taobao / 1688)</span>
+                        <span class="text-[9px] bg-rose-500/20 text-rose-300 px-1.5 py-0.5 rounded font-bold border border-rose-500/30">🔒 Nội bộ</span>
                     </label>
-                    <input type="url" id="webProdBuyUrl" placeholder="https://detail.1688.com/offer/... hoặc https://item.taobao.com/..." class="w-full bg-slate-950 border border-indigo-500/50 rounded-lg p-2.5 text-indigo-300 font-mono text-[11px] focus:outline-none focus:border-amber-400">
+                    <input type="url" id="webProdBuyUrl" placeholder="https://detail.1688.com/offer/..." class="w-full bg-slate-950 border border-indigo-500/50 rounded-lg p-2.5 text-indigo-300 font-mono text-[11px] focus:outline-none focus:border-amber-400">
                 </div>
 
                 <div class="grid grid-cols-2 gap-2">
                     <div>
-                        <label class="block text-slate-400 mb-1 font-semibold">Thẻ Tag Nhận Diện *</label>
+                        <label class="block text-slate-400 mb-1 font-semibold">Thẻ Tag</label>
                         <input type="text" id="webProdTag" placeholder="VD: Hàng Hot 2026" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-amber-400 font-bold">
                     </div>
                     <div>
-                        <label class="block text-slate-400 mb-1 font-semibold">Mã Danh Mục *</label>
+                        <label class="block text-slate-400 mb-1 font-semibold">Danh Mục *</label>
                         <select id="webProdCategory" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-white font-semibold"></select>
                     </div>
                 </div>
 
                 <div class="bg-slate-950 p-3 rounded-xl border border-amber-500/30 space-y-2">
-                    <span class="text-amber-400 font-bold block"><i class="fas fa-sliders mr-1"></i> Tùy Chỉnh Size & Màu Sắc Riêng:</span>
+                    <span class="text-amber-400 font-bold block"><i class="fas fa-sliders mr-1"></i> Size &amp; Màu Sắc Riêng:</span>
                     <div>
-                        <label class="block text-slate-300 text-[11px] mb-1 font-semibold">1. Danh sách Size (cách nhau bởi dấu phẩy):</label>
-                        <input type="text" id="webProdCustomSizes" placeholder="S, M, L, XL, XXL hoặc 36, 37, 38, 39, 40" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-amber-300 font-mono">
+                        <label class="block text-slate-300 text-[11px] mb-1 font-semibold">Size (cách nhau dấu phẩy):</label>
+                        <input type="text" id="webProdCustomSizes" placeholder="S, M, L, XL, XXL" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-amber-300 font-mono">
                     </div>
                     <div>
-                        <label class="block text-slate-300 text-[11px] mb-1 font-semibold">2. Danh sách Màu Sắc (cách nhau bởi dấu phẩy):</label>
-                        <input type="text" id="webProdCustomColors" placeholder="Đen, Trắng, Đỏ, Xanh Dương" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-indigo-300 font-mono">
+                        <label class="block text-slate-300 text-[11px] mb-1 font-semibold">Màu Sắc (cách nhau dấu phẩy):</label>
+                        <input type="text" id="webProdCustomColors" placeholder="Đen, Trắng, Đỏ" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-indigo-300 font-mono">
                     </div>
                 </div>
 
@@ -885,7 +871,7 @@
                         <input type="number" id="webProdSold" value="95" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-white font-bold">
                     </div>
                     <div>
-                        <label class="block text-slate-400 mb-1 font-semibold">Trạng Thái Tồn Kho</label>
+                        <label class="block text-slate-400 mb-1 font-semibold">Tồn Kho</label>
                         <select id="webProdIsReadySelect" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-white font-bold">
                             <option value="false">Hàng Order</option>
                             <option value="true">Sẵn tại Kho HN</option>
@@ -898,14 +884,14 @@
                     <textarea id="webProdDesc" rows="2" placeholder="Mô tả chi tiết..." class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-white"></textarea>
                 </div>
                 <div>
-                    <label class="block text-slate-400 mb-1 font-semibold">1. Ảnh Bìa Sản Phẩm Chính *</label>
+                    <label class="block text-slate-400 mb-1 font-semibold">1. Ảnh Bìa Chính *</label>
                     <input type="file" id="webProdImgFile" accept="image/*" onchange="convertWebProdImage(this)" class="w-full text-slate-400 text-xs">
                     <div id="webProdPreviewContainer" class="hidden mt-2">
                         <img id="webProdPreviewImg" src="" class="max-h-32 rounded border border-slate-700">
                     </div>
                 </div>
                 <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
-                    <label class="block text-amber-400 mb-1 font-bold"><i class="fas fa-images mr-1"></i> 2. Chọn Thêm Ảnh Các Màu Khác:</label>
+                    <label class="block text-amber-400 mb-1 font-bold"><i class="fas fa-images mr-1"></i> 2. Ảnh Các Màu Khác:</label>
                     <input type="file" id="webProdGalleryFiles" accept="image/*" multiple onchange="convertMultipleGalleryImages(this)" class="w-full text-slate-400 text-xs cursor-pointer">
                     <div id="webProdGalleryPreviewContainer" class="mt-2 flex flex-wrap gap-2"></div>
                 </div>
@@ -933,27 +919,27 @@
 
             <div class="bg-slate-950 border border-amber-500/40 rounded-xl p-3 mb-4 text-xs space-y-2">
                 <div class="flex justify-between items-center border-b border-slate-800 pb-1.5">
-                    <span class="font-bold text-amber-400"><i class="fas fa-calculator mr-1"></i>QUY ĐỔI GIÁ VỐN TỆ (¥) SANG VNĐ</span>
-                    <span class="text-[10px] text-slate-400">Tỷ giá: <b id="lblRmbRateInModal" class="text-amber-400">3,810</b>đ/¥</span>
+                    <span class="font-bold text-amber-400"><i class="fas fa-calculator mr-1"></i>QUY ĐỔI GIÁ VỐN TỆ (¥)</span>
+                    <span class="text-[11px] text-slate-400">Tỷ giá: <b id="lblRmbRateInModal" class="text-amber-400">3,810</b>đ/¥</span>
                 </div>
                 <div class="grid grid-cols-2 gap-2">
                     <div>
-                        <label class="block text-slate-300 text-[10px] mb-1 font-bold">Giá nhập gốc (Tệ ¥):</label>
-                        <input type="number" step="0.1" id="calcRmbGoods" oninput="calculateCostFromRmb(true)" placeholder="VD: 55" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-amber-400 font-bold">
+                        <label class="block text-slate-300 text-[11px] mb-1 font-bold">Giá nhập gốc (Tệ ¥):</label>
+                        <input type="number" step="0.1" id="calcRmbGoods" oninput="calculateCostFromRmb(true)" placeholder="VD: 55" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-amber-400 font-bold">
                     </div>
                     <div>
-                        <label class="block text-slate-300 text-[10px] mb-1 font-bold">Ship nội địa TQ (Tệ ¥):</label>
-                        <input type="number" step="0.1" id="calcRmbShip" oninput="calculateCostFromRmb(true)" placeholder="VD: 10" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white font-bold">
+                        <label class="block text-slate-300 text-[11px] mb-1 font-bold">Ship nội địa TQ (Tệ ¥):</label>
+                        <input type="number" step="0.1" id="calcRmbShip" oninput="calculateCostFromRmb(true)" placeholder="VD: 10" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white font-bold">
                     </div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-2 pt-1 border-t border-slate-800/80">
-                    <div class="flex justify-between items-center bg-slate-900 p-2 rounded border border-slate-800">
+                    <div class="flex justify-between items-center bg-slate-900 p-2 rounded-lg border border-slate-800">
                         <span class="text-slate-400 text-[11px]">Tổng vốn nhập TQ:</span>
                         <b id="lblCalculatedCostVnd" class="text-rose-400 text-sm">0đ</b>
                     </div>
-                    <div class="flex justify-between items-center bg-slate-900 p-2 rounded border border-slate-800">
-                        <span class="text-slate-400 text-[11px]">Giá Bán Khách (Gợi ý):</span>
+                    <div class="flex justify-between items-center bg-slate-900 p-2 rounded-lg border border-slate-800">
+                        <span class="text-slate-400 text-[11px]">Giá bán gợi ý:</span>
                         <b id="lblCalculatedSellPriceVnd" class="text-emerald-400 text-sm">0đ</b>
                     </div>
                 </div>
@@ -1010,17 +996,17 @@
                 </div>
                 <div class="grid grid-cols-3 gap-2">
                     <div class="col-span-2">
-                        <label class="block text-slate-400 mb-1 font-semibold">Tên Sản Phẩm Order</label>
+                        <label class="block text-slate-400 mb-1 font-semibold">Tên Sản Phẩm Order *</label>
                         <input type="text" id="formProduct" required placeholder="Áo Real Madrid..." class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-white">
                     </div>
                     <div>
-                        <label class="block text-slate-400 mb-1 font-semibold">Size</label>
+                        <label class="block text-slate-400 mb-1 font-semibold">Size *</label>
                         <input type="text" id="formSize" required placeholder="M / 41" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-white">
                     </div>
                 </div>
 
                 <div>
-                    <label class="block text-amber-400 mb-1 font-bold"><i class="fas fa-link mr-1"></i> Đường Link Mua Taobao / 1688:</label>
+                    <label class="block text-amber-400 mb-1 font-bold"><i class="fas fa-link mr-1"></i> Link Mua Taobao / 1688:</label>
                     <input type="url" id="formBuyUrl" placeholder="https://detail.1688.com/offer/..." class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-indigo-300 font-mono">
                 </div>
 
@@ -1032,7 +1018,7 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-4 gap-2">
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
                     <div>
                         <label class="block text-rose-400 mb-1 font-bold">Vốn Gốc (VNĐ)</label>
                         <input type="number" id="formCost" oninput="calculateCostFromRmb(false)" required placeholder="293370" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-rose-400 font-bold">
@@ -1053,20 +1039,20 @@
 
                 <div class="grid grid-cols-2 gap-2">
                     <div>
-                        <label class="block text-slate-400 mb-1 font-semibold">Ảnh Bill Cọc / Chuyển Khoản:</label>
+                        <label class="block text-slate-400 mb-1 font-semibold">Ảnh Bill Cọc:</label>
                         <input type="file" id="formBillFile" accept="image/*" onchange="convertBillImage(this)" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-400 text-xs">
                     </div>
                     <div>
-                        <label class="block text-slate-400 mb-1 font-semibold">Ảnh Hàng Trước Khi Ship:</label>
+                        <label class="block text-slate-400 mb-1 font-semibold">Ảnh Trước Khi Ship:</label>
                         <input type="file" id="formPreShipFile" accept="image/*" onchange="convertPreShipImage(this)" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-400 text-xs">
                     </div>
                 </div>
 
-                <div class="flex items-center space-x-2 text-[11px]">
+                <div class="flex items-center gap-2 text-[11px]">
                     <span class="text-slate-400 font-semibold">Chọn nhanh cọc:</span>
-                    <button type="button" onclick="setDepositRatio(0.2)" class="bg-slate-800 hover:bg-slate-700 text-amber-400 border border-amber-500/30 px-2 py-1 rounded font-bold">Cọc 20%</button>
-                    <button type="button" onclick="setDepositRatio(0.3)" class="bg-slate-800 hover:bg-slate-700 text-amber-400 border border-amber-500/30 px-2 py-1 rounded font-bold">Cọc 30%</button>
-                    <button type="button" onclick="setDepositRatio(0.5)" class="bg-slate-800 hover:bg-slate-700 text-amber-400 border border-amber-500/30 px-2 py-1 rounded font-bold">Cọc 50%</button>
+                    <button type="button" onclick="setDepositRatio(0.2)" class="bg-slate-800 hover:bg-slate-700 text-amber-400 border border-amber-500/30 px-2.5 py-1 rounded-lg font-bold">20%</button>
+                    <button type="button" onclick="setDepositRatio(0.3)" class="bg-slate-800 hover:bg-slate-700 text-amber-400 border border-amber-500/30 px-2.5 py-1 rounded-lg font-bold">30%</button>
+                    <button type="button" onclick="setDepositRatio(0.5)" class="bg-slate-800 hover:bg-slate-700 text-amber-400 border border-amber-500/30 px-2.5 py-1 rounded-lg font-bold">50%</button>
                 </div>
                 <div>
                     <label class="block text-slate-400 mb-1 font-semibold">Trạng Thái Đơn Hàng</label>
@@ -1079,7 +1065,7 @@
                         <option value="Shop giao sai đơn (Lỗ vốn)">6. Shop giao sai đơn (Lỗ vốn)</option>
                     </select>
                 </div>
-                <button type="submit" class="w-full gold-gradient text-slate-950 font-bold py-3 rounded-xl text-sm mt-2 hover:opacity-90">Lưu Đơn Hàng Dữ Liệu</button>
+                <button type="submit" class="w-full gold-gradient text-slate-950 font-bold py-3 rounded-xl text-sm mt-2 hover:opacity-90">Lưu Đơn Hàng</button>
             </form>
         </div>
     </div>
@@ -1098,7 +1084,7 @@
                     <label class="block text-slate-400 mb-1 font-semibold">Mức Giảm Giá (VNĐ) *</label>
                     <input type="number" id="cpValue" required placeholder="VD: 20000" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-emerald-400 font-bold">
                 </div>
-                <button type="submit" class="w-full gold-gradient text-slate-950 font-bold py-2.5 rounded-xl text-xs hover:opacity-90 mt-2">Lưu Mã Giảm Giá Lên Firebase</button>
+                <button type="submit" class="w-full gold-gradient text-slate-950 font-bold py-2.5 rounded-xl text-xs hover:opacity-90 mt-2">Lưu Mã Giảm Giá</button>
             </form>
         </div>
     </div>
@@ -1112,13 +1098,13 @@
                 <div>
                     <label class="block text-slate-400 mb-1 font-semibold">Chọn loại tin nhắn:</label>
                     <select id="msgTypeSelect" onchange="generateClientMsg()" class="w-full bg-slate-950 border border-slate-700 text-white rounded-lg p-2 font-semibold">
-                        <option value="CONFIRM">1. Tin nhắn xác nhận chốt cọc đầy đủ thông tin (Cộng 2 tuần)</option>
-                        <option value="ARRIVED">2. Tin nhắn báo hàng về kho Hà Nội (Gửi mã VC)</option>
+                        <option value="CONFIRM">1. Xác nhận chốt cọc (dự kiến 2 tuần)</option>
+                        <option value="ARRIVED">2. Báo hàng về kho Hà Nội (kèm mã VĐ)</option>
                     </select>
                 </div>
                 <textarea id="msgContentArea" rows="10" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-amber-300 font-mono text-xs focus:outline-none leading-relaxed"></textarea>
                 <button onclick="copyMsgToClipboard()" class="w-full gold-gradient text-slate-950 font-bold py-2.5 rounded-xl text-xs hover:opacity-90">
-                    <i class="fas fa-copy mr-1.5"></i> Copy Tin Nhắn Này Để Dán Zalo / Messenger
+                    <i class="fas fa-copy mr-1.5"></i>Copy Tin Nhắn Gửi Khách
                 </button>
             </div>
         </div>
@@ -1156,7 +1142,7 @@
                 </div>
             </div>
             <button onclick="window.print()" class="w-full gold-gradient text-slate-950 font-extrabold py-2.5 rounded-xl text-xs mt-4">
-                <i class="fas fa-print mr-1"></i> In Tem Dán Đơn Hàng Ngay
+                <i class="fas fa-print mr-1"></i>In Tem Dán Đơn Hàng
             </button>
         </div>
     </div>
@@ -1190,7 +1176,7 @@
                         <input type="number" id="invPrice" required placeholder="450000" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-emerald-400 font-bold">
                     </div>
                 </div>
-                <button type="submit" class="w-full gold-gradient text-slate-950 font-bold py-2.5 rounded-xl text-xs hover:opacity-90 mt-2">Lưu Sản Phẩm Về Kho</button>
+                <button type="submit" class="w-full gold-gradient text-slate-950 font-bold py-2.5 rounded-xl text-xs hover:opacity-90 mt-2">Lưu Về Kho</button>
             </form>
         </div>
     </div>
@@ -1198,15 +1184,15 @@
     <div id="logsModal" class="fixed inset-0 bg-black/80 z-50 hidden flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-lg w-full p-6 relative">
             <button onclick="closeModal('logsModal')" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fas fa-xmark text-xl"></i></button>
-            <h3 class="text-base font-bold text-white mb-2"><i class="fas fa-history text-amber-500 mr-2"></i>Nhật Ký Thao Tác Hệ Thống</h3>
-            <div id="logsContainer" class="max-h-72 overflow-y-auto space-y-2 text-xs"></div>
+            <h3 class="text-base font-bold text-white mb-3"><i class="fas fa-history text-amber-500 mr-2"></i>Nhật Ký Thao Tác</h3>
+            <div id="logsContainer" class="max-h-80 overflow-y-auto space-y-2 text-xs"></div>
         </div>
     </div>
 
     <div id="withdrawModal" class="fixed inset-0 bg-black/80 z-50 hidden flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-lg w-full p-6 relative">
             <button onclick="closeWithdrawModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fas fa-xmark text-xl"></i></button>
-            <h3 class="text-base font-bold text-white mb-2"><i class="fas fa-money-bill-transfer text-rose-500 mr-2"></i>Quản Lý Rút Tiền / Chi Tiêu Minh Bạch</h3>
+            <h3 class="text-base font-bold text-white mb-3"><i class="fas fa-money-bill-transfer text-rose-500 mr-2"></i>Rút Tiền &amp; Chi Tiêu</h3>
             <form onsubmit="handleWithdrawSubmit(event)" class="space-y-3 text-xs mb-4">
                 <div class="grid grid-cols-2 gap-2">
                     <div>
@@ -1223,15 +1209,15 @@
                     </div>
                 </div>
                 <div>
-                    <label class="block text-slate-400 mb-1 font-semibold">Lý do / Mục đích chi tiêu *</label>
-                    <input type="text" id="wdReason" required placeholder="VD: Rút tiền..." class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-white">
+                    <label class="block text-slate-400 mb-1 font-semibold">Lý do / Mục đích *</label>
+                    <input type="text" id="wdReason" required placeholder="VD: Rút lãi, chạy Ads..." class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-white">
                 </div>
                 <button type="submit" class="w-full bg-rose-600 hover:bg-rose-500 text-white font-bold py-2.5 rounded-xl text-xs transition">
-                    <i class="fas fa-check mr-1"></i> Xác Nhận Ghi Sổ Khoản Rút / Chi Tiêu
+                    <i class="fas fa-check mr-1"></i>Ghi Sổ Khoản Rút / Chi
                 </button>
             </form>
             <div class="border-t border-slate-800 pt-3">
-                <span class="text-xs font-bold text-slate-300 block mb-2"><i class="fas fa-history mr-1"></i> Lịch Sử Rút Tiền & Chi Tiêu:</span>
+                <span class="text-xs font-bold text-slate-300 block mb-2">Lịch Sử Rút &amp; Chi:</span>
                 <div class="max-h-40 overflow-y-auto space-y-2 text-xs" id="withdrawHistoryList"></div>
             </div>
         </div>
@@ -1240,7 +1226,7 @@
     <div id="fundModal" class="fixed inset-0 bg-black/80 z-50 hidden flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-lg w-full p-6 relative">
             <button onclick="closeFundModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fas fa-xmark text-xl"></i></button>
-            <h3 class="text-base font-bold text-white mb-1"><i class="fas fa-wallet text-amber-500 mr-2"></i>Sổ Quỹ Góp Vốn YoungZone</h3>
+            <h3 class="text-base font-bold text-white mb-3"><i class="fas fa-wallet text-amber-500 mr-2"></i>Sổ Quỹ Góp Vốn</h3>
             <form onsubmit="addFundTransaction(event)" class="space-y-3 mb-4 text-xs">
                 <div class="grid grid-cols-2 gap-2">
                     <div>
@@ -1248,7 +1234,7 @@
                         <select id="fundPerson" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-white font-bold">
                             <option value="Khôi">Khôi góp vốn</option>
                             <option value="Lâm">Lâm góp vốn</option>
-                            <option value="Khôi & Lâm">Khôi & Lâm góp chung</option>
+                            <option value="Khôi & Lâm">Khôi &amp; Lâm góp chung</option>
                         </select>
                     </div>
                     <div>
@@ -1257,13 +1243,13 @@
                     </div>
                 </div>
                 <div>
-                    <label class="block text-slate-400 mb-1 font-semibold">Ghi Chú / Nội Dung *</label>
-                    <input type="text" id="fundDesc" placeholder="VD: Góp vốn..." required class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-white">
+                    <label class="block text-slate-400 mb-1 font-semibold">Ghi Chú *</label>
+                    <input type="text" id="fundDesc" placeholder="VD: Góp vốn đợt 1..." required class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-white">
                 </div>
-                <button type="submit" class="w-full gold-gradient text-slate-950 font-bold py-2.5 rounded-xl text-xs hover:opacity-90"><i class="fas fa-plus mr-1"></i>Thêm Vốn Góp Vào Quỹ</button>
+                <button type="submit" class="w-full gold-gradient text-slate-950 font-bold py-2.5 rounded-xl text-xs hover:opacity-90"><i class="fas fa-plus mr-1"></i>Thêm Vốn Góp</button>
             </form>
             <div class="border-t border-slate-800 pt-3">
-                <span class="text-xs font-bold text-slate-300 block mb-2"><i class="fas fa-history mr-1"></i> Lịch Sử Góp Vốn:</span>
+                <span class="text-xs font-bold text-slate-300 block mb-2">Lịch Sử Góp Vốn:</span>
                 <div class="max-h-48 overflow-y-auto space-y-2 text-xs" id="fundHistoryList"></div>
             </div>
         </div>
@@ -1360,13 +1346,14 @@
         }
 
         const firebaseConfig = {
-            databaseURL: "https://web-ban-hang-4fd4e-default-rtdb.asia-southeast1.firebasedatabase.app/"
+            databaseURL: "https://web-ban-hang-4fd4e-default-rtdb.asia-southeast1.firebasedatabase.app"
         };
 
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
         let currentUserRole = 'ADMIN';
+        let currentUserName = 'Admin';
         let selectedOrderForMsg = null;
         let currentFilterOwner = 'ALL';
         let isDelayedOnly = false;
@@ -1382,7 +1369,6 @@
         let webProdSizeBase64Image = '';
         let sizeChartBase64Image = '';
 
-        // Biến lưu trữ tạm cho Hàng Đã Đăng
         let piTempSizeChartBase64 = '';
         let piTempAllImagesArr = [];
 
@@ -1425,7 +1411,7 @@
             return [];
         }
 
-        function parseKeyedFirebaseData(snapshotVal) {
+        function parseKeyedFirebaseData(snapshotVal, sortField = 'id') {
             if (!snapshotVal) return [];
             const entries = Array.isArray(snapshotVal)
                 ? snapshotVal.map((v, i) => [String(i), v])
@@ -1433,7 +1419,12 @@
             return entries
                 .filter(([, v]) => v && typeof v === 'object')
                 .map(([k, v]) => ({ ...v, _fbKey: k }))
-                .sort((a, b) => (Number(b.id) || 0) - (Number(a.id) || 0));
+                .sort((a, b) => {
+                    if (sortField === 'date') {
+                        return String(b.date || '').localeCompare(String(a.date || ''));
+                    }
+                    return (Number(b[sortField]) || 0) - (Number(a[sortField]) || 0);
+                });
         }
 
         function stripFbKey(obj) {
@@ -1446,18 +1437,24 @@
             if (snapshotVal === null || snapshotVal === undefined) return [];
             if (typeof snapshotVal === 'number' || typeof snapshotVal === 'string') {
                 const amt = parseMoneyValue(snapshotVal);
-                return amt !== 0 ? [{ date: '', person: 'Vốn Firebase', amount: amt, desc: 'Đồng bộ từ Firebase' }] : [];
+                return amt !== 0 ? [{ date: '', person: 'Vốn Firebase', amount: amt, desc: 'Đồng bộ từ Firebase', _fbKey: '0' }] : [];
             }
             if (!Array.isArray(snapshotVal) && typeof snapshotVal === 'object' && ('amount' in snapshotVal || 'value' in snapshotVal || 'total' in snapshotVal)) {
                 const amt = parseMoneyValue(snapshotVal.amount ?? snapshotVal.value ?? snapshotVal.total);
-                return [{ ...snapshotVal, amount: amt }];
+                return [{ ...snapshotVal, amount: amt, _fbKey: '0' }];
             }
-            return parseFirebaseData(snapshotVal).map(item => {
-                if (typeof item === 'number' || typeof item === 'string') {
-                    return { date: '', person: 'Vốn Firebase', amount: parseMoneyValue(item), desc: 'Đồng bộ từ Firebase' };
-                }
-                return { ...item, amount: parseMoneyValue(item.amount ?? item.value ?? item.total) };
-            });
+            const entries = Array.isArray(snapshotVal)
+                ? snapshotVal.map((v, i) => [String(i), v])
+                : Object.entries(snapshotVal);
+            return entries
+                .filter(([, v]) => v !== null && v !== undefined)
+                .map(([k, item]) => {
+                    if (typeof item === 'number' || typeof item === 'string') {
+                        return { date: '', person: 'Vốn Firebase', amount: parseMoneyValue(item), desc: 'Đồng bộ từ Firebase', _fbKey: k };
+                    }
+                    return { ...item, amount: parseMoneyValue(item.amount ?? item.value ?? item.total), _fbKey: k };
+                })
+                .sort((a, b) => (Number(b.id) || 0) - (Number(a.id) || 0));
         }
 
         function getTodayStr() {
@@ -1496,7 +1493,7 @@
                         globalRMBRate = calculatedRate;
                         document.getElementById('globalRmbRate').value = globalRMBRate;
                         if (document.getElementById('lblRmbRateInModal')) document.getElementById('lblRmbRateInModal').innerText = globalRMBRate.toLocaleString();
-                        db.ref('youngzone_rmb_rate').set(globalRMBRate);
+                        fbSet('youngzone_rmb_rate', globalRMBRate).catch(() => {});
                         if (isManualClick) showToast(`Tỷ giá Tệ cập nhật: 1 ¥ = ${globalRMBRate}đ`);
                     }
                 }
@@ -1505,7 +1502,6 @@
             }
         }
 
-        /* --- CHỨC NĂNG CẬP NHẬT GIAO DIỆN TỨC THÌ REALTIME TRÊN TOÀN BỘ TAB --- */
         function refreshAllViews() {
             saveAllToLocalStorage();
             renderDashboard();
@@ -1576,14 +1572,16 @@
                 return;
             }
 
-            if (user === 'admin') {
+            if (user === 'admin' || user === 'khoi' || user === 'lam') {
                 if (pass !== '123456') {
-                    showToast('❌ Sai mật khẩu tài khoản Admin!');
+                    showToast('❌ Sai mật khẩu tài khoản quản trị!');
                     return;
                 }
                 currentUserRole = 'ADMIN';
+                currentUserName = user === 'khoi' ? 'Khôi' : user === 'lam' ? 'Lâm' : 'Admin';
             } else {
                 currentUserRole = 'STAFF';
+                currentUserName = user;
             }
 
             if (remember) {
@@ -1593,21 +1591,25 @@
                 localStorage.removeItem('yz_user_role');
                 localStorage.removeItem('yz_saved_user');
                 sessionStorage.setItem('yz_user_role', currentUserRole);
+                sessionStorage.setItem('yz_saved_user', user);
             }
 
             applyRolePermissions();
             document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('appContainer').classList.remove('hidden');
-            showToast(`Đăng nhập thành công!`);
+            showToast(`Xin chào ${currentUserName}!`);
         }
 
         function checkLoginSession() {
             const savedRole = localStorage.getItem('yz_user_role') || sessionStorage.getItem('yz_user_role');
-            const savedUser = localStorage.getItem('yz_saved_user');
+            const savedUser = localStorage.getItem('yz_saved_user') || sessionStorage.getItem('yz_saved_user');
 
             if (savedUser) {
                 document.getElementById('loginUser').value = savedUser;
-                document.getElementById('rememberMe').checked = true;
+                if (localStorage.getItem('yz_saved_user')) {
+                    document.getElementById('rememberMe').checked = true;
+                }
+                currentUserName = savedUser === 'khoi' ? 'Khôi' : savedUser === 'lam' ? 'Lâm' : savedUser === 'admin' ? 'Admin' : savedUser;
             }
 
             if (savedRole) {
@@ -1621,6 +1623,7 @@
         function handleLogout() {
             localStorage.removeItem('yz_user_role');
             sessionStorage.removeItem('yz_user_role');
+            sessionStorage.removeItem('yz_saved_user');
             location.reload();
         }
 
@@ -1628,15 +1631,191 @@
             const roleText = document.getElementById('roleBadge');
             if (!roleText) return;
             if (currentUserRole === 'ADMIN') {
-                roleText.innerText = 'Vai trò: Admin (Khôi & Lâm)';
+                roleText.innerText = `${currentUserName} (Quản trị)`;
             } else {
-                roleText.innerText = 'Vai trò: Nhân viên / CTV';
+                roleText.innerText = `${currentUserName} (Nhân viên)`;
             }
         }
 
+        let firebaseSdkConnected = false;
+        let firebaseRestConnected = false;
+        let firebaseHasData = false;
+        let restPollTimer = null;
+
+        async function fbRestRequest(path, method = 'GET', data = undefined) {
+            const url = `${firebaseConfig.databaseURL}/${path}.json`;
+            const opts = { method, cache: 'no-store' };
+            if (data !== undefined) {
+                opts.headers = { 'Content-Type': 'application/json' };
+                opts.body = JSON.stringify(data);
+            }
+            const res = await fetch(url, opts);
+            if (!res.ok) {
+                const errText = await res.text().catch(() => '');
+                throw new Error(`HTTP ${res.status}${errText ? ': ' + errText : ''}`);
+            }
+            return res.status === 204 ? null : await res.json().catch(() => null);
+        }
+
+        async function fbSet(path, data) {
+            if (firebaseSdkConnected) {
+                try {
+                    await Promise.race([
+                        db.ref(path).set(data),
+                        new Promise((_, rej) => setTimeout(() => rej(new Error('SDK timeout')), 4000))
+                    ]);
+                    updateFirebaseStatus(true);
+                    return true;
+                } catch (sdkErr) {
+                    console.warn('SDK set fallback sang REST:', path, sdkErr.message);
+                }
+            }
+            await fbRestRequest(path, 'PUT', data);
+            firebaseRestConnected = true;
+            updateFirebaseStatus(true);
+            return true;
+        }
+
+        async function fbRemove(path) {
+            if (firebaseSdkConnected) {
+                try {
+                    await Promise.race([
+                        db.ref(path).remove(),
+                        new Promise((_, rej) => setTimeout(() => rej(new Error('SDK timeout')), 4000))
+                    ]);
+                    updateFirebaseStatus(true);
+                    return true;
+                } catch (sdkErr) {
+                    console.warn('SDK remove fallback sang REST:', path, sdkErr.message);
+                }
+            }
+            await fbRestRequest(path, 'DELETE');
+            firebaseRestConnected = true;
+            updateFirebaseStatus(true);
+            return true;
+        }
+
+        async function fbPush(path, data) {
+            if (firebaseSdkConnected) {
+                try {
+                    await Promise.race([
+                        db.ref(path).push(data),
+                        new Promise((_, rej) => setTimeout(() => rej(new Error('SDK timeout')), 4000))
+                    ]);
+                    return true;
+                } catch (sdkErr) {
+                    console.warn('SDK push fallback sang REST:', path, sdkErr.message);
+                }
+            }
+            await fbRestRequest(path, 'POST', data);
+            firebaseRestConnected = true;
+            updateFirebaseStatus(true);
+            return true;
+        }
+
+        async function checkFirebaseRestConnection(forceLoad = false) {
+            if (!navigator.onLine) {
+                firebaseRestConnected = false;
+                updateFirebaseStatus(false, 'Mất kết nối mạng');
+                return false;
+            }
+            try {
+                await fbRestRequest('youngzone_rmb_rate', 'GET');
+                firebaseRestConnected = true;
+                updateFirebaseStatus(true);
+                if (forceLoad || !firebaseHasData) {
+                    await loadAllFromFirebaseRest();
+                }
+                return true;
+            } catch (e) {
+                firebaseRestConnected = false;
+                if (!firebaseSdkConnected) {
+                    const isPerm = String(e.message).includes('401') || String(e.message).includes('403');
+                    updateFirebaseStatus(false, isPerm ? 'Lỗi quyền Firebase Rules (401)' : e.message);
+                    if (isPerm) {
+                        showToast('⚠ Firebase bị khóa quyền (HTTP 401)! Hãy mở Rules trong Firebase Console.');
+                    }
+                }
+                return false;
+            }
+        }
+
+        async function loadAllFromFirebaseRest() {
+            const baseUrl = firebaseConfig.databaseURL;
+            const fetchNode = async (path) => {
+                try {
+                    const r = await fetch(`${baseUrl}/${path}.json`, { cache: 'no-store' });
+                    return r.ok ? await r.json() : null;
+                } catch { return null; }
+            };
+            const [ord, fnd, wdr, wprod, vch, sbar, cat, inv, post, rate, cust, lg] = await Promise.all([
+                fetchNode('youngzone_orders'),
+                fetchNode('youngzone_funds'),
+                fetchNode('youngzone_withdraws'),
+                fetchNode('youngzone_web_products'),
+                fetchNode('youngzone_web_vouchers'),
+                fetchNode('youngzone_web_sidebar_config'),
+                fetchNode('youngzone_web_categories'),
+                fetchNode('youngzone_inventory'),
+                fetchNode('youngzone_posted_items'),
+                fetchNode('youngzone_rmb_rate'),
+                fetchNode('youngzone_customers'),
+                fetchNode('youngzone_logs')
+            ]);
+            if (ord !== null) orders = parseKeyedFirebaseData(ord, 'date');
+            if (fnd !== null) funds = parseFundsData(fnd);
+            if (wdr !== null) withdraws = parseKeyedFirebaseData(wdr, 'date');
+            if (wprod !== null) webProducts = parseFirebaseData(wprod);
+            if (vch !== null) coupons = parseFirebaseData(vch);
+            if (sbar !== null) { sidebarConfig = { ...sidebarConfig, ...sbar }; renderSizeChartUI(); }
+            if (cat !== null) { categories = parseFirebaseData(cat); updateCategorySelectOptions(); }
+            if (inv !== null) inventory = parseKeyedFirebaseData(inv, 'id');
+            if (post !== null) postedItems = parseKeyedFirebaseData(post, 'id');
+            if (rate !== null) {
+                globalRMBRate = parseInt(rate, 10) || 3810;
+                document.getElementById('globalRmbRate').value = globalRMBRate;
+            }
+            if (cust !== null) customers = parseFirebaseData(cust);
+            if (lg !== null) logs = parseFirebaseData(lg).reverse();
+            firebaseHasData = true;
+            refreshAllViews();
+        }
+
         function initFirebaseListeners() {
+            try { firebase.database().goOnline(); } catch (e) {}
+
+            window.addEventListener('online', () => {
+                try { firebase.database().goOnline(); } catch (e) {}
+                checkFirebaseRestConnection(true);
+            });
+            window.addEventListener('offline', () => {
+                firebaseSdkConnected = false;
+                updateFirebaseStatus(false, 'Mất mạng');
+            });
+
+            db.ref('.info/connected').on('value', (snap) => {
+                if (snap.val() === true) {
+                    firebaseSdkConnected = true;
+                    updateFirebaseStatus(true);
+                    if (restPollTimer) { clearInterval(restPollTimer); restPollTimer = null; }
+                } else {
+                    firebaseSdkConnected = false;
+                    checkFirebaseRestConnection(false);
+                    if (!restPollTimer) {
+                        restPollTimer = setInterval(() => {
+                            if (!firebaseSdkConnected) {
+                                checkFirebaseRestConnection(true);
+                            }
+                        }, 12000);
+                    }
+                }
+            });
+
+            // Kiểm tra kết nối HTTPS REST ngay khi mở trang
+            checkFirebaseRestConnection(true);
+
             db.ref('youngzone_orders').on('value', (snapshot) => {
-                const incoming = parseFirebaseData(snapshot.val());
+                const incoming = parseKeyedFirebaseData(snapshot.val(), 'date');
                 if (isInitialOrdersLoad) {
                     incoming.forEach(o => { if (o.id) knownOrderIds.add(o.id); });
                     isInitialOrdersLoad = false;
@@ -1659,10 +1838,12 @@
                         }
                     });
                 }
+                firebaseHasData = true;
+                updateFirebaseStatus(true);
                 orders = incoming;
                 refreshAllViews();
-                updateFirebaseStatus(true);
-            }, () => {
+            }, (err) => {
+                console.warn('Lỗi đọc youngzone_orders:', err);
                 updateFirebaseStatus(false);
                 refreshAllViews();
             });
@@ -1671,22 +1852,28 @@
                 funds = parseFundsData(snapshot.val());
                 refreshAllViews();
             }, (err) => {
-                console.warn('Lỗi đọc youngzone_funds từ Firebase:', err);
+                console.warn('Lỗi đọc youngzone_funds:', err);
             });
 
             db.ref('youngzone_withdraws').on('value', (snapshot) => {
-                withdraws = parseFirebaseData(snapshot.val());
+                withdraws = parseKeyedFirebaseData(snapshot.val(), 'date');
                 refreshAllViews();
+            }, (err) => {
+                console.warn('Lỗi đọc youngzone_withdraws:', err);
             });
 
             db.ref('youngzone_web_products').on('value', (snapshot) => {
                 webProducts = parseFirebaseData(snapshot.val());
                 refreshAllViews();
+            }, (err) => {
+                console.warn('Lỗi đọc youngzone_web_products:', err);
             });
 
             db.ref('youngzone_web_vouchers').on('value', (snapshot) => {
                 coupons = parseFirebaseData(snapshot.val());
                 refreshAllViews();
+            }, (err) => {
+                console.warn('Lỗi đọc youngzone_web_vouchers:', err);
             });
 
             db.ref('youngzone_web_sidebar_config').on('value', (snapshot) => {
@@ -1695,6 +1882,8 @@
                     sidebarConfig = { ...sidebarConfig, ...data };
                     renderSizeChartUI();
                 }
+            }, (err) => {
+                console.warn('Lỗi đọc youngzone_web_sidebar_config:', err);
             });
 
             db.ref('youngzone_web_categories').on('value', (snapshot) => {
@@ -1704,14 +1893,12 @@
                 }
                 updateCategorySelectOptions();
                 refreshAllViews();
-            });
-
-            db.ref('.info/connected').on('value', (snap) => {
-                updateFirebaseStatus(snap.val() === true);
+            }, (err) => {
+                console.warn('Lỗi đọc youngzone_web_categories:', err);
             });
 
             db.ref('youngzone_inventory').on('value', (snapshot) => {
-                inventory = parseKeyedFirebaseData(snapshot.val());
+                inventory = parseKeyedFirebaseData(snapshot.val(), 'id');
                 refreshAllViews();
             }, (err) => {
                 console.warn('Lỗi đọc youngzone_inventory:', err);
@@ -1719,7 +1906,7 @@
             });
 
             db.ref('youngzone_posted_items').on('value', (snapshot) => {
-                postedItems = parseKeyedFirebaseData(snapshot.val());
+                postedItems = parseKeyedFirebaseData(snapshot.val(), 'id');
                 refreshAllViews();
             }, (err) => {
                 console.warn('Lỗi đọc youngzone_posted_items:', err);
@@ -1733,15 +1920,21 @@
                     document.getElementById('globalRmbRate').value = globalRMBRate;
                     if (document.getElementById('lblRmbRateInModal')) document.getElementById('lblRmbRateInModal').innerText = globalRMBRate.toLocaleString();
                 }
+            }, (err) => {
+                console.warn('Lỗi đọc youngzone_rmb_rate:', err);
             });
 
             db.ref('youngzone_customers').on('value', (snapshot) => {
                 customers = parseFirebaseData(snapshot.val());
                 refreshAllViews();
+            }, (err) => {
+                console.warn('Lỗi đọc youngzone_customers:', err);
             });
 
             db.ref('youngzone_logs').on('value', (snapshot) => {
-                logs = parseFirebaseData(snapshot.val());
+                logs = parseFirebaseData(snapshot.val()).reverse();
+            }, (err) => {
+                console.warn('Lỗi đọc youngzone_logs:', err);
             });
         }
 
@@ -1796,20 +1989,28 @@
 
         function addLog(action) {
             const time = new Date().toLocaleString('vi-VN');
-            logs.unshift({ time, action });
+            const entry = { time, action: `[${currentUserName}] ${action}` };
+            logs.unshift(entry);
             if (logs.length > 200) logs.length = 200;
-            db.ref('youngzone_logs').set(logs);
+            fbPush('youngzone_logs', entry).catch(() => {});
         }
 
-        function updateFirebaseStatus(isConnected) {
+        function updateFirebaseStatus(isConnected, reason = '') {
             const statusBadge = document.getElementById('firebaseStatus');
             if (!statusBadge) return;
             if (isConnected) {
-                statusBadge.className = "text-[9px] px-1.5 py-0.5 rounded font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40";
-                statusBadge.innerHTML = '<i class="fas fa-wifi mr-1"></i>Firebase Đã Kết Nối';
+                statusBadge.className = "text-[11px] px-2 py-0.5 rounded-full font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30";
+                statusBadge.innerHTML = '<i class="fas fa-circle text-[7px] mr-1.5 align-middle"></i>Online';
+                statusBadge.title = 'Đã kết nối Firebase Realtime';
             } else {
-                statusBadge.className = "text-[9px] px-1.5 py-0.5 rounded font-bold bg-rose-500/20 text-rose-400 border border-rose-500/40";
-                statusBadge.innerHTML = '<i class="fas fa-triangle-exclamation mr-1"></i>Offline (Dùng Local)';
+                statusBadge.className = "text-[11px] px-2 py-0.5 rounded-full font-semibold bg-rose-500/15 text-rose-400 border border-rose-500/30 cursor-pointer";
+                statusBadge.innerHTML = '<i class="fas fa-triangle-exclamation mr-1"></i>Offline';
+                statusBadge.title = reason ? `Offline (${reason}) - Bấm để kết nối lại` : 'Bấm để thử kết nối lại';
+                statusBadge.onclick = () => {
+                    statusBadge.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>Đang thử...';
+                    try { firebase.database().goOnline(); } catch (e) {}
+                    checkFirebaseRestConnection(true);
+                };
             }
         }
 
@@ -1818,7 +2019,7 @@
             if (document.getElementById('lblRmbRateInModal')) document.getElementById('lblRmbRateInModal').innerText = globalRMBRate.toLocaleString();
             calcWebProdVndCost();
             calcPostedItemVnd();
-            db.ref('youngzone_rmb_rate').set(globalRMBRate);
+            fbSet('youngzone_rmb_rate', globalRMBRate).catch(() => {});
             showToast(`Đã lưu tỷ giá Tệ (${globalRMBRate}đ) lên Firebase!`);
         }
 
@@ -1839,7 +2040,7 @@
                 if (el) el.classList.add('hidden');
                 const btnNav = document.getElementById('nav' + t.id);
                 if (btnNav) {
-                    btnNav.className = "px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 border border-slate-700 hover:text-white transition";
+                    btnNav.className = "px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:bg-slate-800 hover:text-white transition whitespace-nowrap";
                 }
                 const mBtnNav = document.getElementById('mNav' + t.id);
                 if (mBtnNav) {
@@ -1852,7 +2053,7 @@
             if (activeTabEl) activeTabEl.classList.remove('hidden');
 
             const activeNavEl = document.getElementById('nav' + active.id);
-            if (activeNavEl) activeNavEl.className = "px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-500 text-slate-950 transition";
+            if (activeNavEl) activeNavEl.className = "px-3.5 py-2 rounded-xl text-xs font-bold bg-amber-500 text-slate-950 transition whitespace-nowrap";
 
             const activeMobileNavEl = document.getElementById('mNav' + active.id);
             if (activeMobileNavEl) activeMobileNavEl.className = "flex flex-col items-center shrink-0 text-amber-400 font-bold";
@@ -1867,7 +2068,7 @@
         }
 
         /* =========================================================================
-           CHỨC NĂNG QUẢN LÝ HÀNG ĐÃ ĐĂNG LÊN SHOP (TRONG TAB KHO HÀNG SẴN)
+           QUẢN LÝ HÀNG ĐÃ ĐĂNG LÊN SHOP
            ========================================================================= */
         function calcPostedItemVnd() {
             const rmb = parseFloat(document.getElementById('piRmbCost').value) || 0;
@@ -1988,35 +2189,21 @@
             }
 
             saveAllToLocalStorage();
-            let finished = false;
-            const resetBtn = () => {
-                btn.disabled = false;
-                btn.innerHTML = `<i class="fas fa-floppy-disk mr-1"></i> Lưu Vào Danh Sách Hàng Đã Đăng`;
-            };
-
-            const fallbackTimer = setTimeout(() => {
-                if (!finished) {
-                    finished = true;
-                    resetBtn();
+            fbSet('youngzone_posted_items/' + fbKey, itemObj)
+                .then(() => {
                     closeModal('postedItemModal');
                     refreshAllViews();
-                    showToast("⚠ Mạng chậm: Đã lưu tạm vào máy, đang tiếp tục đồng bộ Firebase!");
-                }
-            }, 8000);
-
-            db.ref('youngzone_posted_items/' + fbKey).set(itemObj, (err) => {
-                if (finished) return;
-                finished = true;
-                clearTimeout(fallbackTimer);
-                resetBtn();
-                closeModal('postedItemModal');
-                refreshAllViews();
-                if (err) {
-                    showToast("⚠ Đã lưu tạm trên máy (Lỗi Firebase: " + err.message + ")");
-                } else {
-                    showToast("✅ Đã lưu thông tin hàng đã đăng lên Firebase!");
-                }
-            });
+                    showToast("✅ Đã lưu hàng đã đăng lên Firebase!");
+                })
+                .catch((err) => {
+                    closeModal('postedItemModal');
+                    refreshAllViews();
+                    showToast("⚠ Đã lưu trên máy nhưng lỗi Firebase: " + err.message);
+                })
+                .finally(() => {
+                    btn.disabled = false;
+                    btn.innerHTML = `<i class="fas fa-floppy-disk mr-1"></i> Lưu Vào Danh Sách Hàng Đã Đăng`;
+                });
         }
 
         function renderPostedItemsTable() {
@@ -2032,7 +2219,7 @@
             );
 
             if (filtered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="9" class="p-6 text-center text-slate-500">Chưa có mẫu hàng đã đăng nào phù hợp. Bấm <b>"+ Thêm Hàng Đã Đăng"</b> để lưu mẫu mới!</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="9" class="p-6 text-center text-slate-500">Chưa có mẫu hàng đã đăng nào. Bấm <b>"+ Thêm Mẫu"</b> để lưu!</td></tr>`;
                 return;
             }
 
@@ -2046,25 +2233,25 @@
                 <tr class="hover:bg-slate-800/40 transition">
                     <td class="p-3">
                         ${mainThumb
-                            ? `<img src="${mainThumb}" onclick="openAlbumViewer(${realIdx})" class="w-12 h-12 object-cover rounded-xl border border-slate-700 cursor-pointer hover:scale-105 transition" title="Bấm xem tất cả ${imgCount} ảnh">`
+                            ? `<img src="${mainThumb}" onclick="openAlbumViewer(${realIdx})" class="w-12 h-12 object-cover rounded-xl border border-slate-700 cursor-pointer hover:scale-105 transition" title="Xem ${imgCount} ảnh">`
                             : `<div class="w-12 h-12 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-center text-slate-600 text-[10px]">No Img</div>`
                         }
                     </td>
                     <td class="p-3">
                         <b class="text-white text-xs block">${escapeHtml(item.name)}</b>
-                        ${item.note ? `<span class="text-[10px] text-slate-400 block mt-0.5 max-w-xs truncate" title="${escapeHtml(item.note)}">${escapeHtml(item.note)}</span>` : ''}
+                        ${item.note ? `<span class="text-[11px] text-slate-400 block mt-0.5 max-w-xs truncate" title="${escapeHtml(item.note)}">${escapeHtml(item.note)}</span>` : ''}
                     </td>
                     <td class="p-3">
                         <b class="text-rose-400 block font-bold">${(Number(item.costVnd) || 0).toLocaleString()}đ</b>
-                        ${item.rmbCost ? `<span class="text-[10px] text-amber-400 font-mono">(${item.rmbCost}¥)</span>` : ''}
+                        ${item.rmbCost ? `<span class="text-[11px] text-amber-400 font-mono">(${item.rmbCost}¥)</span>` : ''}
                     </td>
                     <td class="p-3">
                         <b class="text-emerald-400 block font-bold">${(Number(item.sellPrice) || 0).toLocaleString()}đ</b>
-                        <span class="text-[10px] text-slate-400">Lãi gộp: ~${profitEst.toLocaleString()}đ</span>
+                        <span class="text-[11px] text-slate-400">Lãi: ~${profitEst.toLocaleString()}đ</span>
                     </td>
                     <td class="p-3">
                         ${item.taobaoUrl
-                            ? `<a href="${escapeHtml(item.taobaoUrl)}" target="_blank" rel="noopener noreferrer" class="bg-indigo-600/30 border border-indigo-500/50 text-indigo-300 px-2.5 py-1 rounded-lg text-[11px] font-bold hover:bg-indigo-500 hover:text-white transition inline-flex items-center whitespace-nowrap"><i class="fas fa-arrow-up-right-from-square mr-1"></i>Mở Taobao</a>`
+                            ? `<a href="${escapeHtml(item.taobaoUrl)}" target="_blank" rel="noopener noreferrer" class="bg-indigo-600/30 border border-indigo-500/50 text-indigo-300 px-2.5 py-1 rounded-lg text-[11px] font-bold hover:bg-indigo-500 hover:text-white transition inline-flex items-center whitespace-nowrap"><i class="fas fa-arrow-up-right-from-square mr-1"></i>Taobao</a>`
                             : `<span class="text-slate-600 italic">Chưa có</span>`
                         }
                     </td>
@@ -2077,17 +2264,17 @@
                     </td>
                     <td class="p-3 text-center">
                         ${item.sizeChartImg
-                            ? `<img src="${item.sizeChartImg}" onclick="openBillViewer(this.src)" class="w-10 h-10 object-cover rounded-lg border border-amber-500/60 mx-auto cursor-pointer hover:scale-110 transition" title="Bấm phóng to bảng size">`
+                            ? `<img src="${item.sizeChartImg}" onclick="openBillViewer(this.src)" class="w-10 h-10 object-cover rounded-lg border border-amber-500/60 mx-auto cursor-pointer hover:scale-110 transition" title="Phóng to bảng size">`
                             : `<span class="text-slate-600 italic text-[11px]">Chưa có</span>`
                         }
                     </td>
                     <td class="p-3 text-center">
                         <button onclick="openAlbumViewer(${realIdx})" class="bg-slate-950 hover:bg-slate-800 border border-emerald-500/40 text-emerald-400 font-bold px-2.5 py-1.5 rounded-lg text-[11px] transition inline-flex items-center whitespace-nowrap">
-                            <i class="fas fa-images mr-1.5"></i> Xem (${imgCount} ảnh)
+                            <i class="fas fa-images mr-1.5"></i>${imgCount} ảnh
                         </button>
                     </td>
                     <td class="p-3 text-right whitespace-nowrap space-x-1.5">
-                        <button onclick="createOrderFromPostedItem(${realIdx})" class="bg-amber-500/20 hover:bg-amber-500 text-amber-400 hover:text-slate-950 border border-amber-500/40 font-bold px-2 py-1 rounded-lg text-[11px] transition" title="Tạo nhanh đơn khách đặt mẫu này">
+                        <button onclick="createOrderFromPostedItem(${realIdx})" class="bg-amber-500/20 hover:bg-amber-500 text-amber-400 hover:text-slate-950 border border-amber-500/40 font-bold px-2.5 py-1 rounded-lg text-[11px] transition" title="Tạo đơn & tùy chỉnh giá">
                             <i class="fas fa-cart-plus mr-1"></i>Lên Đơn
                         </button>
                         <button onclick="editPostedItem(${realIdx})" class="text-blue-400 hover:underline p-1" title="Chỉnh sửa"><i class="fas fa-pen"></i></button>
@@ -2102,12 +2289,12 @@
             const item = postedItems[idx];
             if (!item) return;
 
-            document.getElementById('albumViewerTitle').innerText = `Bộ Ảnh Đơn & Ảnh Mẫu: ${item.name}`;
+            document.getElementById('albumViewerTitle').innerText = `Bộ Ảnh: ${item.name}`;
             const grid = document.getElementById('albumViewerGrid');
             const imgs = item.images || [];
 
             if (imgs.length === 0) {
-                grid.innerHTML = `<div class="col-span-full text-center text-slate-500 py-8 text-xs">Sản phẩm này chưa có ảnh nào được tải lên.</div>`;
+                grid.innerHTML = `<div class="col-span-full text-center text-slate-500 py-8 text-xs">Chưa có ảnh nào được tải lên.</div>`;
             } else {
                 grid.innerHTML = imgs.map((src, i) => `
                     <div class="bg-slate-950 border border-slate-800 rounded-xl overflow-hidden group relative">
@@ -2134,7 +2321,7 @@
             }
             calculateCostFromRmb(false);
             autoCalculateDeposit();
-            showToast(`Đã điền sẵn thông tin mẫu [${item.name}] vào đơn mới!`);
+            showToast(`Đã điền mẫu [${item.name}] — bạn có thể sửa giá trước khi lưu!`);
         }
 
         function editPostedItem(idx) {
@@ -2176,11 +2363,9 @@
                 addLog(`Xóa hàng đã đăng: [${removedName}]`);
                 saveAllToLocalStorage();
                 if (fbKey) {
-                    db.ref('youngzone_posted_items/' + fbKey).remove((err) => {
-                        if (err) showToast("Lỗi xóa trên Firebase: " + err.message);
-                    });
+                    fbRemove('youngzone_posted_items/' + fbKey).catch((err) => showToast("Lỗi xóa trên Firebase: " + err.message));
                 } else {
-                    db.ref('youngzone_posted_items').set(postedItems.map(stripFbKey));
+                    fbSet('youngzone_posted_items', postedItems.map(stripFbKey)).catch((err) => showToast("Lỗi xóa trên Firebase: " + err.message));
                 }
                 refreshAllViews();
                 showToast("Đã xóa mẫu hàng đã đăng!");
@@ -2197,14 +2382,14 @@
                 return;
             }
             tbody.innerHTML = orders.map((o) => `
-                <tr>
-                    <td class="p-3 font-mono font-bold text-amber-400">${escapeHtml(o.id)}</td>
-                    <td class="p-3"><b class="text-white block">${escapeHtml(o.customer)}</b><span class="text-slate-400 font-mono">${escapeHtml(o.phone)}</span></td>
-                    <td class="p-3"><span class="text-slate-200 block font-semibold">${escapeHtml(o.product)}</span><span class="text-slate-400">Size: ${escapeHtml(o.size)}</span></td>
-                    <td class="p-3 font-mono text-indigo-300 text-[11px] truncate max-w-xs">${escapeHtml(o.buyUrl) || 'Chưa gắn link mua'}</td>
-                    <td class="p-3 text-right">
+                <tr class="hover:bg-slate-800/40">
+                    <td class="p-3.5 font-mono font-bold text-amber-400">${escapeHtml(o.id)}</td>
+                    <td class="p-3.5"><b class="text-white block">${escapeHtml(o.customer)}</b><span class="text-slate-400 font-mono">${escapeHtml(o.phone)}</span></td>
+                    <td class="p-3.5"><span class="text-slate-200 block font-semibold">${escapeHtml(o.product)}</span><span class="text-slate-400">Size: ${escapeHtml(o.size)}</span></td>
+                    <td class="p-3.5 font-mono text-indigo-300 text-[11px] truncate max-w-xs">${escapeHtml(o.buyUrl) || 'Chưa gắn link mua'}</td>
+                    <td class="p-3.5 text-right">
                         ${o.buyUrl
-                            ? `<a href="${escapeHtml(o.buyUrl)}" target="_blank" rel="noopener noreferrer" class="gold-gradient text-slate-950 font-extrabold px-3 py-1.5 rounded-lg text-xs hover:opacity-90"><i class="fas fa-cart-shopping mr-1"></i>Mở Trang Taobao</a>`
+                            ? `<a href="${escapeHtml(o.buyUrl)}" target="_blank" rel="noopener noreferrer" class="gold-gradient text-slate-950 font-extrabold px-3 py-1.5 rounded-lg text-xs hover:opacity-90"><i class="fas fa-cart-shopping mr-1"></i>Mở Taobao</a>`
                             : `<span class="text-slate-600">Chưa lưu link</span>`
                         }
                     </td>
@@ -2232,6 +2417,8 @@
                     saveAllToLocalStorage();
                     renderWebProductsTable();
                     showToast(`Đã tính giá bán tất cả!`);
+                } else {
+                    showToast("Lỗi Firebase: " + error.message);
                 }
             });
         }
@@ -2245,7 +2432,7 @@
             if (selectedIdxs.length === 0) { showToast("Hãy tích chọn ít nhất 1 món hàng!"); return; }
 
             selectedIdxs.forEach(idx => { if (webProducts[idx]) webProducts[idx].isHot = isHot; });
-            db.ref('youngzone_web_products').set(webProducts);
+            fbSet('youngzone_web_products', webProducts).catch((err) => showToast('Lỗi Firebase: ' + err.message));
             showToast(`Đã đánh dấu HOT cho ${selectedIdxs.length} món hàng!`);
         }
 
@@ -2257,7 +2444,7 @@
             if (newCount !== null && newCount.trim() !== '') {
                 const parsed = parseInt(newCount, 10) || 0;
                 selectedIdxs.forEach(idx => { if (webProducts[idx]) webProducts[idx].soldCount = parsed; });
-                db.ref('youngzone_web_products').set(webProducts);
+                fbSet('youngzone_web_products', webProducts).catch((err) => showToast('Lỗi Firebase: ' + err.message));
                 showToast(`Đã cập nhật số lượng đã bán!`);
             }
         }
@@ -2279,15 +2466,15 @@
                 <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 space-y-2">
                     <div class="flex justify-between items-center border-b border-slate-900 pb-2">
                         <b class="text-amber-400">${escapeHtml(o.id)} - ${escapeHtml(o.customer)}</b>
-                        <span class="text-[10px] text-slate-400">${escapeHtml(o.phone)}</span>
+                        <span class="text-[11px] text-slate-400">${escapeHtml(o.phone)}</span>
                     </div>
-                    <div class="grid grid-cols-2 gap-2 text-center text-[10px]">
+                    <div class="grid grid-cols-2 gap-2 text-center text-[11px]">
                         <div>
-                            <span class="block text-slate-400 mb-1 font-bold">1. Ảnh Bill Cọc:</span>
+                            <span class="block text-slate-400 mb-1 font-semibold">Ảnh Bill Cọc:</span>
                             ${o.billImg ? `<img src="${o.billImg}" onclick="openBillViewer(this.src)" class="w-full h-24 object-cover rounded-lg border border-emerald-500/40 cursor-pointer">` : '<div class="h-24 bg-slate-900 rounded-lg flex items-center justify-center text-slate-600">Chưa có ảnh</div>'}
                         </div>
                         <div>
-                            <span class="block text-slate-400 mb-1 font-bold">2. Ảnh Trước Khi Ship:</span>
+                            <span class="block text-slate-400 mb-1 font-semibold">Ảnh Trước Ship:</span>
                             ${o.preShipImg ? `<img src="${o.preShipImg}" onclick="openBillViewer(this.src)" class="w-full h-24 object-cover rounded-lg border border-indigo-500/40 cursor-pointer">` : '<div class="h-24 bg-slate-900 rounded-lg flex items-center justify-center text-slate-600">Chưa có ảnh</div>'}
                         </div>
                     </div>
@@ -2326,14 +2513,14 @@
         function convertBillImage(input) {
             const file = input.files[0];
             if (file) {
-                compressImageFile(file, 500, 0.6, (base64Res) => { tempBase64Bill = base64Res; });
+                compressImageFile(file, 480, 0.55, (base64Res) => { tempBase64Bill = base64Res; });
             }
         }
 
         function convertPreShipImage(input) {
             const file = input.files[0];
             if (file) {
-                compressImageFile(file, 500, 0.6, (base64Res) => { tempBase64PreShip = base64Res; });
+                compressImageFile(file, 480, 0.55, (base64Res) => { tempBase64PreShip = base64Res; });
             }
         }
 
@@ -2342,7 +2529,7 @@
             if (files.length === 0) return;
 
             files.forEach(file => {
-                compressImageFile(file, 500, 0.6, (base64Res) => {
+                compressImageFile(file, 450, 0.55, (base64Res) => {
                     webProdGalleryBase64Arr.push(base64Res);
                     renderGalleryPreviews();
                 });
@@ -2395,7 +2582,7 @@
                 categories.push(catObj);
             }
 
-            db.ref('youngzone_web_categories').set(categories);
+            fbSet('youngzone_web_categories', categories).catch((err) => showToast('Lỗi Firebase: ' + err.message));
             saveAllToLocalStorage();
             renderCategoriesTable();
             updateCategorySelectOptions();
@@ -2412,7 +2599,7 @@
             }
 
             tbody.innerHTML = categories.map((c, idx) => `
-                <tr>
+                <tr class="hover:bg-slate-800/40">
                     <td class="p-3 font-mono font-bold text-amber-400">${escapeHtml(c.code)}</td>
                     <td class="p-3 font-bold text-white">${escapeHtml(c.name)}</td>
                     <td class="p-3 text-slate-300"><i class="fas ${escapeHtml(c.icon)} text-amber-500 mr-2"></i>${escapeHtml(c.icon)}</td>
@@ -2438,7 +2625,7 @@
         function deleteCategory(idx) {
             showConfirmToast("Xóa danh mục sản phẩm này khỏi Firebase?", () => {
                 categories.splice(idx, 1);
-                db.ref('youngzone_web_categories').set(categories);
+                fbSet('youngzone_web_categories', categories).catch((err) => showToast('Lỗi Firebase: ' + err.message));
                 saveAllToLocalStorage();
                 renderCategoriesTable();
                 updateCategorySelectOptions();
@@ -2497,7 +2684,7 @@
         function convertWebProdImage(input) {
             const file = input.files[0];
             if (file) {
-                compressImageFile(file, 500, 0.6, (base64Res) => {
+                compressImageFile(file, 450, 0.55, (base64Res) => {
                     webProdBase64Image = base64Res;
                     document.getElementById('webProdPreviewImg').src = webProdBase64Image;
                     document.getElementById('webProdPreviewContainer').classList.remove('hidden');
@@ -2508,7 +2695,7 @@
         function convertWebProdSizeImage(input) {
             const file = input.files[0];
             if (file) {
-                compressImageFile(file, 500, 0.6, (base64Res) => {
+                compressImageFile(file, 450, 0.55, (base64Res) => {
                     webProdSizeBase64Image = base64Res;
                     document.getElementById('webProdSizePreviewImg').src = webProdSizeBase64Image;
                     document.getElementById('webProdSizePreviewContainer').classList.remove('hidden');
@@ -2569,18 +2756,19 @@
                 webProducts.unshift(prodObj);
             }
 
-            db.ref('youngzone_web_products').set(webProducts, (error) => {
-                btnSubmit.disabled = false;
-                btnSubmit.innerText = "Lưu Món Hàng Lên Web";
-
-                if (error) {
-                    showToast("Lỗi kết nối Firebase: " + error.message);
-                } else {
+            fbSet('youngzone_web_products', webProducts)
+                .then(() => {
                     closeModal('webProductModal');
                     refreshAllViews();
-                    showToast("Đã lưu sản phẩm thành công!");
-                }
-            });
+                    showToast("✅ Đã lưu sản phẩm lên Firebase!");
+                })
+                .catch((error) => {
+                    showToast("⚠ Lỗi kết nối Firebase: " + error.message);
+                })
+                .finally(() => {
+                    btnSubmit.disabled = false;
+                    btnSubmit.innerText = "Lưu Món Hàng Lên Web";
+                });
         }
 
         function renderWebProductsTable() {
@@ -2600,35 +2788,35 @@
                 const vndText = p.cost ? `${Number(p.cost).toLocaleString()}đ` : '0đ';
 
                 return `
-                <tr>
+                <tr class="hover:bg-slate-800/40">
                     <td class="p-3"><input type="checkbox" value="${idx}" class="webProdCheckbox"></td>
                     <td class="p-3"><img src="${p.img}" class="w-10 h-10 object-cover rounded-lg border border-slate-800"></td>
                     <td class="p-3 font-bold text-white">${escapeHtml(p.name)}</td>
-                    <td class="p-3"><span class="bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 font-bold px-2 py-0.5 rounded text-[10px]"><i class="fas fa-tag mr-1"></i>${escapeHtml(p.tag || 'Mới')}</span></td>
+                    <td class="p-3"><span class="bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 font-bold px-2 py-0.5 rounded text-[10px]">${escapeHtml(p.tag || 'Mới')}</span></td>
                     <td class="p-3 text-slate-300 font-semibold">${escapeHtml(catObj ? catObj.name : p.category)}</td>
-                    <td class="p-3 text-indigo-300 font-mono text-[11px] font-semibold">${escapeHtml(displayColors)}</td>
+                    <td class="p-3 text-indigo-300 font-mono text-[11px]">${escapeHtml(displayColors)}</td>
                     <td class="p-3 text-amber-300 font-mono text-[11px] font-bold">${escapeHtml(displaySizes)}</td>
                     <td class="p-3">
                         <b class="text-rose-400 block font-bold">${vndText}</b>
-                        ${rmbText ? `<span class="text-[10px] text-amber-400 font-mono font-bold">(${rmbText})</span>` : ''}
+                        ${rmbText ? `<span class="text-[10px] text-amber-400 font-mono">(${rmbText})</span>` : ''}
                     </td>
                     <td class="p-3 font-bold text-amber-400">${p.price ? Number(p.price).toLocaleString() : 0}đ</td>
                     <td class="p-3">
                         ${p.buyUrl
-                            ? `<a href="${escapeHtml(p.buyUrl)}" target="_blank" rel="noopener noreferrer" class="bg-indigo-600/30 border border-indigo-500/50 text-indigo-300 px-2 py-1 rounded text-[10px] font-bold hover:bg-indigo-500 hover:text-white transition inline-block whitespace-nowrap" title="Bấm mở link Taobao / 1688"><i class="fas fa-cart-shopping mr-1"></i>Link Mua</a>`
+                            ? `<a href="${escapeHtml(p.buyUrl)}" target="_blank" rel="noopener noreferrer" class="bg-indigo-600/30 border border-indigo-500/50 text-indigo-300 px-2 py-1 rounded text-[10px] font-bold hover:bg-indigo-500 hover:text-white transition inline-block whitespace-nowrap"><i class="fas fa-cart-shopping mr-1"></i>Link</a>`
                             : `<span class="text-slate-600 italic">Chưa gắn</span>`
                         }
                     </td>
-                    <td class="p-3 text-emerald-400 font-bold">${p.soldCount || 0} món</td>
+                    <td class="p-3 text-emerald-400 font-bold">${p.soldCount || 0}</td>
                     <td class="p-3">
                         ${p.sizeImg ? `<img src="${p.sizeImg}" onclick="openBillViewer(this.src)" class="w-8 h-8 object-cover rounded border border-amber-500/50 cursor-pointer">` : '<span class="text-slate-600 italic">Chưa có</span>'}
                     </td>
                     <td class="p-3">
                         <span class="text-[10px] font-bold px-2 py-0.5 rounded ${p.isReadyStock ? 'bg-emerald-500/20 text-emerald-400' : 'bg-blue-500/20 text-blue-400'}">
-                            ${p.isReadyStock ? 'Hàng có sẵn' : 'Hàng Order'}
+                            ${p.isReadyStock ? 'Có sẵn' : 'Order'}
                         </span>
                     </td>
-                    <td class="p-3 text-right">
+                    <td class="p-3 text-right whitespace-nowrap">
                         <button onclick="editWebProduct(${idx})" class="text-blue-400 hover:underline mr-2"><i class="fas fa-pen"></i></button>
                         <button onclick="deleteWebProduct(${idx})" class="text-rose-400 hover:underline"><i class="fas fa-trash"></i></button>
                     </td>
@@ -2693,7 +2881,7 @@
         function deleteWebProduct(idx) {
             showConfirmToast("Xóa món hàng này khỏi Web cửa hàng?", () => {
                 webProducts.splice(idx, 1);
-                db.ref('youngzone_web_products').set(webProducts);
+                fbSet('youngzone_web_products', webProducts).catch((err) => showToast('Lỗi Firebase: ' + err.message));
                 refreshAllViews();
                 showToast("Đã xóa món hàng!");
             });
@@ -2716,7 +2904,7 @@
             }
 
             coupons.push({ code: code, value: val });
-            db.ref('youngzone_web_vouchers').set(coupons);
+            fbSet('youngzone_web_vouchers', coupons).catch((err) => showToast('Lỗi Firebase: ' + err.message));
             saveAllToLocalStorage();
             renderCouponsTable();
             closeModal('couponModal');
@@ -2731,7 +2919,7 @@
                 return;
             }
             tbody.innerHTML = coupons.map((cp, idx) => `
-                <tr>
+                <tr class="hover:bg-slate-800/40">
                     <td class="p-3 font-mono font-bold text-amber-400">${escapeHtml(cp.code)}</td>
                     <td class="p-3 font-bold text-emerald-400">${cp.value ? Number(cp.value).toLocaleString() : 0}đ</td>
                     <td class="p-3 text-slate-300">Giảm tiền trực tiếp khi đặt hàng Web</td>
@@ -2746,7 +2934,7 @@
         function deleteCoupon(idx) {
             showConfirmToast("Xóa mã giảm giá này khỏi Firebase?", () => {
                 coupons.splice(idx, 1);
-                db.ref('youngzone_web_vouchers').set(coupons);
+                fbSet('youngzone_web_vouchers', coupons).catch((err) => showToast('Lỗi Firebase: ' + err.message));
                 saveAllToLocalStorage();
                 renderCouponsTable();
                 showToast("Đã xóa mã giảm giá!");
@@ -2784,7 +2972,7 @@
         function convertSizeChartImg(input) {
             const file = input.files[0];
             if (file) {
-                compressImageFile(file, 500, 0.6, (base64Res) => {
+                compressImageFile(file, 480, 0.55, (base64Res) => {
                     sizeChartBase64Image = base64Res;
                     document.getElementById('sizeChartImgPreview').src = sizeChartBase64Image;
                 });
@@ -2797,13 +2985,9 @@
                 sidebarConfig.sizeImg = sizeChartBase64Image;
             }
 
-            db.ref('youngzone_web_sidebar_config').set(sidebarConfig, (error) => {
-                if (error) {
-                    showToast("Lỗi khi lưu bảng size lên Firebase!");
-                } else {
-                    showToast("Đã đồng bộ Bảng Size Chung lên Web Khách Hàng!");
-                }
-            });
+            fbSet('youngzone_web_sidebar_config', sidebarConfig)
+                .then(() => showToast("✅ Đã đồng bộ Bảng Size Chung lên Firebase!"))
+                .catch((error) => showToast("⚠ Lỗi lưu bảng size lên Firebase: " + error.message));
         }
 
         function filterOwner(owner) {
@@ -2815,8 +2999,8 @@
                 const btn = document.getElementById('btnFilter' + o);
                 if (btn) {
                     btn.className = (o === owner)
-                        ? "px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-500 text-slate-950"
-                        : "px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 border border-slate-700";
+                        ? "px-3 py-2 rounded-xl text-xs font-bold bg-amber-500 text-slate-950"
+                        : "px-3 py-2 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300 hover:text-white";
                 }
             });
             renderDashboard();
@@ -2841,7 +3025,6 @@
             return Math.floor(diffTime / (1000 * 60 * 60 * 24));
         }
 
-        /* --- TÍNH TOÁN 9 Ô THỐNG KÊ TỰ ĐỘNG CỰC KỲ CHUẨN XÁC REALTIME --- */
         function renderDashboard() {
             let totalFundAdded = funds.reduce((sum, f) => sum + parseMoneyValue(f && f.amount !== undefined ? f.amount : f), 0);
             const capitalEl = document.getElementById('displayCapital');
@@ -2867,7 +3050,7 @@
             const accBalEl = document.getElementById('statTotalAccountBalance');
             if (accBalEl) {
                 accBalEl.innerText = totalAcc.toLocaleString() + 'đ';
-                accBalEl.className = totalAcc < 0 ? "text-lg font-black text-rose-500 block mt-1" : "text-lg font-black text-amber-400 block mt-1";
+                accBalEl.className = totalAcc < 0 ? "text-xl font-extrabold text-rose-500 mt-2" : "text-xl font-extrabold text-amber-400 mt-2";
             }
 
             const selectedMonthStr = document.getElementById('filterMonth').value;
@@ -2969,9 +3152,6 @@
             const elTotalCost = document.getElementById('statTotalCost');
             if (elTotalCost) elTotalCost.innerText = totCost.toLocaleString() + 'đ';
 
-            const elTotalProfitMonth = document.getElementById('statTotalProfitMonth');
-            if (elTotalProfitMonth) elTotalProfitMonth.innerText = totProfit.toLocaleString() + 'đ';
-
             const elTotalProfitNet = document.getElementById('statTotalProfitNet');
             if (elTotalProfitNet) elTotalProfitNet.innerText = totProfit.toLocaleString() + 'đ';
 
@@ -2985,7 +3165,7 @@
             if (elProfitLam) elProfitLam.innerText = Math.round(profitLam).toLocaleString() + 'đ';
 
             if (monthOrders.length === 0) {
-                if (desktopTbody) desktopTbody.innerHTML = `<tr><td colspan="13" class="p-8 text-center text-slate-500">Không tìm thấy đơn hàng nào phù hợp.</td></tr>`;
+                if (desktopTbody) desktopTbody.innerHTML = `<tr><td colspan="11" class="p-8 text-center text-slate-500">Không tìm thấy đơn hàng nào phù hợp.</td></tr>`;
                 if (mobileCardsContainer) mobileCardsContainer.innerHTML = `<div class="p-8 text-center text-slate-500 text-xs">Không tìm thấy đơn hàng nào phù hợp.</div>`;
                 return;
             }
@@ -3016,57 +3196,60 @@
                     const realIdx = orders.indexOf(o);
 
                     return `
-                    <tr class="hover:bg-slate-800/40 ${isDelayed ? 'bg-rose-500/10' : ''}">
-                        <td class="p-3">
-                            <b class="text-amber-400 block">${escapeHtml(o.id)}</b>
-                            <span class="text-[10px] text-slate-400">${escapeHtml(o.date)}</span>
-                            ${isDelayed ? `<span class="text-[9px] bg-rose-600 text-white font-bold px-1 rounded block mt-0.5">⚠ Trễ ${daysCount} ngày</span>` : ''}
+                    <tr class="hover:bg-slate-800/40 transition ${isDelayed ? 'bg-rose-500/10' : ''}">
+                        <td class="p-3.5">
+                            <b class="text-amber-400 block font-mono">${escapeHtml(o.id)}</b>
+                            <span class="text-[11px] text-slate-400">${escapeHtml(o.date)}</span>
+                            ${isDelayed ? `<span class="text-[10px] bg-rose-600 text-white font-bold px-1.5 py-0.5 rounded inline-block mt-1">Trễ ${daysCount}n</span>` : ''}
                         </td>
-                        <td class="p-3">
-                            <span class="font-mono text-amber-300 font-semibold block">TQ: ${escapeHtml(o.tracking || 'Chưa có')}</span>
-                            <span class="font-mono text-indigo-400 font-semibold block">VN: ${escapeHtml(o.vnTracking || 'Chưa có')}</span>
-                        </td>
-                        <td class="p-3">
+                        <td class="p-3.5">
                             <b class="text-white block">${escapeHtml(o.customer)}</b>
-                            <span class="text-slate-400">${escapeHtml(o.phone)}</span>
+                            <span class="text-slate-400 font-mono text-[11px]">${escapeHtml(o.phone)}</span>
                         </td>
-                        <td class="p-3"><span class="text-slate-200 block font-semibold">${escapeHtml(o.product)}</span><span class="text-slate-400">Size: ${escapeHtml(o.size)}</span></td>
-                        <td class="p-3">
-                            ${o.buyUrl ? `<a href="${escapeHtml(o.buyUrl)}" target="_blank" rel="noopener noreferrer" class="bg-indigo-600/30 border border-indigo-500/50 text-indigo-300 px-2 py-1 rounded text-[10px] font-bold"><i class="fas fa-arrow-up-right-from-square mr-1"></i>Link Taobao</a>` : '<span class="text-slate-600">Chưa gắn</span>'}
+                        <td class="p-3.5">
+                            <span class="text-slate-200 block font-semibold">${escapeHtml(o.product)}</span>
+                            <div class="flex items-center gap-2 mt-0.5">
+                                <span class="text-slate-400 text-[11px]">Size: ${escapeHtml(o.size)}</span>
+                                ${o.buyUrl ? `<a href="${escapeHtml(o.buyUrl)}" target="_blank" rel="noopener noreferrer" class="text-indigo-400 hover:text-indigo-300 text-[11px] font-semibold"><i class="fas fa-arrow-up-right-from-square mr-0.5"></i>Taobao</a>` : ''}
+                            </div>
                         </td>
-                        <td class="p-3">
-                            <span class="px-2 py-0.5 rounded font-bold text-[10px] ${o.owner === 'Khoi' ? 'bg-blue-500/20 text-blue-400' : o.owner === 'Lam' ? 'bg-purple-500/20 text-purple-400' : 'bg-emerald-500/20 text-emerald-400'}">
-                                ${o.owner === 'Khoi' ? 'Khách Khôi' : o.owner === 'Lam' ? 'Khách Lâm' : 'Nguồn Chung'}
+                        <td class="p-3.5 font-mono text-[11px]">
+                            <span class="text-amber-300 block">TQ: ${escapeHtml(o.tracking || '-')}</span>
+                            <span class="text-indigo-400 block">VN: ${escapeHtml(o.vnTracking || '-')}</span>
+                        </td>
+                        <td class="p-3.5">
+                            <span class="px-2 py-1 rounded-lg font-bold text-[11px] ${o.owner === 'Khoi' ? 'bg-blue-500/15 text-blue-400' : o.owner === 'Lam' ? 'bg-purple-500/15 text-purple-400' : 'bg-emerald-500/15 text-emerald-400'}">
+                                ${o.owner === 'Khoi' ? 'Khôi' : o.owner === 'Lam' ? 'Lâm' : 'Chung'}
                             </span>
                         </td>
-                        <td class="p-3">
+                        <td class="p-3.5">
                             <b class="text-amber-400 block">${(Number(o.total) || 0).toLocaleString()}đ</b>
-                            <span class="text-rose-400 block">Vốn: ${(Number(o.cost) || 0).toLocaleString()}đ</span>
-                            ${o.vnShip ? `<span class="text-indigo-400 text-[10px]">Ship VN: ${Number(o.vnShip).toLocaleString()}đ</span>` : ''}
+                            <span class="text-rose-400 text-[11px] block">Vốn: ${(Number(o.cost) || 0).toLocaleString()}đ</span>
+                            ${o.vnShip ? `<span class="text-indigo-400 text-[10px]">Ship: ${Number(o.vnShip).toLocaleString()}đ</span>` : ''}
                         </td>
-                        <td class="p-3">
+                        <td class="p-3.5">
                             <span class="text-emerald-400 block font-bold">Cọc: ${(Number(o.deposit) || 0).toLocaleString()}đ</span>
-                            <span class="${remCOD > 0 ? 'text-amber-400' : 'text-slate-400'}">COD: ${remCOD.toLocaleString()}đ</span>
-                            ${o.codReceived === 'YES' ? '<span class="text-[9px] text-emerald-400 font-bold block mt-0.5">✓ Đã thu COD</span>' : '<span class="text-[9px] text-slate-500 block mt-0.5"> Chưa nhận COD</span>'}
+                            <span class="${remCOD > 0 ? 'text-amber-400 font-semibold' : 'text-slate-500'} text-[11px] block">COD: ${remCOD.toLocaleString()}đ</span>
+                            ${o.codReceived === 'YES' ? '<span class="text-[10px] text-emerald-400 font-bold">✓ Đã thu</span>' : '<span class="text-[10px] text-slate-500">Chưa thu</span>'}
                         </td>
-                        <td class="p-3"><b class="${orderProfit < 0 ? 'text-rose-500' : isCompleted ? 'text-emerald-400' : 'text-slate-500'} text-sm">${orderProfit.toLocaleString()}đ</b></td>
-                        <td class="p-3">
-                            <span class="text-[10px] text-blue-400 block font-semibold">Khôi: ${Math.round(kShare).toLocaleString()}đ</span>
-                            <span class="text-[10px] text-purple-400 block font-semibold">Lâm: ${Math.round(lShare).toLocaleString()}đ</span>
+                        <td class="p-3.5">
+                            <b class="${orderProfit < 0 ? 'text-rose-500' : isCompleted ? 'text-emerald-400' : 'text-slate-500'} block">${orderProfit.toLocaleString()}đ</b>
+                            <span class="text-[10px] text-blue-400 block">K: ${Math.round(kShare).toLocaleString()}đ</span>
+                            <span class="text-[10px] text-purple-400 block">L: ${Math.round(lShare).toLocaleString()}đ</span>
                         </td>
-                        <td class="p-3">
-                            ${o.billImg ? `<img src="${o.billImg}" onclick="openBillViewer(this.src)" class="w-8 h-8 object-cover rounded-lg border border-amber-500/50 cursor-pointer hover:scale-110 transition" title="Xem bill">` : '<span class="text-slate-600 italic">Không</span>'}
+                        <td class="p-3.5">
+                            ${o.billImg ? `<img src="${o.billImg}" onclick="openBillViewer(this.src)" class="w-9 h-9 object-cover rounded-lg border border-amber-500/50 cursor-pointer hover:scale-110 transition" title="Xem bill">` : '<span class="text-slate-600 text-[11px]">-</span>'}
                         </td>
-                        <td class="p-3">
-                            <span class="text-[10px] font-bold px-2 py-0.5 rounded ${isCompleted ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : isWrongItem ? 'bg-rose-600/30 text-rose-300 border border-rose-500/50' : isRefunded ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' : 'bg-amber-500/10 text-amber-400 border border-amber-500/30'}">
+                        <td class="p-3.5">
+                            <span class="text-[11px] font-bold px-2.5 py-1 rounded-lg inline-block ${isCompleted ? 'bg-emerald-500/15 text-emerald-400' : isWrongItem ? 'bg-rose-600/25 text-rose-300' : isRefunded ? 'bg-rose-500/15 text-rose-400' : 'bg-amber-500/15 text-amber-400'}">
                                 ${escapeHtml(o.status)}
                             </span>
                         </td>
-                        <td class="p-3 text-right space-x-1 whitespace-nowrap">
-                            <button onclick="openMsgModal(${realIdx})" class="text-amber-400 hover:underline" title="Gửi tin nhắn khách"><i class="fas fa-comment-dots"></i></button>
-                            <button onclick="openPrintModal(${realIdx})" class="text-emerald-400 hover:underline" title="In tem dán"><i class="fas fa-print"></i></button>
-                            <button onclick="editOrder(${realIdx})" class="text-blue-400 hover:underline" title="Sửa đơn"><i class="fas fa-pen"></i></button>
-                            <button onclick="deleteOrder(${realIdx})" class="text-rose-400 hover:underline" title="Xóa đơn"><i class="fas fa-trash"></i></button>
+                        <td class="p-3.5 text-right space-x-1.5 whitespace-nowrap">
+                            <button onclick="openMsgModal(${realIdx})" class="text-amber-400 hover:text-amber-300 p-1" title="Tin nhắn"><i class="fas fa-comment-dots"></i></button>
+                            <button onclick="openPrintModal(${realIdx})" class="text-emerald-400 hover:text-emerald-300 p-1" title="In tem"><i class="fas fa-print"></i></button>
+                            <button onclick="editOrder(${realIdx})" class="text-blue-400 hover:text-blue-300 p-1" title="Sửa"><i class="fas fa-pen"></i></button>
+                            <button onclick="deleteOrder(${realIdx})" class="text-rose-400 hover:text-rose-300 p-1" title="Xóa"><i class="fas fa-trash"></i></button>
                         </td>
                     </tr>
                 `}).join('');
@@ -3081,49 +3264,49 @@
                     const realIdx = orders.indexOf(o);
 
                     return `
-                    <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 space-y-2 relative shadow-md text-xs">
+                    <div class="bg-slate-950 border border-slate-800 rounded-xl p-3.5 space-y-2.5 shadow-md text-xs">
                         <div class="flex justify-between items-start border-b border-slate-800/80 pb-2">
                             <div>
                                 <div class="flex items-center space-x-2">
-                                    <b class="text-amber-400 font-mono text-xs">${escapeHtml(o.id)}</b>
-                                    <span class="px-1.5 py-0.5 rounded font-bold text-[9px] ${o.owner === 'Khoi' ? 'bg-blue-500/20 text-blue-400' : o.owner === 'Lam' ? 'bg-purple-500/20 text-purple-400' : 'bg-emerald-500/20 text-emerald-400'}">
+                                    <b class="text-amber-400 font-mono">${escapeHtml(o.id)}</b>
+                                    <span class="px-2 py-0.5 rounded font-bold text-[10px] ${o.owner === 'Khoi' ? 'bg-blue-500/20 text-blue-400' : o.owner === 'Lam' ? 'bg-purple-500/20 text-purple-400' : 'bg-emerald-500/20 text-emerald-400'}">
                                         ${o.owner === 'Khoi' ? 'Khôi' : o.owner === 'Lam' ? 'Lâm' : 'Chung'}
                                     </span>
                                 </div>
-                                <span class="text-[10px] text-slate-500 block">${escapeHtml(o.date)}</span>
+                                <span class="text-[11px] text-slate-500 block mt-0.5">${escapeHtml(o.date)}</span>
                             </div>
-                            <span class="text-[9px] font-bold px-2 py-0.5 rounded-full ${isCompleted ? 'bg-emerald-500/20 text-emerald-400' : isWrongItem ? 'bg-rose-600/30 text-rose-300' : isRefunded ? 'bg-rose-500/20 text-rose-400' : 'bg-amber-500/10 text-amber-400'}">
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${isCompleted ? 'bg-emerald-500/20 text-emerald-400' : isWrongItem ? 'bg-rose-600/30 text-rose-300' : isRefunded ? 'bg-rose-500/20 text-rose-400' : 'bg-amber-500/10 text-amber-400'}">
                                 ${escapeHtml(o.status)}
                             </span>
                         </div>
 
                         <div class="flex justify-between items-center">
                             <div>
-                                <b class="text-white text-xs block">${escapeHtml(o.customer)}</b>
-                                <span class="text-slate-400 font-mono text-[11px]"><i class="fas fa-phone mr-1 text-[9px] text-amber-500"></i>${escapeHtml(o.phone)}</span>
+                                <b class="text-white text-sm block">${escapeHtml(o.customer)}</b>
+                                <span class="text-slate-400 font-mono text-[11px]"><i class="fas fa-phone mr-1 text-[10px] text-amber-500"></i>${escapeHtml(o.phone)}</span>
                             </div>
                             <div class="text-right">
                                 <b class="text-amber-400 text-sm block">${(Number(o.total) || 0).toLocaleString()}đ</b>
-                                <span class="text-emerald-400 font-semibold text-[10px]">Cọc: ${(Number(o.deposit) || 0).toLocaleString()}đ</span>
+                                <span class="text-emerald-400 font-semibold text-[11px]">Cọc: ${(Number(o.deposit) || 0).toLocaleString()}đ</span>
                             </div>
                         </div>
 
-                        <div class="bg-slate-900 p-2 rounded-lg flex justify-between items-center">
-                            <span class="text-slate-300 font-bold"><i class="fas fa-shirt mr-1.5 text-amber-500"></i>${escapeHtml(o.product)} (${escapeHtml(o.size)})</span>
-                            <span class="text-rose-400 text-[10px] font-bold">COD: ${remCOD.toLocaleString()}đ</span>
+                        <div class="bg-slate-900 p-2.5 rounded-lg flex justify-between items-center">
+                            <span class="text-slate-200 font-semibold">${escapeHtml(o.product)} (${escapeHtml(o.size)})</span>
+                            <span class="text-amber-400 text-[11px] font-bold">COD: ${remCOD.toLocaleString()}đ</span>
                         </div>
 
-                        <div class="flex justify-between items-center pt-1 border-t border-slate-900">
+                        <div class="flex justify-between items-center pt-1">
                             <div class="flex space-x-2">
-                                <button onclick="openMsgModal(${realIdx})" class="text-amber-400 bg-slate-900 px-2 py-1 rounded border border-slate-800"><i class="fas fa-comment-dots"></i></button>
-                                <button onclick="openPrintModal(${realIdx})" class="text-emerald-400 bg-slate-900 px-2 py-1 rounded border border-slate-800"><i class="fas fa-print"></i></button>
+                                <button onclick="openMsgModal(${realIdx})" class="text-amber-400 bg-slate-900 px-2.5 py-1.5 rounded-lg border border-slate-800"><i class="fas fa-comment-dots"></i></button>
+                                <button onclick="openPrintModal(${realIdx})" class="text-emerald-400 bg-slate-900 px-2.5 py-1.5 rounded-lg border border-slate-800"><i class="fas fa-print"></i></button>
                             </div>
                             <div class="flex space-x-2">
-                                <button onclick="editOrder(${realIdx})" class="text-blue-400 font-bold bg-slate-900 px-2.5 py-1 rounded-lg border border-slate-800 text-[11px]">
-                                    <i class="fas fa-pen text-[9px]"></i> Sửa
+                                <button onclick="editOrder(${realIdx})" class="text-blue-400 font-bold bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-800">
+                                    <i class="fas fa-pen mr-1"></i>Sửa
                                 </button>
-                                <button onclick="deleteOrder(${realIdx})" class="text-rose-400 font-bold bg-slate-900 px-2.5 py-1 rounded-lg border border-slate-800 text-[11px]">
-                                    <i class="fas fa-trash text-[9px]"></i> Xóa
+                                <button onclick="deleteOrder(${realIdx})" class="text-rose-400 font-bold bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-800">
+                                    <i class="fas fa-trash mr-1"></i>Xóa
                                 </button>
                             </div>
                         </div>
@@ -3175,9 +3358,21 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
         }
 
         function copyMsgToClipboard() {
-            const txt = document.getElementById('msgContentArea').value;
-            navigator.clipboard.writeText(txt);
-            showToast("Đã copy tin nhắn gửi khách!");
+            const area = document.getElementById('msgContentArea');
+            const txt = area.value;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(txt).then(() => {
+                    showToast("Đã copy tin nhắn gửi khách!");
+                }).catch(() => {
+                    area.select();
+                    document.execCommand('copy');
+                    showToast("Đã copy tin nhắn gửi khách!");
+                });
+            } else {
+                area.select();
+                document.execCommand('copy');
+                showToast("Đã copy tin nhắn gửi khách!");
+            }
         }
 
         function openInventoryModal() {
@@ -3203,10 +3398,9 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
             };
             inventory.unshift({ ...invObj, _fbKey: fbKey });
             saveAllToLocalStorage();
-            db.ref('youngzone_inventory/' + fbKey).set(invObj, (err) => {
-                if (err) showToast("⚠ Đã lưu tạm trên máy (Lỗi Firebase: " + err.message + ")");
-                else showToast("✅ Đã nhập sản phẩm vào Kho Hàng Sẵn!");
-            });
+            fbSet('youngzone_inventory/' + fbKey, invObj)
+                .then(() => showToast("✅ Đã nhập sản phẩm vào Kho & đồng bộ Firebase!"))
+                .catch((err) => showToast("⚠ Đã lưu trên máy (Lỗi Firebase: " + err.message + ")"));
             closeModal('inventoryModal');
             refreshAllViews();
         }
@@ -3219,14 +3413,14 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
                 return;
             }
             tbody.innerHTML = inventory.map((item, idx) => `
-                <tr>
+                <tr class="hover:bg-slate-800/40">
                     <td class="p-3 font-bold text-white">${escapeHtml(item.product)}</td>
                     <td class="p-3 text-slate-300">${escapeHtml(item.size)}</td>
                     <td class="p-3"><b class="text-amber-400 bg-slate-950 px-2 py-1 rounded border border-slate-800">${item.qty} cái</b></td>
                     <td class="p-3 text-rose-400 font-bold">${(Number(item.cost) || 0).toLocaleString()}đ</td>
                     <td class="p-3 text-emerald-400 font-bold">${(Number(item.price) || 0).toLocaleString()}đ</td>
-                    <td class="p-3 text-right">
-                        <button onclick="createOrderFromStock(${idx})" class="text-amber-400 hover:underline mr-2"><i class="fas fa-cart-plus mr-1"></i> Xuất Đơn</button>
+                    <td class="p-3 text-right whitespace-nowrap">
+                        <button onclick="createOrderFromStock(${idx})" class="text-amber-400 hover:underline mr-2"><i class="fas fa-cart-plus mr-1"></i>Xuất Đơn</button>
                         <button onclick="deleteInventory(${idx})" class="text-rose-400 hover:underline"><i class="fas fa-trash"></i></button>
                     </td>
                 </tr>
@@ -3258,11 +3452,9 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
                 inventory.splice(idx, 1);
                 saveAllToLocalStorage();
                 if (fbKey) {
-                    db.ref('youngzone_inventory/' + fbKey).remove((err) => {
-                        if (err) showToast("Lỗi xóa kho trên Firebase: " + err.message);
-                    });
+                    fbRemove('youngzone_inventory/' + fbKey).catch((err) => showToast("Lỗi xóa kho trên Firebase: " + err.message));
                 } else {
-                    db.ref('youngzone_inventory').set(inventory.map(stripFbKey));
+                    fbSet('youngzone_inventory', inventory.map(stripFbKey)).catch((err) => showToast("Lỗi xóa kho trên Firebase: " + err.message));
                 }
                 refreshAllViews();
                 showToast("Đã xóa khỏi kho!");
@@ -3327,14 +3519,14 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
                 const isAutoVIP = totalSpent >= 2000000;
 
                 return `
-                <tr>
+                <tr class="hover:bg-slate-800/40">
                     <td class="p-3 font-bold text-white">${escapeHtml(c.name)}</td>
                     <td class="p-3 text-amber-400 font-bold">${escapeHtml(c.phone)}</td>
                     <td class="p-3 text-slate-300">${escapeHtml(c.address || 'Chưa có')}</td>
                     <td class="p-3 font-bold text-emerald-400">${totalSpent.toLocaleString()}đ</td>
                     <td class="p-3">
                         ${isAutoVIP
-                            ? `<span class="bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2 py-1 rounded font-bold text-[10px]"><i class="fas fa-crown mr-1"></i>💎 VIP (> 2tr)</span>`
+                            ? `<span class="bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2 py-1 rounded font-bold text-[10px]">💎 VIP (≥ 2tr)</span>`
                             : `<select onchange="updateCustomerType(${idx}, this.value)" class="bg-slate-950 border border-slate-700 text-xs text-amber-400 rounded px-2 py-1 font-bold">
                                 <option value="VIP" ${c.type === 'VIP' ? 'selected' : ''}>VIP</option>
                                 <option value="NORMAL" ${(!c.type || c.type === 'NORMAL') ? 'selected' : ''}>Thường</option>
@@ -3353,7 +3545,7 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
         function updateCustomerType(idx, newType) {
             if (!customers[idx]) return;
             customers[idx].type = newType;
-            db.ref('youngzone_customers').set(customers);
+            fbSet('youngzone_customers', customers).catch((err) => showToast('Lỗi Firebase: ' + err.message));
             saveAllToLocalStorage();
             showToast("Đã cập nhật hạng khách!");
         }
@@ -3361,7 +3553,7 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
         function deleteCustomer(idx) {
             showConfirmToast("Xóa khách hàng này?", () => {
                 customers.splice(idx, 1);
-                db.ref('youngzone_customers').set(customers);
+                fbSet('youngzone_customers', customers).catch((err) => showToast('Lỗi Firebase: ' + err.message));
                 saveAllToLocalStorage();
                 renderCRMTable();
                 showToast("Đã xóa khách!");
@@ -3474,6 +3666,7 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
 
             try {
                 const idx = parseInt(document.getElementById('editIndex').value, 10);
+                const existingOrder = idx >= 0 && orders[idx] ? orders[idx] : null;
                 const name = document.getElementById('formCustomer').value.trim();
                 const phone = document.getElementById('formPhone').value.trim();
                 const address = document.getElementById('formAddress').value.trim();
@@ -3481,11 +3674,11 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
                 const prodSize = document.getElementById('formSize').value.trim();
                 const statusVal = document.getElementById('formStatus').value;
 
-                const existingBill = idx >= 0 && orders[idx] ? (orders[idx].billImg || '') : '';
-                const existingPreShip = idx >= 0 && orders[idx] ? (orders[idx].preShipImg || '') : '';
+                const orderId = existingOrder ? existingOrder.id : 'YZ-' + Math.floor(1000 + Math.random() * 9000);
+                const fbKey = existingOrder && existingOrder._fbKey ? existingOrder._fbKey : (orderId + '_' + Date.now());
 
                 const orderObj = {
-                    id: idx >= 0 && orders[idx] ? orders[idx].id : 'YZ-' + Math.floor(1000 + Math.random() * 9000),
+                    id: orderId,
                     date: document.getElementById('formDate').value,
                     owner: document.getElementById('formOwner').value,
                     customer: name,
@@ -3501,32 +3694,33 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
                     deposit: parseInt(document.getElementById('formDeposit').value, 10) || 0,
                     cost: parseInt(document.getElementById('formCost').value, 10) || 0,
                     vnShip: parseInt(document.getElementById('formVnShip').value, 10) || 0,
-                    billImg: tempBase64Bill || existingBill,
-                    preShipImg: tempBase64PreShip || existingPreShip,
+                    billImg: tempBase64Bill || (existingOrder ? (existingOrder.billImg || '') : ''),
+                    preShipImg: tempBase64PreShip || (existingOrder ? (existingOrder.preShipImg || '') : ''),
                     status: statusVal
                 };
 
                 if (!customers.some(c => c.phone === phone)) {
                     customers.push({ name, phone, address, type: 'NORMAL' });
-                    try { await db.ref('youngzone_customers').set(customers); } catch (err) {}
+                    try { await fbSet('youngzone_customers', customers); } catch (err) {}
                 }
 
-                if (idx >= 0) {
-                    orders[idx] = orderObj;
+                const orderWithKey = { ...orderObj, _fbKey: fbKey };
+                if (existingOrder) {
+                    orders[idx] = orderWithKey;
                     addLog(`Cập nhật đơn hàng [${orderObj.id}]`);
                 } else {
                     knownOrderIds.add(orderObj.id);
-                    orders.unshift(orderObj);
-                    addLog(`Tạo đơn hàng mới [${orderObj.id}] - ${orderObj.product}`);
+                    orders.unshift(orderWithKey);
+                    addLog(`Tạo đơn mới [${orderObj.id}] - ${orderObj.product}`);
 
                     if (pendingStockIndex >= 0 && inventory[pendingStockIndex] && inventory[pendingStockIndex].qty > 0) {
                         const stockItem = inventory[pendingStockIndex];
                         stockItem.qty -= 1;
                         try {
                             if (stockItem._fbKey) {
-                                await db.ref('youngzone_inventory/' + stockItem._fbKey + '/qty').set(stockItem.qty);
+                                await fbSet('youngzone_inventory/' + stockItem._fbKey + '/qty', stockItem.qty);
                             } else {
-                                await db.ref('youngzone_inventory').set(inventory.map(stripFbKey));
+                                await fbSet('youngzone_inventory', inventory.map(stripFbKey));
                             }
                         } catch (err) {}
                     }
@@ -3534,9 +3728,9 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
 
                 saveAllToLocalStorage();
                 try {
-                    await db.ref('youngzone_orders').set(orders);
+                    await fbSet('youngzone_orders/' + fbKey, orderObj);
                 } catch (fbErr) {
-                    console.warn("Chưa đồng bộ được Firebase, đã lưu dữ liệu ở bộ nhớ local:", fbErr);
+                    showToast("⚠ Đã lưu trên máy nhưng lỗi đồng bộ Firebase: " + fbErr.message);
                 }
 
                 closeOrderModal();
@@ -3546,7 +3740,7 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
                 }
 
                 refreshAllViews();
-                showToast("✅ Đã lưu đơn hàng & Cập nhật tức thì thành công!");
+                showToast("✅ Đã lưu đơn hàng & đồng bộ!");
 
             } catch (err) {
                 console.error("Lỗi khi lưu đơn:", err);
@@ -3595,10 +3789,17 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
         function deleteOrder(idx) {
             if (idx < 0 || idx >= orders.length) return;
             showConfirmToast("Bạn có chắc chắn muốn xóa đơn hàng này?", () => {
-                const deletedId = orders[idx].id;
+                const target = orders[idx];
+                const deletedId = target.id;
+                const fbKey = target._fbKey;
                 orders.splice(idx, 1);
                 addLog(`Xóa đơn hàng [${deletedId}]`);
-                db.ref('youngzone_orders').set(orders);
+                saveAllToLocalStorage();
+                if (fbKey) {
+                    fbRemove('youngzone_orders/' + fbKey).catch((err) => showToast("Lỗi xóa trên Firebase: " + err.message));
+                } else {
+                    fbSet('youngzone_orders', orders.map(stripFbKey)).catch((err) => showToast("Lỗi xóa trên Firebase: " + err.message));
+                }
                 refreshAllViews();
                 showToast("Đã xóa đơn hàng!");
             });
@@ -3625,9 +3826,9 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
                 container.innerHTML = `<div class="text-slate-500 text-center py-4">Chưa có nhật ký hoạt động.</div>`;
             } else {
                 container.innerHTML = logs.map(l => `
-                    <div class="bg-slate-950 p-2.5 rounded-lg border border-slate-800 flex justify-between items-center">
+                    <div class="bg-slate-950 p-2.5 rounded-lg border border-slate-800 flex justify-between items-center gap-2">
                         <span class="text-slate-200 font-semibold">${escapeHtml(l.action)}</span>
-                        <span class="text-[10px] text-amber-400 font-mono">${escapeHtml(l.time)}</span>
+                        <span class="text-[10px] text-amber-400 font-mono shrink-0">${escapeHtml(l.time)}</span>
                     </div>
                 `).join('');
             }
@@ -3646,16 +3847,20 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
             const amount = parseInt(document.getElementById('wdAmount').value, 10) || 0;
             const reason = document.getElementById('wdReason').value.trim();
             const date = getTodayStr();
+            const fbKey = String(Date.now());
+            const wdObj = { date, person, amount, reason };
 
-            withdraws.unshift({ date, person, amount, reason });
-            db.ref('youngzone_withdraws').set(withdraws);
+            withdraws.unshift({ ...wdObj, _fbKey: fbKey });
+            saveAllToLocalStorage();
+            fbSet('youngzone_withdraws/' + fbKey, wdObj)
+                .then(() => showToast("✅ Đã ghi sổ khoản rút/chi tiêu lên Firebase!"))
+                .catch((err) => showToast("⚠ Lỗi đồng bộ Firebase: " + err.message));
             addLog(`Rút tiền/Chi tiêu: ${person} - ${amount.toLocaleString()}đ (${reason})`);
 
             document.getElementById('wdAmount').value = '';
             document.getElementById('wdReason').value = '';
             refreshAllViews();
             renderWithdrawHistory();
-            showToast("Đã ghi sổ khoản rút/chi tiêu thành công!");
         }
 
         function renderWithdrawHistory() {
@@ -3681,8 +3886,15 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
 
         function deleteWithdraw(idx) {
             showConfirmToast("Xóa bản ghi rút tiền này?", () => {
+                const target = withdraws[idx];
+                const fbKey = target?._fbKey;
                 withdraws.splice(idx, 1);
-                db.ref('youngzone_withdraws').set(withdraws);
+                saveAllToLocalStorage();
+                if (fbKey) {
+                    fbRemove('youngzone_withdraws/' + fbKey).catch((err) => showToast("Lỗi xóa Firebase: " + err.message));
+                } else {
+                    fbSet('youngzone_withdraws', withdraws.map(stripFbKey)).catch((err) => showToast("Lỗi xóa Firebase: " + err.message));
+                }
                 refreshAllViews();
                 renderWithdrawHistory();
                 showToast("Đã xóa bản ghi rút tiền!");
@@ -3701,16 +3913,18 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
             const amount = parseInt(document.getElementById('fundAmount').value, 10) || 0;
             const desc = document.getElementById('fundDesc').value.trim();
             const date = getTodayStr();
+            const id = Date.now();
+            const fbKey = String(id);
+            const fundObj = { id, date, person, amount, desc };
 
-            funds.unshift({ date, person, amount, desc });
-            db.ref('youngzone_funds').set(funds, (err) => {
-                if (err) {
-                    showToast("Lỗi đồng bộ vốn lên Firebase: " + err.message);
-                } else {
+            funds.unshift({ ...fundObj, _fbKey: fbKey });
+            saveAllToLocalStorage();
+            fbSet('youngzone_funds/' + fbKey, fundObj)
+                .then(() => {
                     addLog(`Thêm vốn góp: ${person} +${amount.toLocaleString()}đ (${desc})`);
-                    showToast("Đã thêm & đồng bộ vốn góp lên Firebase!");
-                }
-            });
+                    showToast("✅ Đã thêm & đồng bộ vốn góp lên Firebase!");
+                })
+                .catch((err) => showToast("⚠ Lỗi đồng bộ vốn lên Firebase: " + err.message));
 
             document.getElementById('fundAmount').value = '';
             document.getElementById('fundDesc').value = '';
@@ -3741,11 +3955,19 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
 
         function deleteFund(idx) {
             showConfirmToast("Xóa khoản góp vốn này?", () => {
+                const target = funds[idx];
+                const fbKey = target?._fbKey;
                 funds.splice(idx, 1);
-                db.ref('youngzone_funds').set(funds, (err) => {
-                    if (err) showToast("Lỗi xóa vốn trên Firebase: " + err.message);
-                    else showToast("Đã xóa khoản góp vốn trên Firebase!");
-                });
+                saveAllToLocalStorage();
+                if (fbKey) {
+                    fbRemove('youngzone_funds/' + fbKey)
+                        .then(() => showToast("Đã xóa khoản góp vốn trên Firebase!"))
+                        .catch((err) => showToast("Lỗi xóa vốn trên Firebase: " + err.message));
+                } else {
+                    fbSet('youngzone_funds', funds.map(stripFbKey))
+                        .then(() => showToast("Đã xóa khoản góp vốn!"))
+                        .catch((err) => showToast("Lỗi xóa vốn trên Firebase: " + err.message));
+                }
                 refreshAllViews();
                 renderFundHistory();
             });
