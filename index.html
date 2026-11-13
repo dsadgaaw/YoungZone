@@ -1425,6 +1425,23 @@
             return [];
         }
 
+        function parseKeyedFirebaseData(snapshotVal) {
+            if (!snapshotVal) return [];
+            const entries = Array.isArray(snapshotVal)
+                ? snapshotVal.map((v, i) => [String(i), v])
+                : Object.entries(snapshotVal);
+            return entries
+                .filter(([, v]) => v && typeof v === 'object')
+                .map(([k, v]) => ({ ...v, _fbKey: k }))
+                .sort((a, b) => (Number(b.id) || 0) - (Number(a.id) || 0));
+        }
+
+        function stripFbKey(obj) {
+            const copy = { ...obj };
+            delete copy._fbKey;
+            return copy;
+        }
+
         function parseFundsData(snapshotVal) {
             if (snapshotVal === null || snapshotVal === undefined) return [];
             if (typeof snapshotVal === 'number' || typeof snapshotVal === 'string') {
@@ -1689,14 +1706,24 @@
                 refreshAllViews();
             });
 
+            db.ref('.info/connected').on('value', (snap) => {
+                updateFirebaseStatus(snap.val() === true);
+            });
+
             db.ref('youngzone_inventory').on('value', (snapshot) => {
-                inventory = parseFirebaseData(snapshot.val());
+                inventory = parseKeyedFirebaseData(snapshot.val());
                 refreshAllViews();
+            }, (err) => {
+                console.warn('Lỗi đọc youngzone_inventory:', err);
+                updateFirebaseStatus(false);
             });
 
             db.ref('youngzone_posted_items').on('value', (snapshot) => {
-                postedItems = parseFirebaseData(snapshot.val());
+                postedItems = parseKeyedFirebaseData(snapshot.val());
                 refreshAllViews();
+            }, (err) => {
+                console.warn('Lỗi đọc youngzone_posted_items:', err);
+                updateFirebaseStatus(false);
             });
 
             db.ref('youngzone_rmb_rate').on('value', (snapshot) => {
@@ -1874,7 +1901,7 @@
         function convertPiSizeChart(input) {
             const file = input.files[0];
             if (file) {
-                compressImageFile(file, 600, 0.7, (base64Res) => {
+                compressImageFile(file, 480, 0.55, (base64Res) => {
                     piTempSizeChartBase64 = base64Res;
                     document.getElementById('piSizeChartPreviewImg').src = piTempSizeChartBase64;
                     document.getElementById('piSizeChartPreviewBox').classList.remove('hidden');
@@ -1893,7 +1920,7 @@
             if (files.length === 0) return;
 
             files.forEach(file => {
-                compressImageFile(file, 550, 0.65, (base64Res) => {
+                compressImageFile(file, 450, 0.55, (base64Res) => {
                     piTempAllImagesArr.push(base64Res);
                     renderPiAllImagesPreviews();
                 });
@@ -1933,8 +1960,12 @@
             btn.innerText = "Đang lưu dữ liệu...";
 
             const idx = parseInt(document.getElementById('editPostedItemIndex').value, 10);
+            const existingItem = idx >= 0 && postedItems[idx] ? postedItems[idx] : null;
+            const itemId = existingItem && existingItem.id ? existingItem.id : Date.now();
+            const fbKey = existingItem && existingItem._fbKey ? existingItem._fbKey : String(itemId);
+
             const itemObj = {
-                id: idx >= 0 && postedItems[idx] ? postedItems[idx].id : Date.now(),
+                id: itemId,
                 name: document.getElementById('piName').value.trim(),
                 taobaoUrl: document.getElementById('piTaobaoUrl').value.trim(),
                 rmbCost: parseFloat(document.getElementById('piRmbCost').value) || 0,
@@ -1947,23 +1978,43 @@
                 updatedAt: getTodayStr()
             };
 
-            if (idx >= 0) {
-                postedItems[idx] = itemObj;
+            const itemWithKey = { ...itemObj, _fbKey: fbKey };
+            if (idx >= 0 && existingItem) {
+                postedItems[idx] = itemWithKey;
                 addLog(`Cập nhật hàng đã đăng: [${itemObj.name}]`);
             } else {
-                postedItems.unshift(itemObj);
+                postedItems.unshift(itemWithKey);
                 addLog(`Thêm mới hàng đã đăng: [${itemObj.name}]`);
             }
 
-            db.ref('youngzone_posted_items').set(postedItems, (err) => {
+            saveAllToLocalStorage();
+            let finished = false;
+            const resetBtn = () => {
                 btn.disabled = false;
                 btn.innerHTML = `<i class="fas fa-floppy-disk mr-1"></i> Lưu Vào Danh Sách Hàng Đã Đăng`;
-                if (err) {
-                    showToast("Lỗi kết nối Firebase: " + err.message);
-                } else {
+            };
+
+            const fallbackTimer = setTimeout(() => {
+                if (!finished) {
+                    finished = true;
+                    resetBtn();
                     closeModal('postedItemModal');
                     refreshAllViews();
-                    showToast("✅ Đã lưu thông tin hàng đã đăng lên Shop!");
+                    showToast("⚠ Mạng chậm: Đã lưu tạm vào máy, đang tiếp tục đồng bộ Firebase!");
+                }
+            }, 8000);
+
+            db.ref('youngzone_posted_items/' + fbKey).set(itemObj, (err) => {
+                if (finished) return;
+                finished = true;
+                clearTimeout(fallbackTimer);
+                resetBtn();
+                closeModal('postedItemModal');
+                refreshAllViews();
+                if (err) {
+                    showToast("⚠ Đã lưu tạm trên máy (Lỗi Firebase: " + err.message + ")");
+                } else {
+                    showToast("✅ Đã lưu thông tin hàng đã đăng lên Firebase!");
                 }
             });
         }
@@ -2118,10 +2169,19 @@
 
         function deletePostedItem(idx) {
             showConfirmToast("Xóa mẫu hàng đã đăng này khỏi danh sách?", () => {
-                const removedName = postedItems[idx]?.name || '';
+                const target = postedItems[idx];
+                const removedName = target?.name || '';
+                const fbKey = target?._fbKey;
                 postedItems.splice(idx, 1);
                 addLog(`Xóa hàng đã đăng: [${removedName}]`);
-                db.ref('youngzone_posted_items').set(postedItems);
+                saveAllToLocalStorage();
+                if (fbKey) {
+                    db.ref('youngzone_posted_items/' + fbKey).remove((err) => {
+                        if (err) showToast("Lỗi xóa trên Firebase: " + err.message);
+                    });
+                } else {
+                    db.ref('youngzone_posted_items').set(postedItems.map(stripFbKey));
+                }
                 refreshAllViews();
                 showToast("Đã xóa mẫu hàng đã đăng!");
             });
@@ -3131,18 +3191,24 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
 
         function handleSaveInventory(e) {
             e.preventDefault();
-            inventory.unshift({
-                id: Date.now(),
+            const newId = Date.now();
+            const fbKey = String(newId);
+            const invObj = {
+                id: newId,
                 product: document.getElementById('invProduct').value.trim(),
                 size: document.getElementById('invSize').value.trim(),
                 qty: parseInt(document.getElementById('invQty').value, 10) || 0,
                 cost: parseInt(document.getElementById('invCost').value, 10) || 0,
                 price: parseInt(document.getElementById('invPrice').value, 10) || 0
+            };
+            inventory.unshift({ ...invObj, _fbKey: fbKey });
+            saveAllToLocalStorage();
+            db.ref('youngzone_inventory/' + fbKey).set(invObj, (err) => {
+                if (err) showToast("⚠ Đã lưu tạm trên máy (Lỗi Firebase: " + err.message + ")");
+                else showToast("✅ Đã nhập sản phẩm vào Kho Hàng Sẵn!");
             });
-            db.ref('youngzone_inventory').set(inventory);
             closeModal('inventoryModal');
             refreshAllViews();
-            showToast("Đã nhập sản phẩm vào Kho Hàng Sẵn!");
         }
 
         function renderInventoryTable() {
@@ -3187,8 +3253,17 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
 
         function deleteInventory(idx) {
             showConfirmToast("Xóa sản phẩm này khỏi Kho?", () => {
+                const target = inventory[idx];
+                const fbKey = target?._fbKey;
                 inventory.splice(idx, 1);
-                db.ref('youngzone_inventory').set(inventory);
+                saveAllToLocalStorage();
+                if (fbKey) {
+                    db.ref('youngzone_inventory/' + fbKey).remove((err) => {
+                        if (err) showToast("Lỗi xóa kho trên Firebase: " + err.message);
+                    });
+                } else {
+                    db.ref('youngzone_inventory').set(inventory.map(stripFbKey));
+                }
                 refreshAllViews();
                 showToast("Đã xóa khỏi kho!");
             });
@@ -3445,8 +3520,15 @@ Shop sẽ liên tục cập nhật tiến độ vận chuyển cho bạn. Chúc 
                     addLog(`Tạo đơn hàng mới [${orderObj.id}] - ${orderObj.product}`);
 
                     if (pendingStockIndex >= 0 && inventory[pendingStockIndex] && inventory[pendingStockIndex].qty > 0) {
-                        inventory[pendingStockIndex].qty -= 1;
-                        try { await db.ref('youngzone_inventory').set(inventory); } catch (err) {}
+                        const stockItem = inventory[pendingStockIndex];
+                        stockItem.qty -= 1;
+                        try {
+                            if (stockItem._fbKey) {
+                                await db.ref('youngzone_inventory/' + stockItem._fbKey + '/qty').set(stockItem.qty);
+                            } else {
+                                await db.ref('youngzone_inventory').set(inventory.map(stripFbKey));
+                            }
+                        } catch (err) {}
                     }
                 }
 
