@@ -1521,6 +1521,9 @@
             if (document.getElementById('withdrawModal') && !document.getElementById('withdrawModal').classList.contains('hidden')) {
                 renderWithdrawHistory();
             }
+            if (document.getElementById('logsModal') && !document.getElementById('logsModal').classList.contains('hidden')) {
+                openLogsModal();
+            }
             updateNotifBadge();
         }
 
@@ -1749,17 +1752,16 @@
             const fetchNode = async (path) => {
                 try {
                     const r = await fetch(`${baseUrl}/${path}.json`, { cache: 'no-store' });
-                    return r.ok ? await r.json() : null;
-                } catch { return null; }
+                    if (!r.ok) return { ok: false, data: null };
+                    return { ok: true, data: await r.json() };
+                } catch { return { ok: false, data: null }; }
             };
-            const [ord, fnd, wdr, wprod, vch, sbar, cat, inv, post, pcat, rate, cust, lg] = await Promise.all([
+            const [ord, fnd, wdr, vch, sbar, inv, post, pcat, rate, cust, lg] = await Promise.all([
                 fetchNode('youngzone_orders'),
                 fetchNode('youngzone_funds'),
                 fetchNode('youngzone_withdraws'),
-                fetchNode('youngzone_web_products'),
                 fetchNode('youngzone_web_vouchers'),
                 fetchNode('youngzone_web_sidebar_config'),
-                fetchNode('youngzone_web_categories'),
                 fetchNode('youngzone_inventory'),
                 fetchNode('youngzone_posted_items'),
                 fetchNode('youngzone_posted_categories'),
@@ -1767,22 +1769,20 @@
                 fetchNode('youngzone_customers'),
                 fetchNode('youngzone_logs')
             ]);
-            if (ord !== null) orders = parseKeyedFirebaseData(ord, 'date');
-            if (fnd !== null) funds = parseFundsData(fnd);
-            if (wdr !== null) withdraws = parseKeyedFirebaseData(wdr, 'date');
-            if (wprod !== null) webProducts = parseFirebaseData(wprod);
-            if (vch !== null) coupons = parseFirebaseData(vch);
-            if (sbar !== null) { sidebarConfig = { ...sidebarConfig, ...sbar }; renderSizeChartUI(); }
-
-            if (inv !== null) inventory = parseKeyedFirebaseData(inv, 'id');
-            if (post !== null) postedItems = parseKeyedFirebaseData(post, 'id');
-            if (pcat !== null) { postedCategories = parseFirebaseData(pcat); renderPostedCategoryUI(); }
-            if (rate !== null) {
-                globalRMBRate = parseInt(rate, 10) || 3810;
+            if (ord.ok) orders = parseKeyedFirebaseData(ord.data, 'date');
+            if (fnd.ok) funds = parseFundsData(fnd.data);
+            if (wdr.ok) withdraws = parseKeyedFirebaseData(wdr.data, 'date');
+            if (vch.ok) coupons = parseFirebaseData(vch.data);
+            if (sbar.ok && sbar.data) { sidebarConfig = { ...sidebarConfig, ...sbar.data }; renderSizeChartUI(); }
+            if (inv.ok) inventory = parseKeyedFirebaseData(inv.data, 'id');
+            if (post.ok) postedItems = parseKeyedFirebaseData(post.data, 'id');
+            if (pcat.ok && pcat.data) { postedCategories = parseFirebaseData(pcat.data); renderPostedCategoryUI(); }
+            if (rate.ok && rate.data !== null) {
+                globalRMBRate = parseInt(rate.data, 10) || 3810;
                 document.getElementById('globalRmbRate').value = globalRMBRate;
             }
-            if (cust !== null) customers = parseFirebaseData(cust);
-            if (lg !== null) logs = parseFirebaseData(lg).reverse();
+            if (cust.ok) customers = parseFirebaseData(cust.data);
+            if (lg.ok) logs = parseFirebaseData(lg.data).reverse();
             firebaseHasData = true;
             refreshAllViews();
         }
@@ -1812,7 +1812,7 @@
                             if (!firebaseSdkConnected) {
                                 checkFirebaseRestConnection(true);
                             }
-                        }, 12000);
+                        }, 6000);
                     }
                 }
             });
@@ -1983,6 +1983,9 @@
         function clearNotifications() {
             notificationsList = [];
             saveAllToLocalStorage();
+            if (document.getElementById('logsModal') && !document.getElementById('logsModal').classList.contains('hidden')) {
+                openLogsModal();
+            }
             updateNotifBadge();
             renderNotificationsUI();
             showToast("Đã xóa tất cả thông báo!");
@@ -2094,23 +2097,28 @@
                 const allBtnClass = currentPostedCategoryFilter === 'ALL'
                     ? 'bg-slate-900 text-white font-bold'
                     : 'bg-slate-100 text-slate-700 hover:bg-slate-200 font-semibold';
-                const catBtns = postedCategories.map(cat => {
+                const catBtns = postedCategories.map((cat, idx) => {
                     const active = currentPostedCategoryFilter === cat;
                     const cls = active ? 'bg-slate-900 text-white font-bold' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 font-semibold';
-                    return `<button type="button" onclick="filterPostedCategory('${escapeHtml(cat)}')" class="px-3 py-1.5 rounded-xl text-xs transition ${cls}">${escapeHtml(cat)}</button>`;
+                    const delCls = active ? 'text-slate-300 hover:text-rose-400' : 'text-slate-400 hover:text-rose-600';
+                    return `<div class="inline-flex items-center rounded-xl overflow-hidden border border-slate-200 ${cls}">
+                        <button type="button" onclick="filterPostedCategory(${idx})" class="px-3 py-1.5 text-xs transition">${escapeHtml(cat)}</button>
+                        <button type="button" onclick="deletePostedCategory(${idx}, event)" class="pr-2.5 pl-1 py-1.5 text-xs font-bold transition ${delCls}" title="Xóa phân loại này">×</button>
+                    </div>`;
                 }).join('');
-                bar.innerHTML = `<button type="button" onclick="filterPostedCategory('ALL')" class="px-3 py-1.5 rounded-xl text-xs transition ${allBtnClass}">Tất Cả</button>` + catBtns;
+                bar.innerHTML = `<button type="button" onclick="filterPostedCategory(-1)" class="px-3 py-1.5 rounded-xl text-xs transition border border-slate-200 ${allBtnClass}">Tất Cả</button>` + catBtns;
             }
             const sel = document.getElementById('piCategory');
             if (sel) {
                 const prev = sel.value;
-                sel.innerHTML = postedCategories.map(cat => `<option value="${escapeHtml(cat)}">${escapeHtml(cat)}</option>`).join('');
-                if (prev && postedCategories.includes(prev)) sel.value = prev;
+                const opts = postedCategories.length ? postedCategories : ['Khác'];
+                sel.innerHTML = opts.map(cat => `<option value="${escapeHtml(cat)}">${escapeHtml(cat)}</option>`).join('');
+                if (prev && opts.includes(prev)) sel.value = prev;
             }
         }
 
-        function filterPostedCategory(cat) {
-            currentPostedCategoryFilter = cat;
+        function filterPostedCategory(catIdx) {
+            currentPostedCategoryFilter = (catIdx === -1 || catIdx === 'ALL') ? 'ALL' : (postedCategories[catIdx] || 'ALL');
             renderPostedCategoryUI();
             renderPostedItemsTable();
         }
@@ -2122,8 +2130,12 @@
             if (!newCat) { showToast("Vui lòng nhập tên phân loại!"); return; }
             if (!postedCategories.some(c => c.toLowerCase() === newCat.toLowerCase())) {
                 postedCategories.push(newCat);
-                fbSet('youngzone_posted_categories', postedCategories).catch(() => {});
                 saveAllToLocalStorage();
+                fbSet('youngzone_posted_categories', postedCategories)
+                    .then(() => showToast(`✅ Đã thêm phân loại [${newCat}] lên Firebase!`))
+                    .catch((err) => showToast(`⚠ Đã thêm trên máy nhưng lỗi Firebase: ${err.message}`));
+            } else {
+                showToast(`Phân loại [${newCat}] đã có sẵn!`);
             }
             inp.value = '';
             renderPostedCategoryUI();
@@ -2132,7 +2144,24 @@
                 if (sel) sel.value = newCat;
             }
             renderPostedItemsTable();
-            showToast(`✅ Đã thêm phân loại [${newCat}]!`);
+        }
+
+        function deletePostedCategory(idx, e) {
+            if (e) e.stopPropagation();
+            const catName = postedCategories[idx];
+            if (!catName) return;
+            showConfirmToast(`Xóa phân loại [${catName}]?`, () => {
+                postedCategories.splice(idx, 1);
+                if (currentPostedCategoryFilter === catName) {
+                    currentPostedCategoryFilter = 'ALL';
+                }
+                saveAllToLocalStorage();
+                fbSet('youngzone_posted_categories', postedCategories)
+                    .then(() => showToast(`✅ Đã xóa phân loại [${catName}] trên Firebase!`))
+                    .catch((err) => showToast(`⚠ Lỗi xóa trên Firebase: ${err.message}`));
+                renderPostedCategoryUI();
+                renderPostedItemsTable();
+            });
         }
 
         function quickChangePostedCategory(idx, newCat) {
