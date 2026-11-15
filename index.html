@@ -1326,6 +1326,7 @@
         let postedItems = [];
         let postedCategories = ['Áo Đấu', 'Giày', 'Đồ Gym', 'Áo Khoác', 'Phụ Kiện', 'Khác'];
         let currentPostedCategoryFilter = 'ALL';
+        let lastPostedCatMutationAt = 0;
         let funds = [];
         let withdraws = [];
         let customers = [];
@@ -1352,6 +1353,17 @@
                 return Number.isFinite(parsed) ? parsed : 0;
             }
             return 0;
+        }
+
+        function parsePostedCategoriesData(val) {
+            if (val === null || val === undefined) return null;
+            if (typeof val === 'object' && !Array.isArray(val) && 'items' in val) {
+                return Array.isArray(val.items) ? val.items.filter(Boolean) : [];
+            }
+            if (typeof val === 'object' && !Array.isArray(val) && 'updatedAt' in val) {
+                return [];
+            }
+            return parseFirebaseData(val);
         }
 
         function parseFirebaseData(snapshotVal) {
@@ -1748,6 +1760,7 @@
         }
 
         async function loadAllFromFirebaseRest() {
+            const fetchStartedAt = Date.now();
             const baseUrl = firebaseConfig.databaseURL;
             const fetchNode = async (path) => {
                 try {
@@ -1776,7 +1789,13 @@
             if (sbar.ok && sbar.data) { sidebarConfig = { ...sidebarConfig, ...sbar.data }; renderSizeChartUI(); }
             if (inv.ok) inventory = parseKeyedFirebaseData(inv.data, 'id');
             if (post.ok) postedItems = parseKeyedFirebaseData(post.data, 'id');
-            if (pcat.ok && pcat.data) { postedCategories = parseFirebaseData(pcat.data); renderPostedCategoryUI(); }
+            if (pcat.ok && pcat.data !== null && lastPostedCatMutationAt < fetchStartedAt) {
+                const parsedCats = parsePostedCategoriesData(pcat.data);
+                if (parsedCats !== null) {
+                    postedCategories = parsedCats;
+                    renderPostedCategoryUI();
+                }
+            }
             if (rate.ok && rate.data !== null) {
                 globalRMBRate = parseInt(rate.data, 10) || 3810;
                 document.getElementById('globalRmbRate').value = globalRMBRate;
@@ -1898,9 +1917,9 @@
             });
 
             db.ref('youngzone_posted_categories').on('value', (snapshot) => {
-                const data = snapshot.val();
-                if (data) {
-                    postedCategories = parseFirebaseData(data);
+                const parsedCats = parsePostedCategoriesData(snapshot.val());
+                if (parsedCats !== null) {
+                    postedCategories = parsedCats;
                     renderPostedCategoryUI();
                     refreshAllViews();
                 }
@@ -2131,7 +2150,8 @@
             if (!postedCategories.some(c => c.toLowerCase() === newCat.toLowerCase())) {
                 postedCategories.push(newCat);
                 saveAllToLocalStorage();
-                fbSet('youngzone_posted_categories', postedCategories)
+                lastPostedCatMutationAt = Date.now();
+                fbSet('youngzone_posted_categories', { items: postedCategories, updatedAt: lastPostedCatMutationAt })
                     .then(() => showToast(`✅ Đã thêm phân loại [${newCat}] lên Firebase!`))
                     .catch((err) => showToast(`⚠ Đã thêm trên máy nhưng lỗi Firebase: ${err.message}`));
             } else {
@@ -2156,7 +2176,8 @@
                     currentPostedCategoryFilter = 'ALL';
                 }
                 saveAllToLocalStorage();
-                fbSet('youngzone_posted_categories', postedCategories)
+                lastPostedCatMutationAt = Date.now();
+                fbSet('youngzone_posted_categories', { items: postedCategories, updatedAt: lastPostedCatMutationAt })
                     .then(() => showToast(`✅ Đã xóa phân loại [${catName}] trên Firebase!`))
                     .catch((err) => showToast(`⚠ Lỗi xóa trên Firebase: ${err.message}`));
                 renderPostedCategoryUI();
