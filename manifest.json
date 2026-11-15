@@ -1,24 +1,20 @@
 {
+  "name": "YoungZone",
   "short_name": "YoungZone",
-  "name": "YoungZone Sports - Quản Lý Đơn Hàng",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
   "icons": [
     {
-      "src": "logo.jpg",
-      "type": "image/jpeg",
+      "src": "youngzoneshop.png",
       "sizes": "192x192",
-      "purpose": "any maskable"
+      "type": "image/png"
     },
     {
-      "src": "logo.jpg",
-      "type": "image/jpeg",
+      "src": "youngzoneshop.png",
       "sizes": "512x512",
-      "purpose": "any maskable"
+      "type": "image/png"
     }
-  ],
-  "start_url": "./index.html",
-  "background_color": "#0b0f19",
-  "theme_color": "#0b0f19",
-  "display": "standalone",
-  "orientation": "portrait",
-  "scope": "./"
+  ]
 }
